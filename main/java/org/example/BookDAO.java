@@ -8,7 +8,7 @@ public class BookDAO {
     public static void addBook(String title, String author, String publisher, int year) {
         String sql = "INSERT INTO Books (Title, Author, Publisher, Year) VALUES (?, ?, ?, ?)";
 
-        try (Connection conn = DatabaseConnection.connect();
+        try (Connection conn = DatabaseConnection.connectToLibrary();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, title);

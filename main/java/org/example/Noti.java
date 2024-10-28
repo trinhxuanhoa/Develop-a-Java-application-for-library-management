@@ -27,7 +27,7 @@ public class Noti{
         alert.show(); // Hiển thị thông báo
 
         // Tạo một Timeline để tự động tắt Alert sau 1 giây
-        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(5), event -> {
+        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
             alert.close(); // Đóng Alert
         }));
         timeline.play(); // Chạy Timeline
@@ -42,7 +42,7 @@ public class Noti{
         alert.show(); // Hiển thị thông báo
 
         // Tạo một Timeline để tự động tắt Alert sau 1 giây
-        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(5), event -> {
+        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
             alert.close(); // Đóng Alert
         }));
         timeline.play(); // Chạy Timeline
