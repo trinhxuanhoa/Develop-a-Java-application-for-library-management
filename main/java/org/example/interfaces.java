@@ -1,6 +1,8 @@
 package org.example;
 
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -14,11 +16,12 @@ import javafx.scene.shape.Circle;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
+import javafx.stage.Modality;
 
 public class interfaces {
     private Stage primaryStage;
     LibraryManagement library = new LibraryManagement();
-    private Scene mainScene;;
+    private Scene interfaceScene;;
 
     // Lấy kích thước visual bounds (phần hiển thị không bị che bởi Taskbar/Dock)
     Rectangle2D visualBounds = Screen.getPrimary().getVisualBounds();
@@ -28,7 +31,7 @@ public class interfaces {
     public interfaces(Stage primaryStage) {
         this.primaryStage = primaryStage;
     }
-    public void interFace() {
+    public void interFace(Main main) {
         Pane common = new Pane();
         common.setLayoutX(370);
         common.setLayoutY(0);
@@ -48,52 +51,52 @@ public class interfaces {
         imageView.setFitHeight(100); // Kích thước chiều cao
         Pane pane = new Pane();
         imageView.setLayoutX(100);
-        imageView.setLayoutY(70);
+        imageView.setLayoutY(80);
         // Cắt hình ảnh thành hình tròn
         imageView.setClip(circle);
-        VBox table = new VBox(tableRectangle2,tableRectangle1);
+        Pane paneRectangle = new Pane(tableRectangle2,tableRectangle1);
 
         // Tạo các nút cho menu
-    Button addDocButton = button("Thêm Sách");
-    Button removeDocButton = button("Xóa Sách");
-    Button updateDocButton = button("Sửa Sách");
-    Button findDocButton = button("Tìm Sách");
-    Button displayDocButton = button("Danh Sách Người Dùng");
-    Button addUser = button("Thêm Người Dùng");
+HBox accountHBox =  accountHBox("Thông Tin Tài Khoản");
+        Button dashboardButton = button("Bảng Điều Khiển");
+    Button managerDocumentButton = button("Quản Lý Tài Liệu");
+    Button managerUserButton = button("Quản Lý Người Dùng");
+    Button borrowButton = button("Mượn Tài Liệu");
+    Button returnButton = button("Trả Tài Liệu");
+        Button statisticsButton = button("Thống Kê");
+    Button cardButton = button("Đăng Kí Thẻ");
+        Button renewButton = button("Gia Hạn Thẻ");
+        Button notificationsButton = button("Thông Báo");
+    Button introduceButton = button("Giới Thiệu");
+    Button helpButton = button("Trợ Giúp");
+        Button settingsButton = button("Cài Đặt");
+    Button logOutButton = button("Đăng Xuất");
 
-    // Thêm các sự kiện cho nút
-        addDocButton.setOnAction(e -> {
-        library.addDocument(primaryStage,this);
-    });
-        removeDocButton.setOnAction(e -> {
-        library.removeDocument(primaryStage,this);
-    });
-        updateDocButton.setOnAction(e -> library.updateDocument(primaryStage,this));
-        findDocButton.setOnAction(e-> common.getChildren().add(library.findDocument(primaryStage,this)));
-
+    //dashboardButton.setOnAction(e->);
+        managerDocumentButton.setOnAction(e-> common.getChildren().add(library.managerDocument(primaryStage,this)));
+logOutButton.setOnAction(e-> showLogoutConfirmation(main));
     // Layout
         VBox layout = new VBox(2);
-        layout.getChildren().addAll(addDocButton,
-                                    removeDocButton, updateDocButton,
-                                    findDocButton, displayDocButton,
-                                    addUser
+        layout.getChildren().addAll(dashboardButton, notificationsButton,managerDocumentButton,
+                managerUserButton, borrowButton,returnButton,statisticsButton,cardButton,
+                renewButton, introduceButton, helpButton,settingsButton, logOutButton
                                     );
-        layout.setLayoutY(200);
+        layout.setLayoutY(240);
 
-        pane.getChildren().addAll(imageView,layout,common);
+        pane.getChildren().addAll(imageView,accountHBox,layout,common);
         // Dùng StackPane để xếp hình nền, hình chữ nhật và form
         StackPane root = new StackPane();
-        root.getChildren().addAll(table,pane);
+        root.getChildren().addAll(paneRectangle,pane);
 
-    mainScene = new Scene(root, screenWidth, screenHeight);
-        primaryStage.setScene(mainScene);
+    interfaceScene = new Scene(root, screenWidth, screenHeight);
+        primaryStage.setScene(interfaceScene);
     }
 
-   public void showMainScene() {
-       primaryStage.setScene(mainScene); // Quay lại Scene chính
+   public void showInterfaceScene() {
+       primaryStage.setScene(interfaceScene); // Quay lại Scene chính
    }
    public Scene sms() {
-        return mainScene;
+        return interfaceScene;
    }
 
    public Rectangle rectangle(double width,double High, Color fillColor, Color strokeColor,
@@ -107,10 +110,11 @@ public class interfaces {
        rectangle0.setOpacity(opacity); // Độ trong suốt (tùy chọn)
        //StackPane.setAlignment(rectangle0, p); // vị trí
        rectangle0.setLayoutX(x);
-       rectangle0.setLayoutX(y);
+       rectangle0.setLayoutY(y);
 
        return rectangle0;
    }
+
    Button button(String s) {
        Button button0 = new Button(s);
        button0.setStyle("-fx-background-color: #0080FF; -fx-text-fill: white;-fx-font-size: 15px; -fx-font-weight: normal;");
@@ -120,4 +124,55 @@ public class interfaces {
        button0.setOnMouseExited(e-> button0.setStyle("-fx-background-color: #0080FF; -fx-text-fill: white;-fx-font-size: 15px; -fx-font-weight: normal;"));
        return button0;
    }
+
+   HBox accountHBox(String s) {
+       Label accountLabel = new Label(s);
+       accountLabel.setStyle("-fx-text-fill: white;-fx-font-size: 15px;"); // Màu chữ
+       // Thêm sự kiện di chuột để gạch chân
+       accountLabel.setOnMouseEntered(e -> accountLabel.setStyle("-fx-text-fill: white; -fx-underline: true;-fx-font-size: 15px;"));
+       accountLabel.setOnMouseExited(e -> accountLabel.setStyle("-fx-text-fill: white; -fx-underline: false;-fx-font-size: 15px;"));
+       HBox accountHBox = new HBox(accountLabel);
+       accountHBox.setAlignment(Pos.CENTER);
+       accountHBox.setMinWidth(300);
+       accountHBox.setLayoutY(0);
+       accountHBox.setLayoutY(185);
+       accountLabel.setOnMouseClicked(e -> {
+
+       });
+       return accountHBox;
+   }
+
+    // Hàm hiển thị cửa sổ xác nhận đăng xuất
+    private void showLogoutConfirmation(Main main) {
+        // Tạo một stage mới cho cửa sổ xác nhận
+        Stage logoutStage = new Stage();
+        logoutStage.initModality(Modality.APPLICATION_MODAL); // Chặn thao tác với các cửa sổ khác
+        logoutStage.setTitle("Xác Nhận Đăng Xuất");
+
+        // Label hiển thị thông báo
+        Label messageLabel = new Label("Bạn có chắc chắn muốn đăng xuất không?");
+messageLabel.setStyle("-fx-text-fill: red;-fx-font-size: 15px; -fx-font-weight: bold;");
+        // Nút xác nhận đăng xuất
+        Button confirmButton = new Button("Xác Nhận");
+        confirmButton.setStyle("-fx-background-color: #0080FF; -fx-text-fill: white;-fx-font-size: 12px; -fx-font-weight: bold;");
+        confirmButton.setMinHeight(15);
+        confirmButton.setMinWidth(50);
+        confirmButton.setOnMouseEntered(e-> confirmButton.setStyle("-fx-background-color: #004C99; -fx-text-fill: white;-fx-font-size: 12px; -fx-font-weight: bold;"));
+        confirmButton.setOnMouseExited(e-> confirmButton.setStyle("-fx-background-color: #0080FF; -fx-text-fill: white;-fx-font-size: 12px; -fx-font-weight: bold;"));
+        confirmButton.setOnAction(e -> {
+            logoutStage.close();
+            main.showMainScene();
+        }); // Đóng cửa sổ khi nhấn xác nhận
+
+        // Bố trí các thành phần
+        VBox layout = new VBox(10, messageLabel, confirmButton);
+        layout.setStyle("-fx-padding: 20; -fx-alignment: center;");
+
+        // Tạo scene cho cửa sổ xác nhận
+        Scene scene = new Scene(layout, 400, 100);
+        logoutStage.setScene(scene);
+
+        // Hiển thị cửa sổ xác nhận
+        logoutStage.showAndWait(); // Đợi người dùng đóng cửa sổ này trước khi tiếp tục
+    }
 }

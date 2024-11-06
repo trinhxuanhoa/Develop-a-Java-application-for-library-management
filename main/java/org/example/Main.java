@@ -14,14 +14,15 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.text.Font;
 import javafx.geometry.Rectangle2D;
 import javafx.stage.Screen;
 public class Main extends Application {
+    private Stage primaryStage;
+    private Scene mainScene;
 
     @Override
     public void start(Stage primaryStage) {
-
+        this.primaryStage = primaryStage;
         Rectangle2D visualBounds = Screen.getPrimary().getVisualBounds();
         double screenWidth = visualBounds.getWidth();
         double screenHeight = visualBounds.getHeight();
@@ -70,10 +71,10 @@ public class Main extends Application {
             String password = passwordField.getText();
             if (username.equals("admin") && password.equals("12345")) {
                 System.out.println("Đăng nhập thành công!");
-                inf.interFace();
+                inf.interFace(this);
             } else {
                 System.out.println("Sai tài khoản hoặc mật khẩu!");
-                inf.interFace();
+                inf.interFace(this);
             }
         });
 
@@ -89,15 +90,19 @@ public class Main extends Application {
         StackPane.setAlignment(loginBox, Pos.CENTER);
 
         // Tạo Scene và hiển thị Stage
-        Scene scene = new Scene(root, screenWidth, screenHeight);
+        mainScene = new Scene(root, screenWidth, screenHeight);
         primaryStage.setTitle("Library Manager");
-        primaryStage.setScene(scene);
+        primaryStage.setScene(mainScene);
         primaryStage.show();
         System.out.println(screenWidth);
+        System.out.println(screenHeight);
     }
 
     public static void main(String[] args) {
         launch(args);
+    }
+    public void showMainScene() {
+        primaryStage.setScene(mainScene); // Quay lại scene chính
     }
 }
 

@@ -15,7 +15,7 @@ public class Noti{
         alert.setContentText(message);
         alert.setResizable(false);
         alert.initOwner(primaryStage);
-        alert.show();
+        alert.showAndWait();
     }
 
     public static void showSuccessMessage(String message) {
@@ -27,24 +27,19 @@ public class Noti{
         alert.show(); // Hiển thị thông báo
 
         // Tạo một Timeline để tự động tắt Alert sau 1 giây
-        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
+        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(2), event -> {
             alert.close(); // Đóng Alert
         }));
         timeline.play(); // Chạy Timeline
     }
 
     public static void showFailureMessage(String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Thông báo");
         alert.setHeaderText(null);
         alert.setContentText(message);
 
         alert.show(); // Hiển thị thông báo
 
-        // Tạo một Timeline để tự động tắt Alert sau 1 giây
-        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
-            alert.close(); // Đóng Alert
-        }));
-        timeline.play(); // Chạy Timeline
     }
 }
