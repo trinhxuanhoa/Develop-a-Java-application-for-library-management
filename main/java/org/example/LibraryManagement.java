@@ -32,6 +32,10 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontPosture;
+import javafx.scene.text.FontWeight;
+import javafx.scene.shape.Circle;
 public class LibraryManagement {
 
     Rectangle2D visualBounds = Screen.getPrimary().getVisualBounds();
@@ -41,15 +45,18 @@ public class LibraryManagement {
     BookDAO bookDAO;
     private User user;
     UserDAO userDAO;
-
-    public LibraryManagement() {
+    private Stage primaryStage;
+    private interfaces main;
+    public LibraryManagement(Stage primaryStage, interfaces main) {
         book = null;
         bookDAO = new BookDAO();
         user = null;
         userDAO = new UserDAO();
+        this.primaryStage = primaryStage;
+        this.main = main;
     }
     // Phương thức thêm sách
-    public void addDocument(Stage primaryStage, interfaces main) {
+    public void addDocument() {
 
         VBox isbnVBox = vBox("ISBN");
         VBox titleVBox = vBox("Tiêu đề");
@@ -285,7 +292,7 @@ public class LibraryManagement {
         primaryStage.setScene(scene);
     }
     //phương thức chỉnh sửa sách
-    public void updateDocument(Stage primaryStage, interfaces main, Book book) {
+    public void updateDocument(Book book) {
 
         //tạo mã QR
         TextField urlField;
@@ -373,14 +380,14 @@ public class LibraryManagement {
          authorField.setText(book.getAuthor());
          publisherField.setText(book.getPublisher());
          genreField.setText(book.getGenre());
-         yearField.setText(book.getYear()+"");
+         yearField.setText((book.getYear()!=null)?book.getYear()+"":"");
          quantityField.setText(book.getQuantity()+"");
          editionField.setText(book.getEdition());
-         reprintField.setText(book.getReprint()+"");
-         priceField.setText(book.getPrice()+"");
+         reprintField.setText((book.getReprint()!=null)?book.getReprint()+"":"");
+         priceField.setText((book.getPrice()!=null)?book.getPrice()+"":"");
          languageField.setText(book.getLanguage());
          statusField.setValue(book.getStatus());
-         chapterField.setText(book.getChapter()+"");
+         chapterField.setText((book.getChapter()!=null)?book.getChapter()+"":"");
 
 
         // Tạo một nút để mở hộp thoại chọn file
@@ -534,12 +541,12 @@ public class LibraryManagement {
         primaryStage.setScene(scene);
     }
     //phương thức quản lý sách
-    public Pane managerDocument(Stage primaryStage, interfaces main) {
+    public Pane managerDocument() {
         // Tạo bảng TableView
         TableView<Book> tableView;
         ObservableList<Book> data = FXCollections.observableArrayList();
         List<String> a = new ArrayList<>();
-        tableView = Table.tableDocument(primaryStage, main, true, 1000, a, this);
+        tableView = Table.tableDocument(true, 1000, a, this);
         Rectangle rectangle = rectangle(screenWidth-350, screenHeight - 170, Color.WHITE,
                 Color.BLACK, 1, 10, 10, 0.8, -25, -20 );
 
@@ -631,14 +638,14 @@ public class LibraryManagement {
 
         Button addButton = button("Thêm");
         addButton.setOnAction(e->{
-            addDocument(primaryStage, main);
+            addDocument();
         });
         addButton.setMinWidth(30);
 
         Button updateButton = button("Sửa");
         updateButton.setOnAction(e->{
             if(a.size()>0)
-            updateDocument(primaryStage,main,bookDAO.output1Value(a.get(0)));
+            updateDocument(bookDAO.output1Value(a.get(0)));
             else
                 Noti.showFailureMessage("Xin hãy chọn trước!");
             System.out.println(a.size());
@@ -671,7 +678,7 @@ public class LibraryManagement {
         return layout;
     }
     //phương thức xem chi tiết ảnh
-    public void showBook(Stage primaryStage, interfaces main, String id) {
+    public void showBook(String id) {
 
         book = bookDAO.output1Value(id);
         Label isbnLabel = new Label("ISBN: " + book.getId());
@@ -728,8 +735,94 @@ public class LibraryManagement {
         Scene scene = new Scene(vBox, screenWidth, screenHeight);
         primaryStage.setScene(scene);
     }
+    public Pane showBooks() {
+        // Tạo rectangle làm nền
+        Rectangle rectangle = rectangle(screenWidth - 350, screenHeight - 170, Color.WHITE,
+                Color.BLACK, 1, 10, 10, 0.8, -25, 100);
 
-    public void addUser(Stage primaryStage, interfaces main) {
+        // Tạo TextField và Button tìm kiếm
+        TextField searchField = new TextField();
+        searchField.setMinWidth(750);
+        searchField.setMaxWidth(750);
+        searchField.setPromptText("Tên sách, Tên tác giả");
+        Button searchButton = new Button("Tìm kiếm");
+        searchButton.setMinWidth(100);
+        searchButton.setMaxWidth(100);
+
+        HBox searchHBox = new HBox(searchField, searchButton);
+        searchHBox.setMinWidth(850);
+        searchHBox.setMaxWidth(850);
+        searchHBox.setAlignment(Pos.CENTER);
+        searchHBox.setLayoutX(143);
+        searchHBox.setLayoutY(120);
+
+        Pane pane = new Pane(rectangle, searchHBox);
+
+        // Tạo ScrollPane chứa StackPane
+        ScrollPane scrollPane = new ScrollPane();
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER); // Ẩn thanh cuộn ngang
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER); // Ẩn thanh cuộn dọc
+        scrollPane.setPrefSize(screenWidth - 480, screenHeight - 320);
+        scrollPane.setLayoutX(40);
+        scrollPane.setLayoutY(240);
+        VBox vBox = new VBox(10);
+        scrollPane.setContent(vBox); // Đặt StackPane vào ScrollPane
+        pane.getChildren().add(scrollPane);
+        scrollPane.setStyle("-fx-background-color: white; -fx-background: white;");
+
+        // Xử lý sự kiện khi nhấn nút Tìm kiếm
+        searchButton.setOnAction(e -> {
+            HBox hBox = new HBox(30);
+            vBox.getChildren().clear();
+
+            final String keyword = searchField.getText();
+            ResultSet resultSet = bookDAO.findBooksUtimate(keyword); // Gọi phương thức tìm kiếm
+
+            int i = 0;
+            try {
+                while (resultSet.next()) {
+                    String id = resultSet.getString("id");
+                    String title = resultSet.getString("title");
+                    String author = resultSet.getString("author");
+                    Image coverImage;
+
+                    // Kiểm tra ảnh bìa
+                    if (resultSet.getBytes("cover_image") != null) {
+                        coverImage = new Image(new ByteArrayInputStream(resultSet.getBytes("cover_image")));
+                    } else {
+                        coverImage = new Image("file:C:/Users/Dell/IdeaProjects/library/src/main/image/book.jpg");
+                    }
+
+                    hBox.getChildren().add(bookVBox(id, title, author, coverImage, primaryStage, main));
+                    i++;
+
+                    // Nếu có đủ 5 phần tử trong hBox, thêm hBox vào newVBox và tạo hBox mới
+                    if (i == 6) {
+                        vBox.getChildren().add(hBox);  // Thêm HBox vào VBox
+                        hBox = new HBox(30);  // Tạo một HBox mới để chứa 6 phần tử tiếp theo
+                        i = 0;  // Đặt lại biến đếm
+                    }
+                }
+
+                // Nếu vẫn còn phần tử trong hBox sau khi duyệt hết resultSet
+                if (i > 0) {
+                    vBox.getChildren().add(hBox);
+                }
+
+            } catch (SQLException ex) {
+                Noti.showErrorMessage("Lỗi khi tìm sách: " + ex.getMessage(), primaryStage);
+            } finally {
+                bookDAO.closeDatabase();
+            }
+
+        });
+
+        return pane;
+    }
+
+
+
+    public void addUser() {
 
         VBox userIdVBox = vBox("ID người dùng");
         VBox fullNameVBox = vBox("Họ và tên");
@@ -940,12 +1033,12 @@ public class LibraryManagement {
         primaryStage.setScene(scene);
     }
     //phương thức quản lý người dùng
-    public Pane managerUser(Stage primaryStage, interfaces main) {
+    public Pane managerUser() {
         // Tạo bảng TableView
         TableView<User> tableView;
         ObservableList<User> data = FXCollections.observableArrayList();
         List<String> arr = new ArrayList<>();
-        tableView = Table.tableUser(primaryStage, main, true, 1000, arr, this);
+        tableView = Table.tableUser(true, 1000, arr, this);
         Rectangle rectangle = rectangle(screenWidth-350, screenHeight - 170, Color.WHITE,
                 Color.BLACK, 1, 10, 10, 0.8, -25, -20 );
         // Các trường nhập liệu để thêm dữ liệu mới
@@ -1040,7 +1133,7 @@ public class LibraryManagement {
 
         Button addButton = button("Thêm");
         addButton.setOnAction(e->{
-            addUser(primaryStage, main);
+            addUser();
         });
         addButton.setMinWidth(30);
 
@@ -1075,7 +1168,7 @@ public class LibraryManagement {
         layout.setLayoutY(120);
         return layout;
     }
-    public void showUser(Stage primaryStage, interfaces main, String id) {
+    public void showUser(String id) {
 
         user = userDAO.output1Value(id);
         Label userIdLabel = new Label("User ID: " + user.getUserId());
@@ -1211,22 +1304,48 @@ public class LibraryManagement {
         comboBox.setMinSize(500,28);
         comboBox.setMaxSize(500,28);
 
-
-        // Bố cục HBox và VBox
-
         VBox vBox = new VBox(0, label, comboBox);
         vBox.setMinWidth(500);
 
         return vBox;
     }
 
-    VBox vBoxs(String s1, String s2) {
-        Label label1 = new Label(s1);
-        label1.setStyle("-fx-font-size: 12px;-fx-font-weight: bold;");
-        Label label2 = new Label(s2);
-        label2.setStyle("-fx-font-size: 12px;-fx-font-weight: bold;");
-        VBox vBox = new VBox(0, label1, label2);
-        vBox.setMinWidth(500);
+    public VBox bookVBox(String id, String title, String author, Image image,Stage primaryStage, interfaces main) {
+        Label labelTitle = new Label(title);
+        Label labelAuthor = new Label(author);
+        ImageView imageView = new ImageView(image);
+        // Bo tròn ảnh
+        Circle clip = new Circle(10, 10, 10); // Tạo hình tròn có bán kính 75 (nửa chiều rộng/chiều cao của ImageView)
+        //imageView.setClip(clip);
+
+        imageView.setFitWidth(150);
+        imageView.setFitHeight(200);
+        labelTitle.setMaxHeight(40); // Giới hạn chiều cao để Label chỉ hiển thị 2 dòng
+        labelTitle.setWrapText(true); // Cho phép xuống dòng khi vượt quá chiều rộng
+        labelTitle.setEllipsisString("..."); // Thêm dấu "..." khi chữ bị cắt
+        labelTitle.setStyle("-fx-text-fill: black; -fx-font-family: Arial; -fx-font-size: 12px; -fx-font-weight: normal;");
+
+        labelAuthor.setMaxHeight(40);
+        labelAuthor.setWrapText(true);
+        labelAuthor.setStyle("-fx-text-fill: gray; -fx-font-family: Arial; -fx-font-size: 12px; -fx-font-weight: normal;");
+
+        labelTitle.setOnMouseEntered(event -> {
+            labelTitle.setTextFill(Color.BLUE); // Chuyển màu chữ thành xanh
+            labelTitle.setUnderline(true); // Thêm gạch chân
+            labelTitle.setFont(Font.font("Arial", FontWeight.NORMAL, FontPosture.REGULAR, 16)); // Font khi di chuột vào
+        });
+
+        labelTitle.setOnMouseExited(event -> {
+            labelTitle.setTextFill(Color.BLACK); // Đổi lại màu chữ thành đen
+            labelTitle.setUnderline(false); // Xóa gạch chân
+            labelTitle.setFont(Font.font("Arial", FontWeight.NORMAL, 16)); // Font trở về mặc định
+        });
+
+        VBox vBox = new VBox(0, imageView, labelTitle, labelAuthor);
+        vBox.setMinWidth(150);
+        vBox.setOnMouseClicked(event -> {
+            showBook(id);
+        });
         return vBox;
     }
 
@@ -1291,7 +1410,11 @@ public class LibraryManagement {
         }
     }
     public Integer getInt(ResultSet resultSet, String type) throws SQLException {
-        int type0 = resultSet.getInt(type);
+        Integer type0 = resultSet.getInt(type);
+        return resultSet.wasNull() ? null : type0;
+    }
+    public Double getDouble(ResultSet resultSet, String type) throws SQLException {
+        Double type0 = resultSet.getDouble(type);
         return resultSet.wasNull() ? null : type0;
     }
 

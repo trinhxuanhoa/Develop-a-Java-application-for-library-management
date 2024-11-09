@@ -100,13 +100,13 @@ public class Book {
         this.publisher = new SimpleStringProperty(publisher);
         this.genre = new SimpleStringProperty(genre);
         this.year = (year != null) ? new SimpleIntegerProperty(year) : null;
-        this.quantity = (year != null) ? new SimpleIntegerProperty(quantity) : new SimpleIntegerProperty();
+        this.quantity = (quantity != null) ? new SimpleIntegerProperty(quantity) : new SimpleIntegerProperty();
         this.edition = new SimpleStringProperty(edition);
-        this.reprint = (year != null) ? new SimpleIntegerProperty(reprint) : null;
-        this.price = (year != null) ? new SimpleDoubleProperty(price) : null;
+        this.reprint = (reprint != null) ? new SimpleIntegerProperty(reprint) : null;
+        this.price = (price != null) ? new SimpleDoubleProperty(price) : null;
         this.language = new SimpleStringProperty(language);
         this.status = new SimpleStringProperty(status);
-        this.chapter = (year != null) ? new SimpleDoubleProperty(price) : null;
+        this.chapter = (chapter != null) ? new SimpleDoubleProperty(price) : null;
         this.summary = new SimpleStringProperty(summary);
         this.coverImages = coverImages; // Không cần sử dụng Property cho Image
         this.qrCode = qrCode;
@@ -207,7 +207,7 @@ public class Book {
     public SimpleIntegerProperty yearProperty() { return year; }
 
     // Getter và setter cho quantity
-    public int getQuantity() { return quantity.get(); }
+    public Integer getQuantity() { return quantity.get(); }
     public void setQuantity(Integer quantity) { if(quantity!=null)this.quantity.set(quantity);}
     public SimpleIntegerProperty quantityProperty() { return quantity; }
 

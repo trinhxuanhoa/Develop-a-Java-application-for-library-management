@@ -112,6 +112,8 @@ public class BookDAO {
         }
     }
 
+
+
     public Book output1Value(String id) {
         Book book = new Book();
         try (Connection connection = DatabaseConnection.connectToLibrary()) {
@@ -182,7 +184,7 @@ public class BookDAO {
                 sql += sqlPublisher;
                 checkAnd = true;
             }
-            if (book.yearProperty()!=null) {
+            if (book.getYear()!=null) {
                 System.out.println(sql + "vdv");
                 if (checkAnd)
                     sql += " AND ";
@@ -196,13 +198,15 @@ public class BookDAO {
                 String sqlGenre = "genre = '" + book.getGenre() + "'";
                 sql += sqlGenre;
                 checkAnd = true;
+                System.out.println("hoa1");
             }
-            if (book.quantityProperty()!= null) {
+            if (book.getQuantity()!= 0) {
                 if (checkAnd)
                     sql += " AND ";
                 String sqlQuantity = "quantity = " + book.getQuantity();
                 sql += sqlQuantity;
                 checkAnd = true;
+                System.out.println("hoa2");
             }
             if (!checkAnd) {
                 sql = "SELECT * FROM books";
@@ -213,6 +217,36 @@ public class BookDAO {
         } catch (SQLException e) {
             System.out.println("Lỗi khi tìm sách: " + e.getMessage());
         }
+        return null;
+    }
+    public ResultSet findBooksUtimate(String keyword) {
+
+            try  {
+                connection = DatabaseConnection.connectToLibrary();
+                /*CAST(id AS CHAR), ' ', title, ' ', author, ' ', publisher, ' ',
+                        CAST(year AS CHAR), ' ', genre, ' ',
+                        CAST(quantity AS CHAR), ' ', edition, ' ',
+                        CAST(reprint AS CHAR), ' ', CAST(price AS CHAR), ' ',
+                        language, ' ', status, ' ', summary, ' ', CAST(chapter AS CHAR)*/
+
+                String sql = "SELECT id,title,author,cover_image FROM books \n" +
+                        "WHERE CONCAT_WS(' ', id, title, author, publisher, year,"+
+                        " genre, quantity, edition, reprint, price, language,"+
+                        " status, summary, chapter) LIKE ";
+
+                if (keyword.isEmpty()) {
+                    sql = "SELECT id,title,author,cover_image FROM books";
+                }
+                else {
+                    sql += "'%" + keyword + "%'";
+                }
+                statement = connection.prepareStatement(sql);
+
+                ResultSet resultSet = statement.executeQuery();
+                return resultSet;
+            } catch (SQLException e) {
+                System.out.println("Lỗi khi tìm sách: " + e.getMessage());
+            }
         return null;
     }
 

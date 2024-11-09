@@ -1,6 +1,7 @@
 package org.example;
 
 import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -9,7 +10,7 @@ import javafx.stage.Stage;
 import java.util.List;
 import java.time.LocalDate;
 public class Table {
-    public static TableView<Book> tableDocument(Stage primaryStage, interfaces main, boolean open, double tableWidth, List<String> a, LibraryManagement library) {
+    public static TableView<Book> tableDocument(boolean open, double tableWidth, List<String> a, LibraryManagement library) {
         TableView<Book> tableView = new TableView<>();
         tableView.setEditable(open); // Bật chế độ chỉnh sửa
 
@@ -58,7 +59,7 @@ public class Table {
                 // Thiết lập sự kiện nhấp chuột
                 label.setOnMouseClicked(e -> {
                     Book book = getTableView().getItems().get(getIndex());
-                    library.showBook(primaryStage, main, book.getId());
+                    library.showBook(book.getId());
                     System.out.println("Chi tiết cho: " + book.getTitle());
                 });
             }
@@ -82,7 +83,7 @@ public class Table {
         return tableView;
     }
 
-    public static TableView<User> tableUser(Stage primaryStage, interfaces main, boolean open, double tableWidth, List<String> a, LibraryManagement library) {
+    public static TableView<User> tableUser(boolean open, double tableWidth, List<String> a, LibraryManagement library) {
         TableView<User> tableView = new TableView<>();
         tableView.setEditable(open); // Bật chế độ chỉnh sửa
 
@@ -134,7 +135,7 @@ public class Table {
                 // Thiết lập sự kiện nhấp chuột
                 label.setOnMouseClicked(e -> {
                     User user = getTableView().getItems().get(getIndex());
-                    library.showUser(primaryStage, main, user.getUserId());
+                    library.showUser(user.getUserId());
                     System.out.println("Chi tiết cho: " + user.getFullName());
                 });
             }

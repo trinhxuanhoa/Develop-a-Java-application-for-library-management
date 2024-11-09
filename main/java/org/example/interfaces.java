@@ -20,8 +20,8 @@ import javafx.stage.Modality;
 
 public class interfaces {
     private Stage primaryStage;
-    LibraryManagement library = new LibraryManagement();
-    private Scene interfaceScene;;
+    LibraryManagement library;
+    private Scene interfaceScene;
 
     // Lấy kích thước visual bounds (phần hiển thị không bị che bởi Taskbar/Dock)
     Rectangle2D visualBounds = Screen.getPrimary().getVisualBounds();
@@ -30,6 +30,7 @@ public class interfaces {
 
     public interfaces(Stage primaryStage) {
         this.primaryStage = primaryStage;
+        library = new LibraryManagement(primaryStage, this);
     }
     public void interFaceAdmin(Login main) {
         Pane common = new Pane();
@@ -75,13 +76,17 @@ HBox accountHBox =  accountHBox("Thông Tin Tài Khoản");
     //dashboardButton.setOnAction(e->);
         managerDocumentButton.setOnAction(e-> {
                 common.getChildren().clear();
-                common.getChildren().add(library.managerDocument(primaryStage,this));
+                common.getChildren().add(library.managerDocument());
         });
         managerUserButton.setOnAction(e->{
                 common.getChildren().clear();
-                common.getChildren().add(library.managerUser(primaryStage,this));
+                common.getChildren().add(library.managerUser());
         });
-logOutButton.setOnAction(e-> showLogoutConfirmation(main));
+        borrowButton.setOnAction(e->{
+            common.getChildren().clear();
+            common.getChildren().add(library.showBooks());
+        });
+        logOutButton.setOnAction(e-> showLogoutConfirmation(main));
     // Layout
         VBox layout = new VBox(2);
         layout.getChildren().addAll(dashboardButton, notificationsButton,managerDocumentButton,
@@ -101,9 +106,6 @@ logOutButton.setOnAction(e-> showLogoutConfirmation(main));
 
    public void showInterfaceScene() {
        primaryStage.setScene(interfaceScene); // Quay lại Scene chính
-   }
-   public Scene sms() {
-        return interfaceScene;
    }
 
    public Rectangle rectangle(double width,double High, Color fillColor, Color strokeColor,
