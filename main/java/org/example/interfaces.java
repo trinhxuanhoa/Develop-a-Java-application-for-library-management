@@ -31,14 +31,14 @@ public class interfaces {
     public interfaces(Stage primaryStage) {
         this.primaryStage = primaryStage;
     }
-    public void interFace(Main main) {
+    public void interFaceAdmin(Login main) {
         Pane common = new Pane();
-        common.setLayoutX(370);
-        common.setLayoutY(0);
+        common.setLayoutX(350);
+        common.setLayoutY(15);
 
-        Rectangle tableRectangle1 = rectangle(300,screenHeight-50,Color.rgb(10, 10, 240),Color.WHITE,
-                0,10,10,0.8,0,50);
-        Rectangle tableRectangle2 = rectangle(screenWidth,48,Color.rgb(0, 0, 240),Color.rgb(45, 45, 240),
+        Rectangle tableRectangle1 = rectangle(300,screenHeight-70,Color.rgb(10, 10, 240),Color.WHITE,
+                0,10,10,0.8,0,70);
+        Rectangle tableRectangle2 = rectangle(screenWidth,68,Color.rgb(0, 0, 240),Color.rgb(45, 45, 240),
                 2,0,0,0.8,0,0);
 
         Circle circle = new Circle(50);
@@ -73,7 +73,14 @@ HBox accountHBox =  accountHBox("Thông Tin Tài Khoản");
     Button logOutButton = button("Đăng Xuất");
 
     //dashboardButton.setOnAction(e->);
-        managerDocumentButton.setOnAction(e-> common.getChildren().add(library.managerDocument(primaryStage,this)));
+        managerDocumentButton.setOnAction(e-> {
+                common.getChildren().clear();
+                common.getChildren().add(library.managerDocument(primaryStage,this));
+        });
+        managerUserButton.setOnAction(e->{
+                common.getChildren().clear();
+                common.getChildren().add(library.managerUser(primaryStage,this));
+        });
 logOutButton.setOnAction(e-> showLogoutConfirmation(main));
     // Layout
         VBox layout = new VBox(2);
@@ -143,7 +150,7 @@ logOutButton.setOnAction(e-> showLogoutConfirmation(main));
    }
 
     // Hàm hiển thị cửa sổ xác nhận đăng xuất
-    private void showLogoutConfirmation(Main main) {
+    private void showLogoutConfirmation(Login main) {
         // Tạo một stage mới cho cửa sổ xác nhận
         Stage logoutStage = new Stage();
         logoutStage.initModality(Modality.APPLICATION_MODAL); // Chặn thao tác với các cửa sổ khác
@@ -161,7 +168,7 @@ messageLabel.setStyle("-fx-text-fill: red;-fx-font-size: 15px; -fx-font-weight: 
         confirmButton.setOnMouseExited(e-> confirmButton.setStyle("-fx-background-color: #0080FF; -fx-text-fill: white;-fx-font-size: 12px; -fx-font-weight: bold;"));
         confirmButton.setOnAction(e -> {
             logoutStage.close();
-            main.showMainScene();
+            main.showLoginScene();
         }); // Đóng cửa sổ khi nhấn xác nhận
 
         // Bố trí các thành phần

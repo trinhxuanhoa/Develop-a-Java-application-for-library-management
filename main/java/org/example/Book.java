@@ -27,6 +27,7 @@ import javafx.stage.FileChooser;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import java.io.ByteArrayInputStream;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Book {
     private SimpleStringProperty id;
@@ -66,45 +67,19 @@ public class Book {
         this.chapter = new SimpleDoubleProperty();
         this.summary = new SimpleStringProperty();
     };
-    public Book(String id, String title, String author, String publisher, String genre) {
-        this.id = new SimpleStringProperty(id);
-        this.title = new SimpleStringProperty(title);
-        this.author = new SimpleStringProperty(author);
-        this.year = null;
-        this.publisher = new SimpleStringProperty(publisher);
-        this.genre = new SimpleStringProperty(genre);
-        this.quantity = null;
-    }
+
     public Book(String id, String title, String author, String publisher,
-                String genre, int quantity) {
+                Integer year, String genre, Integer quantity) {
         this.id = new SimpleStringProperty(id);
         this.title = new SimpleStringProperty(title);
         this.author = new SimpleStringProperty(author);
         this.publisher = new SimpleStringProperty(publisher);
+        this.year = (year!=null) ? new SimpleIntegerProperty(year) : null;
         this.genre = new SimpleStringProperty(genre);
-        this.quantity = new SimpleIntegerProperty(quantity);
-    }
-    public Book(String id, String title, String author, String publisher,
-                int year, String genre) {
-        this.id = new SimpleStringProperty(id);
-        this.title = new SimpleStringProperty(title);
-        this.author = new SimpleStringProperty(author);
-        this.publisher = new SimpleStringProperty(publisher);
-        this.year = new SimpleIntegerProperty(year);
-        this.genre = new SimpleStringProperty(genre);
-    }
-    public Book(String id, String title, String author, String publisher,
-                int year, String genre, int quantity) {
-        this.id = new SimpleStringProperty(id);
-        this.title = new SimpleStringProperty(title);
-        this.author = new SimpleStringProperty(author);
-        this.publisher = new SimpleStringProperty(publisher);
-        this.year = new SimpleIntegerProperty(year);
-        this.genre = new SimpleStringProperty(genre);
-        this.quantity = new SimpleIntegerProperty(quantity);
+        this.quantity = (quantity!=null) ? new SimpleIntegerProperty(quantity) : new SimpleIntegerProperty();
     }
     public Book(boolean selected, String id, String title, String author, String publisher,
-             Integer year, String genre, int quantity, String detail) {
+             Integer year, String genre, Integer quantity, String detail) {
         this.id = new SimpleStringProperty(id);
         this.title = new SimpleStringProperty(title);
         this.author = new SimpleStringProperty(author);
@@ -282,6 +257,5 @@ public class Book {
 
     public String getSummary() {return summary.get();}
     public void setSummary(String summary) {this.summary.set(summary);}
-
     public SimpleStringProperty summaryProperty() {return summary;}
 }

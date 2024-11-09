@@ -6,13 +6,14 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
+import java.util.concurrent.atomic.AtomicBoolean;
 public class BookDAO {
     private boolean Available;
+    private AtomicBoolean check;
     private Connection connection;
     private PreparedStatement statement;
     public BookDAO() {
-
+        check=new AtomicBoolean(false);
     }
 
     public void addBook(Book book) {
@@ -50,7 +51,51 @@ public class BookDAO {
             System.out.println("Lỗi khi thêm sách: " + e.getMessage());
         }
     }
+    public void updateBook(Book book) {
+        // Câu lệnh SQL để cập nhật thông tin sách
+        String sql = "UPDATE books SET title = ?, author = ?, publisher = ?, genre = ?, year = ?, " +
+                "quantity = ?, edition = ?, reprint = ?, price = ?, language = ?, status = ?, " +
+                "chapter = ?, summary = ?, qrCode = ?, coverImages = ? WHERE id = ?";
 
+        // Kết nối cơ sở dữ liệu và thực thi câu lệnh
+        try (Connection conn = DatabaseConnection.connectToLibrary(); // Sử dụng kết nối từ DatabaseConnection
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            // Gán giá trị cho các tham số từ đối tượng Book
+            stmt.setString(1, book.getTitle());  // title
+            stmt.setString(2, book.getAuthor());  // author
+            stmt.setString(3, book.getPublisher());  // publisher
+            stmt.setString(4, book.getGenre());  // genre
+            setIntOrNull(stmt, 5, book.getYear()); // year
+            stmt.setInt(6, book.getQuantity());  // quantity
+            stmt.setString(7, book.getEdition());  // edition
+            stmt.setInt(8, book.getReprint());  // reprint
+            stmt.setDouble(9, book.getPrice());  // price
+            stmt.setString(10, book.getLanguage());  // language
+            stmt.setString(11, book.getStatus());  // status
+            stmt.setDouble(12, book.getChapter());  // chapter
+            stmt.setString(13, book.getSummary());  // summary
+            stmt.setBytes(14, book.getQrCode());  // qrCode
+            stmt.setBytes(15, book.getCoverImages());  // coverImages
+            stmt.setString(16, book.getId());  // id
+
+            // Thực thi câu lệnh cập nhật
+            int rowsAffected = stmt.executeUpdate();
+
+            // Kiểm tra kết quả
+            if (rowsAffected > 0) {
+                Noti.showSuccessMessage("Cập nhật thông tin sách thành công!");
+                System.out.println("Cập nhật thông tin sách thành công!");
+            } else {
+                Noti.showFailureMessage("Không tìm thấy sách với ID: " + book.getId());
+                System.out.println("Không tìm thấy sách với ID: " + book.getId());
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            Noti.showFailureMessage("Lỗi khi cập nhật thông tin sách!");
+            System.out.println("Lỗi khi cập nhật thông tin sách.");
+        }
+    }
     public void removeBook(String id) {
         try (Connection connection = DatabaseConnection.connectToLibrary()) {
             String sql = "DELETE FROM books WHERE id = " + "'" + id + "'";
@@ -107,6 +152,7 @@ public class BookDAO {
     public ResultSet findBooks(Book book) {
 
         boolean checkAnd = false;
+        if(check.get()==false)
         try  {
             connection = DatabaseConnection.connectToLibrary();
             String sql = "SELECT * FROM books WHERE ";
@@ -173,10 +219,12 @@ public class BookDAO {
     public boolean isAvailable() {
         return Available;
     }
-
     public void setAvailable(boolean available) {
         Available = available;
     }
+
+    public AtomicBoolean isCheck() {return check;}
+    public void setCheck(AtomicBoolean check) {this.check = check;}
 
     public void setIntOrNull(PreparedStatement statement, int parameterIndex, Integer value) throws SQLException {
         if (value != null) {
