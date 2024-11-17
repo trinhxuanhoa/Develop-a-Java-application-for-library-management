@@ -18,6 +18,10 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+
 public class interfaces {
     private Stage primaryStage;
     LibraryManagement library;
@@ -63,7 +67,6 @@ HBox accountHBox =  accountHBox("Thông Tin Tài Khoản");
     Button managerDocumentButton = button("Quản Lý Tài Liệu");
     Button managerUserButton = button("Quản Lý Người Dùng");
     Button borrowButton = button("Mượn Tài Liệu");
-    Button returnButton = button("Trả Tài Liệu");
         Button statisticsButton = button("Thống Kê");
     Button cardButton = button("Đăng Kí Thẻ");
         Button renewButton = button("Gia Hạn Thẻ");
@@ -74,6 +77,7 @@ HBox accountHBox =  accountHBox("Thông Tin Tài Khoản");
     Button logOutButton = button("Đăng Xuất");
 
     //dashboardButton.setOnAction(e->);
+
         managerDocumentButton.setOnAction(e-> {
                 common.getChildren().clear();
                 common.getChildren().add(library.managerDocument());
@@ -86,11 +90,15 @@ HBox accountHBox =  accountHBox("Thông Tin Tài Khoản");
             common.getChildren().clear();
             common.getChildren().add(library.showBooks());
         });
+        statisticsButton.setOnAction(e->{
+            common.getChildren().clear();
+            common.getChildren().add(library.statistical());
+        });
         logOutButton.setOnAction(e-> showLogoutConfirmation(main));
     // Layout
         VBox layout = new VBox(2);
         layout.getChildren().addAll(dashboardButton, notificationsButton,managerDocumentButton,
-                managerUserButton, borrowButton,returnButton,statisticsButton,cardButton,
+                managerUserButton, borrowButton,statisticsButton,cardButton,
                 renewButton, introduceButton, helpButton,settingsButton, logOutButton
                                     );
         layout.setLayoutY(240);
@@ -146,11 +154,22 @@ HBox accountHBox =  accountHBox("Thông Tin Tài Khoản");
        accountHBox.setLayoutY(0);
        accountHBox.setLayoutY(185);
        accountLabel.setOnMouseClicked(e -> {
-
+           library.showUser(userId());
        });
        return accountHBox;
    }
+    public static String userId() {
+        String userId = null;
 
+        try (BufferedReader reader = new BufferedReader(new FileReader("C:\\Users\\Dell\\IdeaProjects\\library\\src\\main\\user_id.txt"))) {
+            userId = reader.readLine();  // Đọc dòng đầu tiên (chỉ một dòng)
+            System.out.println("Đã đọc ID từ file: " + userId);
+        } catch (IOException e) {
+            System.out.println("Lỗi khi đọc file: " + e.getMessage());
+        }
+
+        return userId;  // Trả về ID đã đọc (hoặc null nếu file rỗng)
+    }
     // Hàm hiển thị cửa sổ xác nhận đăng xuất
     private void showLogoutConfirmation(Login main) {
         // Tạo một stage mới cho cửa sổ xác nhận

@@ -51,10 +51,10 @@ public class Table {
             private final HBox hBox = new HBox(label);
             {
                 hBox.setAlignment(Pos.CENTER);
-                label.setStyle("-fx-text-fill: blue;"); // Màu chữ
+                label.setStyle("-fx-text-fill: #0000FF;"); // Màu chữ
                 // Thêm sự kiện di chuột để gạch chân
-                label.setOnMouseEntered(e -> label.setStyle("-fx-text-fill: blue; -fx-underline: true;"));
-                label.setOnMouseExited(e -> label.setStyle("-fx-text-fill: blue; -fx-underline: false;"));
+                label.setOnMouseEntered(e -> label.setStyle("-fx-text-fill: #0000FF; -fx-underline: true;"));
+                label.setOnMouseExited(e -> label.setStyle("-fx-text-fill: #0000FF; -fx-underline: false;"));
 
                 // Thiết lập sự kiện nhấp chuột
                 label.setOnMouseClicked(e -> {
@@ -127,10 +127,10 @@ public class Table {
             private final HBox hBox = new HBox(label);
             {
                 hBox.setAlignment(Pos.CENTER);
-                label.setStyle("-fx-text-fill: blue;"); // Màu chữ
+                label.setStyle("-fx-text-fill: #0000FF;"); // Màu chữ
                 // Thêm sự kiện di chuột để gạch chân
-                label.setOnMouseEntered(e -> label.setStyle("-fx-text-fill: blue; -fx-underline: true;"));
-                label.setOnMouseExited(e -> label.setStyle("-fx-text-fill: blue; -fx-underline: false;"));
+                label.setOnMouseEntered(e -> label.setStyle("-fx-text-fill: #0000FF; -fx-underline: true;"));
+                label.setOnMouseExited(e -> label.setStyle("-fx-text-fill: #0000FF; -fx-underline: false;"));
 
                 // Thiết lập sự kiện nhấp chuột
                 label.setOnMouseClicked(e -> {

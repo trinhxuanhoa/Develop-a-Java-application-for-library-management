@@ -1,6 +1,6 @@
 package org.example;
 import javafx.scene.image.Image;
-
+import java.io.*;
 import java.io.ByteArrayInputStream;
 import java.sql.*;
 import java.time.LocalDate;
@@ -109,7 +109,7 @@ public class UserDAO {
     public User output1Value(String id) {
         User user = new User();
         try (Connection connection = DatabaseConnection.connectToLibrary()) {
-            String sql = "SELECT * FROM books WHERE user_id = ?";
+            String sql = "SELECT * FROM users WHERE user_id = ?";
             try (PreparedStatement statement = connection.prepareStatement(sql)) {
                 statement.setString(1,id);
                 ResultSet resultSet = statement.executeQuery();
@@ -219,6 +219,52 @@ public class UserDAO {
         }
         return null;
     }
+
+    public static boolean checkAccount(String username, String password) {
+        try (Connection connection = DatabaseConnection.connectToLibrary()) {
+            String sql = "SELECT * FROM users WHERE username = ? AND password_hash = ?";
+            try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+                pstmt.setString(1, username);
+                pstmt.setString(2, password);
+
+                // Thực thi truy vấn và kiểm tra kết quả
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    if (rs.next()) {  // Nếu có kết quả trả về, tài khoản tồn tại
+                        try (BufferedWriter writer = new BufferedWriter(new FileWriter("C:\\Users\\Dell\\IdeaProjects\\library\\src\\main\\user_id.txt"))) {
+                            writer.write(rs.getString("user_id"));
+                        } catch (IOException e) {
+                            System.out.println("Lỗi khi ghi vào file: " + e.getMessage());
+                        }
+                        return true;
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Lỗi: " + e.getMessage());
+        }
+        return false;  // Nếu không có kết quả, tài khoản không tồn tại
+    }
+
+    public static String accountName(String user_id) {
+        String sql = "SELECT full_name FROM users WHERE user_id = ?";
+        try (Connection conn = DatabaseConnection.connectToLibrary();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, user_id);
+
+            try (ResultSet resultSet = pstmt.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getString("full_name");
+                } else {
+                    System.out.println("Không tìm thấy người dùng với user_id: " + user_id);
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Lỗi khi tìm tên người dùng: " + e.getMessage());
+        }
+        return ""; // Trả về chuỗi rỗng nếu không tìm thấy người dùng
+    }
+
 
     public AtomicBoolean isCheck() {return check;}
     public void setCheck(AtomicBoolean check) {this.check=check;}

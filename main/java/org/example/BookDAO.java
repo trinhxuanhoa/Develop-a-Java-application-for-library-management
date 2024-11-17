@@ -1,4 +1,5 @@
 package org.example;
+
 import javafx.scene.image.Image;
 
 import java.io.ByteArrayInputStream;
@@ -7,6 +8,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.*;
+
 public class BookDAO {
     private boolean Available;
     private AtomicBoolean check;
@@ -18,8 +21,9 @@ public class BookDAO {
 
     public void addBook(Book book) {
         try (Connection connection = DatabaseConnection.connectToLibrary()) {
-            String sql = "INSERT INTO books (id, title, author, publisher, year, genre, quantity, edition, reprint, price, language, status, summary, qr_code, cover_image, chapter" +
-                    ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            String sql = "INSERT INTO books (id, title, author, publisher, year, genre, quantity, edition, reprint, price," +
+                    " language, status, summary, qr_code, cover_image, chapter, pages, downloads" +
+                    ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             try (PreparedStatement statement = connection.prepareStatement(sql)) {
                 statement.setString(1, book.getId());
                 statement.setString(2, book.getTitle());
@@ -37,6 +41,8 @@ public class BookDAO {
                 statement.setBytes(14, book.getQrCode());
                 statement.setBytes(15, book.getCoverImages());
                 setDoubleOrNull(statement, 16, book.getChapter());
+                setIntOrNull(statement, 17, book.getPages());
+                setIntOrNull(statement, 18, book.getDownloads());
 
                 int rowsInserted = statement.executeUpdate();
                 if (rowsInserted > 0) {
@@ -55,7 +61,7 @@ public class BookDAO {
         // Câu lệnh SQL để cập nhật thông tin sách
         String sql = "UPDATE books SET title = ?, author = ?, publisher = ?, genre = ?, year = ?, " +
                 "quantity = ?, edition = ?, reprint = ?, price = ?, language = ?, status = ?, " +
-                "chapter = ?, summary = ?, qrCode = ?, coverImages = ? WHERE id = ?";
+                "chapter = ?, summary = ?, qr_code = ?, cover_image = ?, pages = ?, downloads = ? WHERE id = ?";
 
         // Kết nối cơ sở dữ liệu và thực thi câu lệnh
         try (Connection conn = DatabaseConnection.connectToLibrary(); // Sử dụng kết nối từ DatabaseConnection
@@ -69,15 +75,17 @@ public class BookDAO {
             setIntOrNull(stmt, 5, book.getYear()); // year
             stmt.setInt(6, book.getQuantity());  // quantity
             stmt.setString(7, book.getEdition());  // edition
-            stmt.setInt(8, book.getReprint());  // reprint
-            stmt.setDouble(9, book.getPrice());  // price
+            setIntOrNull(stmt, 8, book.getReprint());// reprint
+            setDoubleOrNull(stmt, 9, book.getPrice());// price
             stmt.setString(10, book.getLanguage());  // language
             stmt.setString(11, book.getStatus());  // status
-            stmt.setDouble(12, book.getChapter());  // chapter
+            setDoubleOrNull(stmt, 12, book.getChapter()); // chapter
             stmt.setString(13, book.getSummary());  // summary
             stmt.setBytes(14, book.getQrCode());  // qrCode
             stmt.setBytes(15, book.getCoverImages());  // coverImages
-            stmt.setString(16, book.getId());  // id
+            setIntOrNull(stmt, 16, book.getPages()); // year
+            stmt.setInt(17, book.getDownloads());  // quantity
+            stmt.setString(18, book.getId());  // id
 
             // Thực thi câu lệnh cập nhật
             int rowsAffected = stmt.executeUpdate();
@@ -136,6 +144,8 @@ public class BookDAO {
                 book.setStatus(resultSet.getString("status"));
                 book.setSummary(resultSet.getString("summary"));
                 book.setChapter(getDouble(resultSet,"chapter"));
+                book.setPages(getInt(resultSet,"pages"));
+                book.setDownloads(resultSet.getInt("downloads"));
                 try {
                     if (resultSet.getBytes("qr_code")!=null)
                     book.setQrCodeImage(new Image(new ByteArrayInputStream(resultSet.getBytes("qr_code"))));
@@ -150,7 +160,6 @@ public class BookDAO {
         }
         return book;
     }
-
     public ResultSet findBooks(Book book) {
 
         boolean checkAnd = false;
@@ -219,6 +228,62 @@ public class BookDAO {
         }
         return null;
     }
+    public ResultSet findBooksBorrow(Book book, String user_id, int localTable) {
+        try {
+            connection = DatabaseConnection.connectToLibrary();
+
+            // Khởi tạo câu lệnh SQL cơ bản
+            StringBuilder sql = new StringBuilder(
+                    "SELECT books.*, borrow.status FROM books " +
+                            "JOIN borrow ON books.id = borrow.book_id " +
+                            "JOIN users ON users.user_id = borrow.user_id " +
+                            "WHERE users.user_id = ?"
+            );
+
+            // Danh sách tham số
+            List<Object> parameters = new ArrayList<>();
+            parameters.add(user_id);
+
+            // Thêm điều kiện tìm kiếm theo tiêu chí sách
+            if (!book.getTitle().isEmpty()) {
+                sql.append(" AND books.title = ?");
+                parameters.add(book.getTitle());
+            }
+            if (!book.getAuthor().isEmpty()) {
+                sql.append(" AND books.author = ?");
+                parameters.add(book.getAuthor());
+            }
+            if (!book.getGenre().isEmpty()) {
+                sql.append(" AND books.genre = ?");
+                parameters.add(book.getGenre());
+            }
+
+            // Thêm điều kiện trạng thái mượn trả
+            if (localTable == 0) {
+                sql.append(" AND borrow.status = 'borrowed'");
+            } else if (localTable == 1) {
+                sql.append(" AND borrow.status = 'returned'");
+            } else if (localTable == 2) {
+                sql.append(" AND borrow.status = 'not borrowed'");
+            }
+
+            // Chuẩn bị câu lệnh
+            statement = connection.prepareStatement(sql.toString());
+
+            // Gán các tham số
+            for (int i = 0; i < parameters.size(); i++) {
+                statement.setObject(i + 1, parameters.get(i));
+            }
+
+            // Thực thi câu lệnh
+            return statement.executeQuery();
+
+        } catch (SQLException e) {
+            System.out.println("Lỗi khi tìm sách: " + e.getMessage());
+        }
+        return null;
+    }
+
     public ResultSet findBooksUtimate(String keyword) {
 
             try  {
@@ -229,11 +294,10 @@ public class BookDAO {
                         CAST(reprint AS CHAR), ' ', CAST(price AS CHAR), ' ',
                         language, ' ', status, ' ', summary, ' ', CAST(chapter AS CHAR)*/
 
-                String sql = "SELECT id,title,author,cover_image FROM books \n" +
-                        "WHERE CONCAT_WS(' ', id, title, author, publisher, year,"+
-                        " genre, quantity, edition, reprint, price, language,"+
-                        " status, summary, chapter) LIKE ";
-
+                String   sql = "SELECT id,title,author,cover_image FROM books \n" +
+                            "WHERE CONCAT_WS(' ', id, title, author, publisher, year," +
+                            " genre, quantity, edition, reprint, price, language," +
+                            " status, summary, chapter) LIKE ";
                 if (keyword.isEmpty()) {
                     sql = "SELECT id,title,author,cover_image FROM books";
                 }
@@ -248,6 +312,88 @@ public class BookDAO {
                 System.out.println("Lỗi khi tìm sách: " + e.getMessage());
             }
         return null;
+    }
+    public ResultSet findBooksUltimateBorrow(String keyword, int localTable) {
+        try {
+            connection = DatabaseConnection.connectToLibrary();
+
+            // Base SQL query
+            StringBuilder sql = new StringBuilder(
+                    "SELECT books.*, borrow.status " +
+                            "FROM books " +
+                            "LEFT JOIN borrow ON books.id = borrow.book_id"
+            );
+
+            // Danh sách tham số
+            List<Object> parameters = new ArrayList<>();
+
+            // Điều kiện tìm kiếm
+            List<String> conditions = new ArrayList<>();
+
+            // Thêm điều kiện trạng thái nếu cần
+            if (localTable == 0) {
+                conditions.add("borrow.status = 'borrowed'");
+            } else if (localTable == 1) {
+                conditions.add("borrow.status = 'returned'");
+            } else if (localTable == 2) {
+                conditions.add("borrow.status = 'not borrowed'");
+            }
+
+            // Thêm điều kiện tìm kiếm từ khóa nếu có
+            if (!keyword.isEmpty()) {
+                conditions.add("CONCAT_WS(' ', books.id, books.title, books.author, books.publisher, " +
+                        "books.year, books.genre, books.quantity, books.edition, books.reprint, " +
+                        "books.price, books.language, books.status, books.summary, books.chapter) LIKE ?");
+                parameters.add("%" + keyword + "%");
+            }
+
+            // Gắn các điều kiện
+            if (!conditions.isEmpty()) {
+                sql.append(" WHERE ").append(String.join(" AND ", conditions));
+            }
+
+            // Chuẩn bị câu lệnh
+            statement = connection.prepareStatement(sql.toString());
+
+            // Gán các tham số
+            for (int i = 0; i < parameters.size(); i++) {
+                statement.setObject(i + 1, parameters.get(i));
+            }
+
+            // Thực thi câu lệnh
+            return statement.executeQuery();
+
+        } catch (SQLException e) {
+            System.out.println("Lỗi khi tìm sách: " + e.getMessage());
+        }
+        return null;
+    }
+
+    public void updateDownload(String bookId, int downloads) {
+        // Câu lệnh SQL để cập nhật thông tin sách
+        String sql = "UPDATE books SET downloads = ? WHERE id = ?";
+
+        // Kết nối cơ sở dữ liệu và thực thi câu lệnh
+        try (Connection conn = DatabaseConnection.connectToLibrary(); // Sử dụng kết nối từ DatabaseConnection
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            // Gán giá trị cho các tham số từ đối tượng Book
+            stmt.setInt(1, downloads);  // quantity
+            stmt.setString(2, bookId);  // id
+
+            // Thực thi câu lệnh cập nhật
+            int rowsAffected = stmt.executeUpdate();
+
+            // Kiểm tra kết quả
+            if (rowsAffected > 0) {
+                System.out.println("Cập nhật thông tin sách thành công!");
+            } else {
+                System.out.println("Không tìm thấy sách với ID: " + bookId);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Lỗi khi cập nhật thông tin sách.");
+        }
     }
 
     public boolean isAvailable() {
@@ -277,7 +423,7 @@ public class BookDAO {
     }
 
     public Integer getInt(ResultSet resultSet, String type) throws SQLException {
-        int type0 = resultSet.getInt(type);
+        Integer type0 = resultSet.getInt(type);
         return resultSet.wasNull() ? null : type0;
     }
 

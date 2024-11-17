@@ -1,6 +1,8 @@
 package org.example;
 
 import com.google.zxing.WriterException;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -32,10 +34,20 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontPosture;
-import javafx.scene.text.FontWeight;
 import javafx.scene.shape.Circle;
+import java.io.*;
+import javafx.scene.shape.Line;
+import javafx.util.Duration;
+import javafx.geometry.Insets;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.KeyCode;
+import java.time.LocalDateTime;
+import java.util.concurrent.atomic.AtomicInteger;
+import javafx.application.Platform;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+
 public class LibraryManagement {
 
     Rectangle2D visualBounds = Screen.getPrimary().getVisualBounds();
@@ -71,9 +83,15 @@ public class LibraryManagement {
         VBox languageVBox = vBox("Ngôn ngữ");
         VBox statusVBox = comboBox("Trạng thái",  new String[] {"available", "not available"});
         VBox chapterVBox = vBox("Số chương");
+        VBox pagesVBox = vBox("Số trang");
         genreVBox.setMinWidth(400);
         chapterVBox.setMinWidth(90);
         HBox chapAndGenreHBox = new HBox(10,genreVBox,chapterVBox);
+        chapAndGenreHBox.setMaxWidth(500);
+        quantityVBox.setMinWidth(400);
+        pagesVBox.setMinWidth(90);
+        pagesVBox.setMaxWidth(90);
+        HBox quantityAndPagesHBox = new HBox(10,quantityVBox,pagesVBox);
         chapAndGenreHBox.setMaxWidth(500);
 
         TextField isbnTextField = (TextField)isbnVBox.getChildren().get(1);
@@ -89,6 +107,7 @@ public class LibraryManagement {
         TextField languageField = (TextField)languageVBox.getChildren().get(1);
         ComboBox statusField = (ComboBox)statusVBox.getChildren().get(1);
         TextField chapterField = (TextField)chapterVBox.getChildren().get(1);
+        TextField pagesField = (TextField)pagesVBox.getChildren().get(1);
         //tạo mã QR
         TextField urlField = new TextField();
         urlField.setPromptText("Nhập đường link...");
@@ -176,7 +195,7 @@ public class LibraryManagement {
 
         VBox vBoxLeft = new VBox(15);
         vBoxLeft.getChildren().addAll(titleVBox, authorVBox, publisherVBox,
-                yearVBox,chapAndGenreHBox, quantityVBox);
+                yearVBox,chapAndGenreHBox, quantityAndPagesHBox);
         VBox vBoxRight = new VBox(15);
         vBoxRight.getChildren().addAll(isbnVBox,editionVBox,
               reprintVBox,languageVBox,priceVBox,statusVBox);
@@ -186,26 +205,26 @@ public class LibraryManagement {
         deleteButton.setLayoutY(580);
         deleteButton.setMinSize(70,40);
         deleteButton.setOnAction(e -> main.showInterfaceScene());
-        deleteButton.setStyle("-fx-background-color: #0080FF; -fx-text-fill: white;-fx-font-size: 15px; -fx-font-weight: normal;");
-        deleteButton.setOnMouseEntered(e-> deleteButton.setStyle("-fx-background-color: #004C99; -fx-text-fill: white;-fx-font-size: 15px; -fx-font-weight: bold;"));
-        deleteButton.setOnMouseExited(e-> deleteButton.setStyle("-fx-background-color: #0080FF; -fx-text-fill: white;-fx-font-size: 15px; -fx-font-weight: normal;"));
+        deleteButton.setStyle("-fx-background-color: #0080FF; -fx-text-fill: #FFFFFF;-fx-font-size: 15px; -fx-font-weight: normal;");
+        deleteButton.setOnMouseEntered(e-> deleteButton.setStyle("-fx-background-color: #004C99; -fx-text-fill: #FFFFFF;-fx-font-size: 15px; -fx-font-weight: bold;"));
+        deleteButton.setOnMouseExited(e-> deleteButton.setStyle("-fx-background-color: #0080FF; -fx-text-fill: #FFFFFF;-fx-font-size: 15px; -fx-font-weight: normal;"));
 
         Button backButton = new Button("Thoát");
         backButton.setLayoutX(1400);
         backButton.setLayoutY(640);
         backButton.setMinSize(70,40);
         backButton.setOnAction(e -> main.showInterfaceScene());
-        backButton.setStyle("-fx-background-color: #FF0000; -fx-text-fill: white;-fx-font-size: 15px; -fx-font-weight: normal;");
-        backButton.setOnMouseEntered(e-> backButton.setStyle("-fx-background-color: #CC0000; -fx-text-fill: white;-fx-font-size: 15px; -fx-font-weight: bold;"));
-        backButton.setOnMouseExited(e-> backButton.setStyle("-fx-background-color: #FF0000; -fx-text-fill: white;-fx-font-size: 15px; -fx-font-weight: normal;"));
+        backButton.setStyle("-fx-background-color: #FF0000; -fx-text-fill: #FFFFFF;-fx-font-size: 15px; -fx-font-weight: normal;");
+        backButton.setOnMouseEntered(e-> backButton.setStyle("-fx-background-color: #CC0000; -fx-text-fill: #FFFFFF;-fx-font-size: 15px; -fx-font-weight: bold;"));
+        backButton.setOnMouseExited(e-> backButton.setStyle("-fx-background-color: #FF0000; -fx-text-fill: #FFFFFF;-fx-font-size: 15px; -fx-font-weight: normal;"));
 
         Button addButton = new Button("Lưu");
         addButton.setLayoutX(1400);
         addButton.setLayoutY(700);
         addButton.setMinSize(70,40);
-        addButton.setStyle("-fx-background-color: #0080FF; -fx-text-fill: white;-fx-font-size: 15px; -fx-font-weight: normal;");
-        addButton.setOnMouseEntered(e-> addButton.setStyle("-fx-background-color: #004C99; -fx-text-fill: white;-fx-font-size: 15px; -fx-font-weight: bold;"));
-        addButton.setOnMouseExited(e-> addButton.setStyle("-fx-background-color: #0080FF; -fx-text-fill: white;-fx-font-size: 15px; -fx-font-weight: normal;"));
+        addButton.setStyle("-fx-background-color: #0080FF; -fx-text-fill: #FFFFFF;-fx-font-size: 15px; -fx-font-weight: normal;");
+        addButton.setOnMouseEntered(e-> addButton.setStyle("-fx-background-color: #004C99; -fx-text-fill: #FFFFFF;-fx-font-size: 15px; -fx-font-weight: bold;"));
+        addButton.setOnMouseExited(e-> addButton.setStyle("-fx-background-color: #0080FF; -fx-text-fill: #FFFFFF;-fx-font-size: 15px; -fx-font-weight: normal;"));
 
        deleteButton.setOnAction(e->{
            isbnTextField.clear();
@@ -220,6 +239,7 @@ public class LibraryManagement {
            priceField.clear();
            languageField.clear();
            chapterField.clear();
+           pagesField.clear();
            textArea.clear();
            imageView.setImage(null);
            urlField.clear();
@@ -261,13 +281,13 @@ public class LibraryManagement {
                     Double price = parseDouble(priceField.getText(), "giá không hợp lệ");
                     String language = languageField.getText();
                     String status = (String) statusField.getValue();
-                    //String status = statusField.getText();
                     Double chapter = parseDouble(chapterField.getText(), "số chương không hợp lệ");
+                    Integer pages = parseInteger(pagesField.getText(), "số trang không hợp lệ");
                     String description = textArea.getText();
 
                     // Tạo đối tượng Book
-                    Book book = new Book(isbn, title, author, publisher, year, genre, quantity, edition, reprint,
-                            price, language, status, chapter, description,
+                    Book book = new Book(isbn, title, author, publisher, year, genre, quantity,
+                            edition, reprint, price, language, status, chapter, pages, description,
                             ImageConverter.imageToByteArray(qrImageView),
                             ImageConverter.imageToByteArray(imageView));
 
@@ -303,16 +323,23 @@ public class LibraryManagement {
         urlField.setPromptText("Nhập đường link...");
         Button generateButton = new Button("Tạo mã QR");
         ImageView qrImageView;
-        if(book.getQrCodeImage()!=null)
+        AtomicBoolean checkQR = new AtomicBoolean(false);
+        if(book.getQrCodeImage()!=null) {
+            checkQR.set(true);
             qrImageView = new ImageView(book.getQrCodeImage());
-        else
-            qrImageView = new ImageView(new Image("file:C:/Users/Dell/IdeaProjects/library/src/main/image/qr1.png"));
-        qrImageView.setFitWidth(200);
-        qrImageView.setFitHeight(200);
+        }
+        else {
+            checkQR.set(false);
+            qrImageView = new ImageView(new Image("file:C:/Users/Dell/IdeaProjects/library/src/main/image/qr.png"));
+        }
+        qrImageView.setFitWidth(160);
+        qrImageView.setFitHeight(160);
+
         generateButton.setOnAction(e -> {
             String url = urlField.getText();
             if (!url.isEmpty()) {
                 try {
+                    checkQR.set(true);
                     Image qrImage = generateQRCodeImage(url, 200, 200);
                     qrImageView.setImage(qrImage);
                 } catch (WriterException | IOException ex) {
@@ -320,8 +347,9 @@ public class LibraryManagement {
                 }
             }
         });
+
         HBox linkHBox = new HBox(urlField, generateButton);
-        VBox qrBox = new VBox(linkHBox, qrImageView);
+        VBox qrBox = new VBox(20, linkHBox, qrImageView);
         qrBox.setLayoutX(1150);
         qrBox.setLayoutY(539);
         urlField.setMinWidth(225);
@@ -356,9 +384,18 @@ public class LibraryManagement {
         VBox languageVBox = vBox("Ngôn ngữ");
         VBox statusVBox = comboBox("Trạng thái",  new String[] {"available", "not available"});
         VBox chapterVBox = vBox("Số chương");
+        VBox pagesVBox = vBox("Số trang");
+        VBox downloadsVBox = vBox("Số lượt tải");
         genreVBox.setMinWidth(400);
         chapterVBox.setMinWidth(90);
         HBox chapAndGenreHBox = new HBox(10,genreVBox,chapterVBox);
+        chapAndGenreHBox.setMaxWidth(500);
+        quantityVBox.setMinWidth(300);
+        pagesVBox.setMinWidth(90);
+        pagesVBox.setMaxWidth(90);
+        downloadsVBox.setMinWidth(100);
+        downloadsVBox.setMaxWidth(100);
+        HBox quantityAndPagesHBox = new HBox(10,quantityVBox, downloadsVBox, pagesVBox);
         chapAndGenreHBox.setMaxWidth(500);
 
         TextField isbnField = (TextField)isbnVBox.getChildren().get(1);
@@ -374,6 +411,8 @@ public class LibraryManagement {
         TextField languageField = (TextField)languageVBox.getChildren().get(1);
         ComboBox statusField = (ComboBox)statusVBox.getChildren().get(1);
         TextField chapterField = (TextField)chapterVBox.getChildren().get(1);
+        TextField pagesField = (TextField)pagesVBox.getChildren().get(1);
+        TextField downloadsField = (TextField)downloadsVBox.getChildren().get(1);
 
         isbnField.setText(book.getId());
          titleField.setText(book.getTitle());
@@ -388,6 +427,8 @@ public class LibraryManagement {
          languageField.setText(book.getLanguage());
          statusField.setValue(book.getStatus());
          chapterField.setText((book.getChapter()!=null)?book.getChapter()+"":"");
+         pagesField.setText((book.getPages()!=null)?book.getPages()+"":"");
+         downloadsField.setText(book.getDownloads()+"");
 
 
         // Tạo một nút để mở hộp thoại chọn file
@@ -397,10 +438,13 @@ public class LibraryManagement {
         uploadButton.setOnMouseEntered(e-> uploadButton.setStyle("-fx-background-color: #004C99; -fx-text-fill: white;-fx-font-size: 12px; -fx-font-weight: bold;"));
         uploadButton.setOnMouseExited(e-> uploadButton.setStyle("-fx-background-color: #0080FF; -fx-text-fill: white;-fx-font-size: 12px; -fx-font-weight: bold;"));
         ImageView imageView;
+        AtomicBoolean checkCoverIamge = new AtomicBoolean(false);
         if(book.getCoverImage()==null) {
+            checkCoverIamge.set(false);
             Image imageCover = new Image("file:C:/Users/Dell/IdeaProjects/library/src/main/image/book.jpg");
             imageView = new ImageView(imageCover); // Tạo một ImageView để hiển thị ảnh
         } else {
+            checkCoverIamge.set(true);
             imageView = new ImageView(book.getCoverImage()); // Tạo một ImageView để hiển thị ảnh
         }
         imageView.setFitWidth(300);
@@ -422,6 +466,7 @@ public class LibraryManagement {
                 );   // Thiết lập các loại file cho phép chọn
                 File selectedFile = fileChooser.showOpenDialog(primaryStage);  // Hiển thị hộp thoại chọn file và lưu file được chọn
                 if (selectedFile != null) {
+                    checkCoverIamge.set(true);
                     Image image = new Image(selectedFile.toURI().toString()); // Tạo đối tượng Image từ file đã chọn
                     imageView.setImage(image); // Hiển thị ảnh lên ImageView
                 }
@@ -430,7 +475,7 @@ public class LibraryManagement {
 
         VBox vBoxLeft = new VBox(15);
         vBoxLeft.getChildren().addAll(titleVBox, authorVBox, publisherVBox,
-                yearVBox,chapAndGenreHBox, quantityVBox);
+                yearVBox,chapAndGenreHBox, quantityAndPagesHBox);
         VBox vBoxRight = new VBox(15);
         vBoxRight.getChildren().addAll(isbnVBox,editionVBox,
                 reprintVBox,languageVBox,priceVBox,statusVBox);
@@ -450,16 +495,16 @@ public class LibraryManagement {
         backButton.setMinSize(70,40);
         backButton.setOnAction(e -> main.showInterfaceScene());
         backButton.setStyle("-fx-background-color: #FF0000; -fx-text-fill: white;-fx-font-size: 15px; -fx-font-weight: normal;");
-        backButton.setOnMouseEntered(e-> backButton.setStyle("-fx-background-color: #CC0000; -fx-text-fill: white;-fx-font-size: 15px; -fx-font-weight: bold;"));
-        backButton.setOnMouseExited(e-> backButton.setStyle("-fx-background-color: #FF0000; -fx-text-fill: white;-fx-font-size: 15px; -fx-font-weight: normal;"));
+        backButton.setOnMouseEntered(e-> backButton.setStyle("-fx-background-color: #CC0000; -fx-text-fill: #FFFFFF;-fx-font-size: 15px; -fx-font-weight: bold;"));
+        backButton.setOnMouseExited(e-> backButton.setStyle("-fx-background-color: #FF0000; -fx-text-fill: #FFFFFF;-fx-font-size: 15px; -fx-font-weight: normal;"));
 
         Button addButton = new Button("Lưu");
         addButton.setLayoutX(1400);
         addButton.setLayoutY(700);
         addButton.setMinSize(70,40);
         addButton.setStyle("-fx-background-color: #0080FF; -fx-text-fill: white;-fx-font-size: 15px; -fx-font-weight: normal;");
-        addButton.setOnMouseEntered(e-> addButton.setStyle("-fx-background-color: #004C99; -fx-text-fill: white;-fx-font-size: 15px; -fx-font-weight: bold;"));
-        addButton.setOnMouseExited(e-> addButton.setStyle("-fx-background-color: #0080FF; -fx-text-fill: white;-fx-font-size: 15px; -fx-font-weight: normal;"));
+        addButton.setOnMouseEntered(e-> addButton.setStyle("-fx-background-color: #004C99; -fx-text-fill: #FFFFFF;-fx-font-size: 15px; -fx-font-weight: bold;"));
+        addButton.setOnMouseExited(e-> addButton.setStyle("-fx-background-color: #0080FF; -fx-text-fill: #FFFFFF;-fx-font-size: 15px; -fx-font-weight: normal;"));
 
         deleteButton.setOnAction(e->{
             isbnField.clear();
@@ -517,8 +562,10 @@ public class LibraryManagement {
                     book.setStatus((String) statusField.getValue());
                     book.setChapter(parseDouble(chapterField.getText(), "số chương không hợp lệ"));
                     book.setSummary(textArea.getText());
-                    book.setCoverImages(ImageConverter.imageToByteArray(qrImageView));
-                    book.setQrCode( ImageConverter.imageToByteArray(imageView));
+                  if(checkCoverIamge.get())
+                    book.setCoverImages(ImageConverter.imageToByteArray(imageView));
+                  if(checkQR.get())
+                    book.setQrCode(ImageConverter.imageToByteArray(qrImageView));
 
                     // Thêm vào cơ sở dữ liệu
                     bookDAO.updateBook(book);
@@ -554,22 +601,23 @@ public class LibraryManagement {
         TextField idField = new TextField();
         idField.setPromptText("ID");
         TextField titleField = new TextField();
-        titleField.setPromptText("Title");
+        titleField.setPromptText("Tiêu đề");
         TextField authorField = new TextField();
-        authorField.setPromptText("Author");
+        authorField.setPromptText("Tác giả");
         TextField publisherField = new TextField();
-        publisherField.setPromptText("Publisher");
+        publisherField.setPromptText("Nhà Xuất Bản");
         TextField yearField = new TextField();
-        yearField.setPromptText("Year");
+        yearField.setPromptText("Năm xuất bản");
         TextField genreField = new TextField();
-        genreField.setPromptText("Genre");
+        genreField.setPromptText("Thể loại");
         TextField quantityField = new TextField();
-        quantityField.setPromptText("Quantity");
+        quantityField.setPromptText("Số lượng");
 
         AtomicBoolean check1 = new AtomicBoolean(false);
         AtomicBoolean check2 = new AtomicBoolean(false);
         Button searchButton = button("Tìm kiếm");
         searchButton.setOnAction(e->{
+            a.clear();
             data.clear();
             try {
                     Integer year = parseIntegerForFind(yearField.getText(),check1);
@@ -626,6 +674,7 @@ public class LibraryManagement {
 
         Button deleteSerchButton = button("Xóa Tìm kiếm");
         deleteSerchButton.setOnAction(e-> {
+            a.clear();
             data.clear();
             idField.clear();
             titleField.clear();
@@ -644,8 +693,11 @@ public class LibraryManagement {
 
         Button updateButton = button("Sửa");
         updateButton.setOnAction(e->{
-            if(a.size()>0)
-            updateDocument(bookDAO.output1Value(a.get(0)));
+            if(a.size()>0) {
+                for(String s : a)
+                System.out.println(s);
+                updateDocument(bookDAO.output1Value(a.get(0)));
+            }
             else
                 Noti.showFailureMessage("Xin hãy chọn trước!");
             System.out.println(a.size());
@@ -657,6 +709,7 @@ public class LibraryManagement {
             for(String id0 : a) {
                 bookDAO.removeBook(id0);
             }
+            a.clear();
             data.removeIf(Book::isSelected);
         });
         deleteButton.setMinWidth(15);
@@ -681,27 +734,48 @@ public class LibraryManagement {
     public void showBook(String id) {
 
         book = bookDAO.output1Value(id);
-        Label isbnLabel = new Label("ISBN: " + book.getId());
-        Label titleLabel =  new Label("Tiêu đề: " + book.getTitle());
-        Label authorLabel =  new Label("Tác giả: " + book.getAuthor());
-        Label yearLabel =  new Label("Năm xuất bản: " + ((book.getYear()!=null)?book.getYear():""));
-        Label genreLabel =  new Label("Thể loại: " + book.getGenre());
-        Label publisherLabel =  new Label("Nhà xuất bản: " + book.getPublisher());
-        Label quantityLabel =  new Label("Số lượng: " + book.getQuantity());
-        Label editionLabel =  new Label("Phiên bản: " + book.getEdition());
-        Label reprintLabel =  new Label("Số lần tái bản: " + ((book.getReprint()!=null)?book.getReprint():""));
-        Label priceLabel =  new Label("Giá: " + ((book.getPrice()!=null)?book.getPrice():""));
-        Label languageLabel =  new Label("Ngôn ngữ: " + book.getLanguage());
-        Label statusLabel =  new Label("Trạng thái: " + book.getStatus());
-        Label chapterLabel = new Label("Số chương: " + ((book.getChapter()!=null)?book.getChapter():""));
-        Label summaryLabel = new Label(book.getSummary());
+        VBox isbnBox = styledVBox("ISBN:", book.getId());
+        Label titleLabel =  new Label(book.getTitle());
+        Label authorLabel =  new Label(book.getAuthor());
+        VBox titleBox = styledVBox("Tiêu đề:", book.getTitle());
+        VBox authorBox = styledVBox("Tác giả:", book.getAuthor());
+        VBox yearBox = styledVBox("Năm xuất bản:", (book.getYear() != null) ? book.getYear().toString() : "");
+        VBox genreBox = styledVBox("Thể loại:", book.getGenre());
+        VBox publisherBox = styledVBox("Nhà xuất bản:", book.getPublisher());
+        VBox quantityBox = styledVBox("Số lượng:", Integer.toString(book.getQuantity()));
+        VBox editionBox = styledVBox("Phiên bản:", book.getEdition());
+        VBox reprintBox = styledVBox("Số lần tái bản:", (book.getReprint() != null) ? book.getReprint().toString() : "");
+        VBox priceBox = styledVBox("Giá:", (book.getPrice() != null) ? book.getPrice().toString() : "");
+        VBox languageBox = styledVBox("Ngôn ngữ:", book.getLanguage());
+        VBox statusBox = styledVBox("Trạng thái:", book.getStatus());
+        VBox chapterBox = styledVBox("Số chương:", (book.getChapter() != null) ? book.getChapter().toString() : "");
+
+        Label pages = new Label((book.getPages() != null) ? book.getPages().toString() : "");
+        Label downloads = new Label(Integer.toString(book.getDownloads()));
+        Label ratingLabel = new Label(BookReviewsDAO.getAverageRating(id));
+        HBox pagesAndDownloads = pagesAndDownloads(pages, downloads, ratingLabel);
+
+
+        Label summaryLabel = new Label("Tóm tắt nội dung:");
+        summaryLabel.setLayoutX(70);
+        summaryLabel.setLayoutY(480);
+        summaryLabel.setStyle("-fx-font-size: 15px;-fx-font-style: italic;-fx-font-family: 'Arial';");
+        TextArea summaryArea = textArea(book.getSummary());
+
+        summaryArea.setEditable(false);
+        VBox summaryVBox = new VBox(summaryLabel, summaryArea);
+
+
         ImageView qrCode;
+        Label qr = new Label("Quét mã QR để tải sách");
+        Rectangle rectangle = rectangle(screenWidth-60, screenHeight-80, Color.WHITE,
+                Color.BLACK, 2, 10,10, 0.8, 30, 30);
         if(book.getQrCodeImage()!=null) {
             qrCode = new ImageView(book.getQrCodeImage());
             qrCode.setFitHeight(200);
             qrCode.setFitWidth(200);
         } else {
-            Image image = new Image("file:C:/Users/Dell/IdeaProjects/library/src/main/image/qr1.png");
+            Image image = new Image("file:C:/Users/Dell/IdeaProjects/library/src/main/image/qr.png");
             if (image.isError()) {
                 System.out.println("Error loading image: " + image.getException().getMessage());
             }
@@ -724,15 +798,122 @@ public class LibraryManagement {
             coverImage.setFitHeight(400);
         }
 
-        Button backButton = new Button("Thoát");
+        Button backButton = buttonForShowBook(70, 30, "Thoát", "#FF0000", "#8B0000");
         backButton.setOnAction(e-> main.showInterfaceScene());
+        Button borrowButton = buttonForShowBook(70, 30, "Mượn", "#0000FF", "#00008B");
+        borrowButton.setOnAction(e->{
+            Borrow borrow = new Borrow();
+            borrow.setBookId(id);
+            borrow.setUserId(interfaces.userId());
+            LocalDate borrowDate = LocalDate.now();
+            int loanPeriodDays = 30; // Số ngày được mượn
+            borrow.setBorrowDate(borrowDate);
+            borrow.setStatus("borrowed");
+            borrow.setDueDate(borrow.calculateDueDate(borrowDate, loanPeriodDays));
 
-        VBox imageHBox = new VBox(10, coverImage, qrCode, backButton);
-        VBox attributeVBox1 = new VBox(10, titleLabel,authorLabel, yearLabel, genreLabel,publisherLabel, quantityLabel);
-        VBox attributeVBox2 = new VBox(10, isbnLabel, editionLabel, reprintLabel, priceLabel, languageLabel, statusLabel,chapterLabel);
-        HBox hBox = new HBox(10,imageHBox,attributeVBox1,attributeVBox2);
-        VBox vBox = new VBox(10,hBox,summaryLabel);
-        Scene scene = new Scene(vBox, screenWidth, screenHeight);
+            if(!BorrowDAO.isBorrowed(id, interfaces.userId())) {
+                    BorrowDAO.add(borrow);
+                    if(BorrowDAO.updateQuantity(id, BorrowDAO.remainingQuantity(id) - 1))
+                    bookDAO.updateDownload(id, BorrowDAO.downloads(id));
+                }
+             else {
+                Noti.showFailureMessage("Bạn đã mượn sách này rồi");
+            }
+        });
+        Button ratingButton = buttonForShowBook(90, 30, "Đánh giá", "#008000", "#006400");
+        AtomicInteger rating = new AtomicInteger(0);
+        ratingButton.setOnAction(e->{
+            if(rating.get()-1>=1) {
+                BookReviews bookReviews = new BookReviews();
+                bookReviews.setBookId(id);
+                bookReviews.setUserId(interfaces.userId());
+                bookReviews.setRating(rating.get()-1);
+                bookReviews.setReviewDate(LocalDate.now());
+                BookReviewsDAO.add(bookReviews);
+            } else {
+                Noti.showFailureMessage("Xin vui lòng chọn đánh giá của bạn trước");
+            }
+
+        });
+
+        HBox buttonHBox = new HBox(10, ratingButton, borrowButton, backButton);
+        buttonHBox.setAlignment(Pos.CENTER_RIGHT);
+        buttonHBox.setMinWidth(250);
+        buttonHBox.setMaxWidth(250);
+        buttonHBox.setMinHeight(35);
+        buttonHBox.setMaxHeight(35);
+
+        VBox qrVBox =  new VBox(qrCode, qr);
+        HBox qrHBox = new HBox(20, qrVBox);
+        VBox coverImageVBox = new VBox(coverImage, titleLabel, authorLabel);
+        VBox imageVBox = new VBox(20, coverImageVBox, qrHBox);
+        imageVBox.setLayoutX(50);
+        imageVBox.setLayoutY(50);
+        qrCode.setFitHeight(170);
+        qrCode.setFitWidth(170);
+        titleLabel.setMaxWidth(280);
+        titleLabel.setWrapText(true); // Cho phép xuống dòng khi vượt quá chiều rộng
+        titleLabel.setStyle("-fx-text-fill: #000000; -fx-font-family: Arial; -fx-font-size: 15px; -fx-font-weight: normal;");
+        authorLabel.setMaxHeight(40);
+        authorLabel.setWrapText(true);
+        authorLabel.setStyle("-fx-text-fill: #808080; -fx-font-family: Arial; -fx-font-size: 15px; -fx-font-weight: normal;");
+        authorLabel.setMaxWidth(280);
+        qrVBox.setAlignment(Pos.CENTER);
+        qrHBox.setAlignment(Pos.CENTER);
+        coverImageVBox.setAlignment(Pos.CENTER);
+        HBox genreAndChapter = new HBox(10, genreBox, chapterBox);
+        genreBox.setMinWidth(400);
+        chapterBox.setMaxWidth(138);
+        chapterBox.setMinWidth(138);
+        genreAndChapter.setMinWidth(500);
+        genreAndChapter.setMaxWidth(500);
+        VBox leftVBox = new VBox(5, new VBox(10,titleBox, authorBox, publisherBox,
+                yearBox, genreAndChapter, quantityBox), pagesAndDownloads);
+        VBox rightVBox = new VBox(30,new VBox(10, isbnBox, editionBox, reprintBox,
+                languageBox, priceBox, statusBox), new HBox(25,Shape.startHBox(rating), buttonHBox));
+        leftVBox.setMaxWidth(548);
+        leftVBox.setMinWidth(548);
+        rightVBox.setMaxWidth(548);
+        rightVBox.setMinWidth(548);
+        HBox LRhBox = new HBox(20, leftVBox, rightVBox);
+        List<VBox> list = CommentsDAO.getCommentDisplay(id);
+        CommentPage commentPage = new CommentPage(list);
+        VBox myCommentVbox = createCommentTextArea(id,0, list, commentPage);
+        myCommentVbox.setAlignment(Pos.CENTER);
+
+        VBox vBox = new VBox(30, LRhBox, summaryVBox, myCommentVbox);
+
+
+        vBox.getChildren().add(commentPage.commentPage());
+
+        HBox hBox = new HBox(20, imageVBox, vBox);
+        hBox.setAlignment(Pos.CENTER);
+        hBox.setMinHeight(screenHeight*2+100);
+        hBox.setMaxHeight(screenHeight*2+100);
+
+        summaryVBox.setMinWidth(1116);
+        summaryVBox.setMaxWidth(1116);
+        summaryArea.setMinWidth(1116);
+        summaryArea.setMaxWidth(1116);
+
+
+
+        ScrollPane scrollPane = new ScrollPane(hBox);
+        scrollPane.setFocusTraversable(false);
+        scrollPane.setLayoutX(33);
+        scrollPane.setLayoutY(50);
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setStyle("-fx-background: #FFFFFF; -fx-background-color: #FFFFFF;");
+        scrollPane.setPrefWidth(screenWidth-67);
+        scrollPane.setPrefHeight(screenHeight-110);
+        scrollPane.setFitToHeight(true);
+        scrollPane.setFitToWidth(true);
+        commentPage.setScrollPane(scrollPane);
+
+        Pane pane = new Pane(rectangle,scrollPane);
+
+        Scene scene = new Scene(pane, screenWidth, screenHeight);
         primaryStage.setScene(scene);
     }
     public Pane showBooks() {
@@ -768,7 +949,7 @@ public class LibraryManagement {
         VBox vBox = new VBox(10);
         scrollPane.setContent(vBox); // Đặt StackPane vào ScrollPane
         pane.getChildren().add(scrollPane);
-        scrollPane.setStyle("-fx-background-color: white; -fx-background: white;");
+        scrollPane.setStyle("-fx-background-color: #FFFFFF; -fx-background: #FFFFFF;");
 
         // Xử lý sự kiện khi nhấn nút Tìm kiếm
         searchButton.setOnAction(e -> {
@@ -819,8 +1000,6 @@ public class LibraryManagement {
 
         return pane;
     }
-
-
 
     public void addUser() {
 
@@ -874,9 +1053,9 @@ public class LibraryManagement {
         // Tạo một nút để mở hộp thoại chọn file
         Button uploadButton = new Button("Chọn Ảnh");
         uploadButton.setMinWidth(300);
-        uploadButton.setStyle("-fx-background-color: #0080FF; -fx-text-fill: white;-fx-font-size: 12px; -fx-font-weight: bold;");
-        uploadButton.setOnMouseEntered(e-> uploadButton.setStyle("-fx-background-color: #004C99; -fx-text-fill: white;-fx-font-size: 12px; -fx-font-weight: bold;"));
-        uploadButton.setOnMouseExited(e-> uploadButton.setStyle("-fx-background-color: #0080FF; -fx-text-fill: white;-fx-font-size: 12px; -fx-font-weight: bold;"));
+        uploadButton.setStyle("-fx-background-color: #0080FF; -fx-text-fill: #FFFFFF;-fx-font-size: 12px; -fx-font-weight: bold;");
+        uploadButton.setOnMouseEntered(e-> uploadButton.setStyle("-fx-background-color: #004C99; -fx-text-fill: #FFFFFF;-fx-font-size: 12px; -fx-font-weight: bold;"));
+        uploadButton.setOnMouseExited(e-> uploadButton.setStyle("-fx-background-color: #0080FF; -fx-text-fill: #FFFFFF;-fx-font-size: 12px; -fx-font-weight: bold;"));
         ImageView imageView = new ImageView(); // Tạo một ImageView để hiển thị ảnh
         imageView.setFitWidth(300);
         imageView.setFitHeight(400);
@@ -924,18 +1103,18 @@ public class LibraryManagement {
         deleteButton.setLayoutY(580);
         deleteButton.setMinSize(70,40);
         deleteButton.setOnAction(e -> main.showInterfaceScene());
-        deleteButton.setStyle("-fx-background-color: #0080FF; -fx-text-fill: white;-fx-font-size: 15px; -fx-font-weight: normal;");
-        deleteButton.setOnMouseEntered(e-> deleteButton.setStyle("-fx-background-color: #004C99; -fx-text-fill: white;-fx-font-size: 15px; -fx-font-weight: bold;"));
-        deleteButton.setOnMouseExited(e-> deleteButton.setStyle("-fx-background-color: #0080FF; -fx-text-fill: white;-fx-font-size: 15px; -fx-font-weight: normal;"));
+        deleteButton.setStyle("-fx-background-color: #0080FF; -fx-text-fill: #FFFFFF;-fx-font-size: 15px; -fx-font-weight: normal;");
+        deleteButton.setOnMouseEntered(e-> deleteButton.setStyle("-fx-background-color: #004C99; -fx-text-fill: #FFFFFF;-fx-font-size: 15px; -fx-font-weight: bold;"));
+        deleteButton.setOnMouseExited(e-> deleteButton.setStyle("-fx-background-color: #0080FF; -fx-text-fill: #FFFFFF;-fx-font-size: 15px; -fx-font-weight: normal;"));
 
         Button backButton = new Button("Thoát");
         backButton.setLayoutX(1400);
         backButton.setLayoutY(640);
         backButton.setMinSize(70,40);
         backButton.setOnAction(e -> main.showInterfaceScene());
-        backButton.setStyle("-fx-background-color: #FF0000; -fx-text-fill: white;-fx-font-size: 15px; -fx-font-weight: normal;");
-        backButton.setOnMouseEntered(e-> backButton.setStyle("-fx-background-color: #CC0000; -fx-text-fill: white;-fx-font-size: 15px; -fx-font-weight: bold;"));
-        backButton.setOnMouseExited(e-> backButton.setStyle("-fx-background-color: #FF0000; -fx-text-fill: white;-fx-font-size: 15px; -fx-font-weight: normal;"));
+        backButton.setStyle("-fx-background-color: #FF0000; -fx-text-fill: #FFFFFF;-fx-font-size: 15px; -fx-font-weight: normal;");
+        backButton.setOnMouseEntered(e-> backButton.setStyle("-fx-background-color: #CC0000; -fx-text-fill: #FFFFFF;-fx-font-size: 15px; -fx-font-weight: bold;"));
+        backButton.setOnMouseExited(e-> backButton.setStyle("-fx-background-color: #FF0000; -fx-text-fill: #FFFFFF;-fx-font-size: 15px; -fx-font-weight: normal;"));
 
         Button addButton = new Button("Lưu");
         addButton.setLayoutX(1400);
@@ -1219,6 +1398,197 @@ public class LibraryManagement {
         primaryStage.setScene(scene);
     }
 
+    public Pane statistical() {
+            // Tạo bảng TableView
+            TableView<Book> tableView;
+            ObservableList<Book> data = FXCollections.observableArrayList();
+            List<String> a = new ArrayList<>();
+            tableView = Table.tableDocument(true, 1000, a, this);
+            Rectangle rectangle = rectangle(screenWidth-350, screenHeight - 170, Color.WHITE,
+                    Color.BLACK, 1, 10, 10, 0.8, -25, -20 );
+
+            // Các trường nhập liệu để thêm dữ liệu mới
+
+            TextField titleField = new TextField();
+            titleField.setPromptText("Tiêu đề");
+            titleField.setMinWidth(150);
+            TextField authorField = new TextField();
+            authorField.setPromptText("Tác giả");
+            authorField.setMinWidth(150);
+            TextField genreField = new TextField();
+            genreField.setPromptText("Thể Loại");
+            genreField.setMinWidth(150);
+
+        Label titleTable = new Label("Sách Đã Mượn");
+        titleTable.setStyle("-fx-font-size: 30px; -fx-font-weight: bold;");
+        VBox titleTableVBox = new VBox(titleTable);
+        titleTableVBox.setAlignment(Pos.CENTER);
+
+        AtomicInteger localTable = new AtomicInteger(0);
+
+            TextField serchField = new TextField();
+            serchField.setPromptText("Tìm kiếm");
+            serchField.setMinWidth(500);
+
+            Button borrowedButton = bookButton("Sách đã mượn");
+            Button returneddButton = bookButton("Sách đã trả");
+            Button notBorrowedButton = bookButton("Sách quá hạn");
+            Button returndButton = button("Trả sách");
+            returndButton.setOnAction(e->{
+                if(a.size()>0) {
+                    boolean check = false;
+                    for (String id : a) {
+                        check = BorrowDAO.returnBook(interfaces.userId(), id);
+                        BorrowDAO.updateQuantity(id, BorrowDAO.remainingQuantity(id)+1);
+                    }
+                    if (check)
+                        Noti.showSuccessMessage("Trả sách thành công");
+                    else {
+                        Noti.showFailureMessage("Lỗi khi trả sách");
+                    }
+                } else {
+                    Noti.showFailureMessage("Bạn chưa chọn sách để trả");
+                }
+            });
+
+            HBox bookButton = new HBox(10, borrowedButton, returneddButton, notBorrowedButton);
+            bookButton.setAlignment(Pos.CENTER);
+
+            Button searchButton = button("Tìm kiếm");
+            searchButton.setOnAction(e->{
+                a.clear();
+                data.clear();
+                if(serchField.getText().isEmpty()) {
+
+                    book = new Book();
+                    book.setTitle(titleField.getText());
+                    book.setAuthor(authorField.getText());
+                    book.setGenre(genreField.getText());
+
+
+                ResultSet resultSet = bookDAO.findBooksBorrow(book, interfaces.userId(),localTable.get());
+                if(resultSet!=null) {
+                    try {
+                        while (resultSet.next()) {
+                            data.add(new Book(
+                                    false,
+                                    resultSet.getString("id"),
+                                    resultSet.getString("title"),
+                                    resultSet.getString("author"),
+                                    resultSet.getString("publisher"),
+                                    getInt(resultSet, "year"),
+                                    resultSet.getString("genre"),
+                                    resultSet.getInt("quantity"),
+                                    "chi tiết"
+                            ));
+                        }
+                    } catch (SQLException ex) {
+                        System.out.println("Lỗi khi đọc ResultSet: " + ex.getMessage());
+                    } finally {
+                        try {
+                            if (resultSet != null) resultSet.close();
+                        } catch (SQLException ex) {
+                            System.out.println("Lỗi khi đóng ResultSet: " + ex.getMessage());
+                        }
+                    }
+                    bookDAO.closeDatabase();
+                    }
+                }
+                else {
+                    String keyWord = serchField.getText();
+                    ResultSet resultSet = bookDAO.findBooksUltimateBorrow(keyWord, localTable.get());
+                    if (resultSet != null) {
+                        try {
+                            while (resultSet.next()) {
+                                data.add(new Book(
+                                        false,
+                                        resultSet.getString("id"),
+                                        resultSet.getString("title"),
+                                        resultSet.getString("author"),
+                                        resultSet.getString("publisher"),
+                                        getInt(resultSet, "year"),
+                                        resultSet.getString("genre"),
+                                        resultSet.getInt("quantity"),
+                                        "chi tiết"
+                                ));
+                            }
+                        } catch (SQLException ex) {
+                            System.out.println("Lỗi khi đọc ResultSet: " + ex.getMessage());
+                        } finally {
+                            try {
+                                if (resultSet != null) resultSet.close();
+                            } catch (SQLException ex) {
+                                System.out.println("Lỗi khi đóng ResultSet: " + ex.getMessage());
+                            }
+                        }
+                        bookDAO.closeDatabase();
+                    }
+                }
+                // Thêm lắng nghe cho từng hàng
+                tableView.getItems().forEach(book -> {
+                    book.selectedProperty().addListener((observable, oldValue, newValue) -> {
+                        if (newValue) {
+                            a.add(book.getId()); // Thêm ID vào danh sách khi chọn
+                        } else {
+                            a.remove(book.getId()); // Xóa ID khỏi danh sách khi bỏ chọn
+                        }
+                    });
+                });
+            });
+
+            Button deleteSerchButton = button("Xóa Tìm kiếm");
+            deleteSerchButton.setOnAction(e-> {
+                a.clear();
+                data.clear();
+                serchField.clear();
+                titleField.clear();
+                authorField.clear();
+                genreField.clear();
+            });
+
+            tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+            tableView.setItems(data);
+
+            HBox inputLayout = new HBox(10, titleField, authorField, genreField);
+            inputLayout.setAlignment(Pos.CENTER);
+            HBox buttonLayout = new HBox(10, serchField, searchButton, deleteSerchButton, returndButton);
+            buttonLayout.setAlignment(Pos.CENTER_LEFT);
+
+            borrowedButton.setOnAction(e->{
+                a.clear();
+                data.clear();
+                localTable.set(0);
+                titleTable.setText("Sách Đã Mượn");
+                if (!buttonLayout.getChildren().contains(returndButton)) {
+                    buttonLayout.getChildren().add(returndButton);
+                }
+            });
+            returneddButton.setOnAction(e->{
+                a.clear();
+                data.clear();
+                localTable.set(1);
+                titleTable.setText("Sách Đã Trả");
+                if (buttonLayout.getChildren().contains(returndButton)) {
+                    buttonLayout.getChildren().remove(returndButton);
+                }
+
+            });
+            notBorrowedButton.setOnAction(e->{
+                a.clear();
+                data.clear();
+                localTable.set(2);
+                titleTable.setText("Sách Quá Hạn");
+            if (buttonLayout.getChildren().contains(returndButton)) {
+                buttonLayout.getChildren().remove(returndButton);
+            }
+        });
+
+            VBox buttonLayout2 = new VBox(buttonLayout);
+            Pane layout = new Pane(rectangle,new VBox(20, bookButton, inputLayout,
+                    buttonLayout2, new VBox(titleTable, tableView)));
+            layout.setLayoutY(120);
+            return layout;
+        }
 
     Button button(String s) {
         Button button0 = new Button(s);
@@ -1230,17 +1600,28 @@ public class LibraryManagement {
         return button0;
     }
 
+    Button bookButton(String s) {
+        Button button0 = new Button(s);
+        button0.setStyle("-fx-background-color: #0066CC; -fx-text-fill: white;-fx-font-size: 15px; -fx-font-weight: bold;");
+        button0.setMinHeight(15);
+        button0.setMinWidth(150);
+        button0.setOnMouseEntered(e-> button0.setStyle("-fx-background-color: #004C99; -fx-text-fill: white;-fx-font-size: 15px; -fx-font-weight: bold;"));
+        button0.setOnMouseExited(e-> button0.setStyle("-fx-background-color:  #0066CC; -fx-text-fill: white;-fx-font-size: 15px; -fx-font-weight: bold;"));
+        return button0;
+    }
+
     VBox vBox(String s) {
         Label label = new Label(s);
         label.setStyle("-fx-font-size: 12px;-fx-font-weight: bold;");
         TextField textField = new TextField();
         textField.setPromptText(s);
         textField.setMinHeight(20);
-        textField.setStyle("-fx-background-color: white; -fx-border-color: #ccc;-fx-border-radius: 2px;");
+        textField.setStyle("-fx-background-color: #FFFFFF; -fx-border-color: #ccc;-fx-border-radius: 2px;");
         VBox vBox = new VBox(0, label, textField);
         vBox.setMinWidth(500);
         return vBox;
     }
+
     public VBox comboBoxAndTextField(String s) {
         Label label = new Label(s);
         label.setStyle("-fx-font-size: 12px;-fx-font-weight: bold;");
@@ -1255,7 +1636,7 @@ public class LibraryManagement {
         statusComboBox.getItems().addAll("available", "not available");
         statusComboBox.setValue("available"); // giá trị mặc định
         statusComboBox.setStyle(
-                "-fx-background-color: white; " +
+                "-fx-background-color: #FFFFFF; " +
                         "-fx-border-color:transparent #ccc transparent transparent; " +
                         "-fx-border-radius: 2px; " +
                         "-fx-padding: 0px; " +
@@ -1293,7 +1674,7 @@ public class LibraryManagement {
         comboBox.getItems().addAll(arr);
         comboBox.setValue(arr[0]); // giá trị mặc định
         comboBox.setStyle(
-                "-fx-background-color: white; " +
+                "-fx-background-color: #FFFFFF; " +
                         "-fx-border-color:#ccc #ccc #ccc #ccc; " +
                         "-fx-border-radius: 2px; " +
                         "-fx-padding: 0px; " +
@@ -1309,6 +1690,53 @@ public class LibraryManagement {
 
         return vBox;
     }
+    public HBox pagesAndDownloads(Label pages, Label downloads, Label rating) {
+        Label pagesText = new Label("Trang");
+        Label downloadsText = new Label("Lượt mượn");
+        Label ratingtext = new Label("Đánh giá");
+
+        // Thiết lập cỡ chữ và màu chữ cho các Label
+        pages.setStyle("-fx-font-size: 15px; -fx-font-weight: bold;");
+        downloads.setStyle("-fx-font-size: 15px; -fx-font-weight: bold;");
+        rating.setStyle("-fx-font-size: 15px; -fx-font-weight: bold;");
+
+        pagesText.setStyle("-fx-font-size: 15px; -fx-text-fill: #808080; -fx-font-weight: bold;");
+        downloadsText.setStyle("-fx-font-size: 15px; -fx-text-fill: #808080; -fx-font-weight: bold;");
+        ratingtext.setStyle("-fx-font-size: 15px; -fx-text-fill: #808080; -fx-font-weight: bold;");
+
+        VBox lineAndDotVbox1 = lineAndDotVbox(0,0,0,30,Color.GRAY,1);
+        VBox lineAndDotVbox2 = lineAndDotVbox(0,0,0,30,Color.GRAY,1);
+
+        VBox pagesVBox = new VBox(pages, pagesText);
+        pagesVBox.setAlignment(Pos.CENTER);
+        pagesVBox.setMinWidth(180);
+
+        VBox downloadsVBox = new VBox(downloads, downloadsText);
+        downloadsVBox.setAlignment(Pos.CENTER);
+        downloadsVBox.setMinWidth(180);
+
+        VBox ratingVBox = new VBox(rating, ratingtext);
+        ratingVBox.setAlignment(Pos.CENTER);
+        ratingVBox.setMinWidth(180);
+
+        // Chỉ hiển thị viền bên phải của các VBox
+        pagesVBox.setStyle("-fx-border-color: transparent transparent #808080 transparent;");
+        downloadsVBox.setStyle("-fx-border-color: transparent transparent #808080 transparent;");
+        ratingVBox.setStyle("-fx-border-color: transparent transparent #808080 transparent;");
+
+        // Tạo Region để bao quanh HBox và tạo viền cho toàn bộ
+
+        // Thiết lập HBox
+        HBox hBox = new HBox(pagesVBox, lineAndDotVbox1, downloadsVBox, lineAndDotVbox2, ratingVBox);
+        hBox.setMaxWidth(548);
+        hBox.setMinWidth(548);
+        hBox.setMaxHeight(50);
+        hBox.setMinHeight(50);
+        hBox.setAlignment(Pos.CENTER);
+
+        return hBox; // Hoặc stackPane nếu cần thiết
+    }
+
 
     public VBox bookVBox(String id, String title, String author, Image image,Stage primaryStage, interfaces main) {
         Label labelTitle = new Label(title);
@@ -1321,24 +1749,23 @@ public class LibraryManagement {
         imageView.setFitWidth(150);
         imageView.setFitHeight(200);
         labelTitle.setMaxHeight(40); // Giới hạn chiều cao để Label chỉ hiển thị 2 dòng
+        labelTitle.setMaxWidth(150); // Giới hạn chiều cao để Label chỉ hiển thị 2 dòng
         labelTitle.setWrapText(true); // Cho phép xuống dòng khi vượt quá chiều rộng
         labelTitle.setEllipsisString("..."); // Thêm dấu "..." khi chữ bị cắt
-        labelTitle.setStyle("-fx-text-fill: black; -fx-font-family: Arial; -fx-font-size: 12px; -fx-font-weight: normal;");
+        labelTitle.setStyle("-fx-text-fill: #000000; -fx-font-family: Arial; -fx-font-size: 15px; -fx-font-weight: normal;");
 
         labelAuthor.setMaxHeight(40);
         labelAuthor.setWrapText(true);
-        labelAuthor.setStyle("-fx-text-fill: gray; -fx-font-family: Arial; -fx-font-size: 12px; -fx-font-weight: normal;");
+        labelAuthor.setStyle("-fx-text-fill: #808080; -fx-font-family: Arial; -fx-font-size: 15px; -fx-font-weight: normal;");
+        labelAuthor.setMaxHeight(40); // Giới hạn chiều cao để Label chỉ hiển thị 2 dòng
+        labelAuthor.setMaxWidth(150); // Giới hạn chiều cao để Label chỉ hiển thị 2 dòng
 
         labelTitle.setOnMouseEntered(event -> {
-            labelTitle.setTextFill(Color.BLUE); // Chuyển màu chữ thành xanh
-            labelTitle.setUnderline(true); // Thêm gạch chân
-            labelTitle.setFont(Font.font("Arial", FontWeight.NORMAL, FontPosture.REGULAR, 16)); // Font khi di chuột vào
+            labelTitle.setStyle("-fx-text-fill: #0000FF; -fx-font-family: Arial; -fx-font-size: 15px; -fx-underline: true;");
         });
 
         labelTitle.setOnMouseExited(event -> {
-            labelTitle.setTextFill(Color.BLACK); // Đổi lại màu chữ thành đen
-            labelTitle.setUnderline(false); // Xóa gạch chân
-            labelTitle.setFont(Font.font("Arial", FontWeight.NORMAL, 16)); // Font trở về mặc định
+            labelTitle.setStyle("-fx-text-fill: #000000; -fx-font-family: Arial; -fx-font-size: 15px; -fx-font-weight: normal;");
         });
 
         VBox vBox = new VBox(0, imageView, labelTitle, labelAuthor);
@@ -1348,6 +1775,32 @@ public class LibraryManagement {
         });
         return vBox;
     }
+
+    public VBox styledVBox(String s1, String s2) {
+        // Tạo Label cho s1 với chữ in đậm
+        Label label1 = new Label(s1);
+        label1.setStyle("-fx-font-weight: bold;");
+
+        // Tạo TextField cho s2 để hiển thị và chỉ cho phép sao chép
+        TextField textField2 = new TextField(s2);
+        textField2.setEditable(false);
+        textField2.setStyle(
+                "-fx-font-size: 15;" +                              // Đặt cỡ chữ là 15
+                        "-fx-border-color: #808080;" +                         // Màu viền là gray
+                        "-fx-border-width: 1;" +                            // Độ dày viền
+                        "-fx-border-radius: 2;" +                           // Bo góc viền
+                        "-fx-padding: 4;" +                                 // Đệm trong
+                        "-fx-focus-color: transparent;"                     // Ẩn viền khi focus
+        );
+
+
+        // Tạo VBox và thêm Label và TextField vào
+        VBox vbox = new VBox(label1, textField2);
+
+        return vbox;
+    }
+
+
 
     TextArea textArea() {
         TextArea textArea = new TextArea();
@@ -1361,14 +1814,130 @@ public class LibraryManagement {
                 "-fx-font-family: 'Arial';" +
                         "-fx-font-size: 14px;"+
                         "-fx-font-style: italic;" +
-                        "-fx-text-fill: black;" +
-                        "-fx-border-color: black;" + // Đặt màu viền là đen
+                        "-fx-text-fill: #000000;" +
+                        "-fx-border-color: #000000;" + // Đặt màu viền là đen
                         "-fx-border-width: 1;" + // Đặt độ dày viền
                         "-fx-focus-color: transparent;" + // Xóa màu focus
                         "-fx-faint-focus-color: transparent;" + // Xóa viền mờ khi focus
                         "-fx-background-insets: 0;" // Đảm bảo không có hiệu ứng insets
         );
         return textArea;
+    }
+
+    TextArea textArea(String s) {
+        TextArea textArea = new TextArea(s);
+        textArea.setLayoutX(70);
+        textArea.setLayoutY(500);
+        textArea.setMaxSize(1040,240);  // Kích thước bên trong ô vuông
+        textArea.setMinSize(1040,240);
+        textArea.setWrapText(true);  // Tự xuống dòng khi vượt quá chiều rộng
+        //textArea.setPadding(new Insets(20, 10, 10, 10));  // Cách viền 10px
+        textArea.setStyle(
+                "-fx-font-family: 'Arial';" +
+                        "-fx-font-size: 14px;"+
+                        "-fx-font-style: italic;" +
+                        "-fx-text-fill: #000000;" +
+                        "-fx-border-color: #000000;" + // Đặt màu viền là đen
+                        "-fx-border-width: 1;" + // Đặt độ dày viền
+                        "-fx-focus-color: transparent;" + // Xóa màu focus
+                        "-fx-faint-focus-color: transparent;" + // Xóa viền mờ khi focus
+                        "-fx-background-insets: 0;" // Đảm bảo không có hiệu ứng insets
+        );
+        return textArea;
+    }
+
+    public VBox createCommentTextArea(String bookId,int totalComments, List<VBox> list, CommentPage commentPage) {
+        // Tạo Label phía trên TextArea
+        Label titleLabel = new Label(totalComments +" bình luận");
+        titleLabel.setStyle("-fx-font-size: 16px;");
+
+        // Tạo TextField cho thông báo, thiết lập không chỉnh sửa và cho phép sao chép nội dung
+        TextField promptField = new TextField("Mời bạn thảo luận, vui lòng không spam, share link kiếm tiền, thiếu lành mạnh,... để tránh bị khóa tài khoản");
+        promptField.setEditable(false);  // Chế độ không chỉnh sửa
+        promptField.setMaxWidth(999);
+        promptField.setStyle("-fx-text-fill: #808080;" + // Đặt màu chữ là xám
+                "-fx-font-style: italic;" +  // Đặt kiểu chữ nghiêng
+                "-fx-font-size: 16px;" + // Đặt kích thước chữ là 16px
+                "-fx-focus-color: transparent;" + // Xóa màu focus
+                "-fx-faint-focus-color: transparent;" + // Xóa viền mờ khi focus
+                "-fx-background-color: #FFFFFF;" + // Đặt nền màu trắng
+                "-fx-background-insets: 0;" + // Loại bỏ hiệu ứng insets
+                "-fx-border-color:#000000 transparent transparent #000000;" // Ẩn viền TextField
+        );
+
+        // Tạo TextArea và thiết lập kích thước, cho phép xuống dòng
+
+        TextArea commentText = new TextArea();
+        commentText.setMinHeight(75);
+        commentText.setMaxHeight(75);
+        commentText.setWrapText(true);
+        commentText.setStyle("-fx-font-family: 'Arial';" +
+                "-fx-font-size: 16px;" +
+                "-fx-font-style: italic;" +
+                "-fx-text-fill: #000000;" +
+                "-fx-border-color: #000000;" + // Đặt màu viền là đen
+                "-fx-border-width: 1;" + // Đặt độ dày viền
+                "-fx-focus-color: transparent;" + // Xóa màu focus
+                "-fx-faint-focus-color: transparent;" + // Xóa viền mờ khi focus
+                "-fx-vbar-policy: never;" + /* Ẩn thanh cuộn dọc */
+                "-fx-hbar-policy: never;" +
+                "-fx-background-insets: 0;" // Đảm bảo không có hiệu ứng insets
+        );
+
+        // Đặt promptField vào StackPane với TextArea để hiển thị khi TextArea trống
+        StackPane stackPane = new StackPane();
+        stackPane.getChildren().addAll(commentText, promptField);
+
+        // Ẩn hiện promptField dựa vào nội dung TextArea
+        commentText.addEventHandler(KeyEvent.KEY_TYPED, event -> {
+            promptField.setVisible(false);
+        });
+
+        // Khi TextArea mất focus mà vẫn trống, ẩn promptField
+        commentText.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
+            promptField.setVisible(!isNowFocused && commentText.getText().isEmpty());
+        });
+
+        promptField.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
+            promptField.setVisible(false);
+            commentText.requestFocus();
+        });
+
+        Button sendButton = new Button("Gửi");
+
+        sendButton.setStyle("-fx-font-weight: bold; -fx-text-fill: #FFFFFF; -fx-background-color: #0077FF; -fx-font-size: 16px;");
+        sendButton.setOnMouseEntered(event -> {
+            sendButton.setStyle("-fx-font-weight: bold; -fx-text-fill: #FFFFFF; -fx-background-color: #0055BB; -fx-font-size: 16px;"); // Đổi nền thành xanh đậm hơn khi di chuột vào
+        });
+        sendButton.setOnMouseExited(event -> {
+            sendButton.setStyle("-fx-font-weight: bold; -fx-text-fill: #FFFFFF; -fx-background-color: #0077FF; -fx-font-size: 16px;"); // Quay lại nền xanh ban đầu khi chuột ra
+        });
+        HBox sendButtonHBox =  new HBox(sendButton);
+        sendButtonHBox.setAlignment(Pos.CENTER_LEFT);
+
+        HBox titleHBox =  new HBox(titleLabel);
+        titleHBox.setAlignment(Pos.CENTER_LEFT);
+        VBox titleVbox = new VBox(titleHBox, stackPane);
+        stackPane.setAlignment(Pos.TOP_LEFT);
+        VBox vbox = new VBox(10, titleVbox, sendButtonHBox);
+        sendButton.setOnAction(e-> {
+            Comments comments = new Comments();
+            comments.setCommentId(CommentsDAO.getMaxCommentId() + 1);
+            comments.setUserId(interfaces.userId());
+            comments.setBookId(bookId);
+            comments.setComment(commentText.getText());
+            comments.setTimestamp(LocalDateTime.now()); // Thiết lập thời gian hiện tại
+            CommentsDAO.addComments(comments);
+
+            /*vbox.getChildren().add(2,CommentsDAO.createCommentBox(interfaces.userId(),
+                    new java.sql.Timestamp(System.currentTimeMillis()), commentText.getText()));*/
+            VBox addVBox = CommentsDAO.createCommentBox(UserDAO.accountName(interfaces.userId()),
+                    new java.sql.Timestamp(System.currentTimeMillis()), commentText.getText());
+            list.add(0, addVBox);
+            commentPage.updatePage();
+        });
+
+        return vbox;
     }
 
     // Phương thức chuyển đổi kiểu Integer
@@ -1418,6 +1987,34 @@ public class LibraryManagement {
         return resultSet.wasNull() ? null : type0;
     }
 
+    public Button buttonForShowBook(double width, double height, String nameButton, String color1, String color2) {
+        // Tạo button mới
+        Button button = new Button(nameButton);
+
+        // Thiết lập kích thước của button
+        button.setMinWidth(width);
+        button.setMinHeight(height);
+
+        // Đặt màu nền ban đầu cho button
+        button.setStyle("-fx-background-color: " + color1 + "; -fx-text-fill: white; -fx-font-size: 15px; -fx-font-weight: bold;");
+
+        // Hiệu ứng khi di chuột vào
+        button.setOnMouseEntered(e -> {
+            button.setStyle("-fx-background-color: " + color2 + "; -fx-text-fill: white; -fx-font-size: 15px; -fx-font-weight: bold;");
+            button.setMinWidth(width+2);
+            button.setMinHeight(height+2);
+        });
+
+        // Hiệu ứng khi di chuột ra
+        button.setOnMouseExited(e -> {
+            button.setStyle("-fx-background-color: " + color1 + "; -fx-text-fill: white; -fx-font-size: 15px; -fx-font-weight: bold;");
+            button.setMinWidth(width);
+            button.setMinHeight(height);
+        });
+
+        return button;
+    }
+
     private LocalDate parseDate(String input, String s) {
         if (input.isEmpty()) {
             return null; // Nếu trường rỗng, trả về null
@@ -1465,6 +2062,29 @@ public class LibraryManagement {
         return rectangle0;
     }
 
+public Line line(double startX, double startY, double endX, double endY, Color color, double strokeWidth) {
+    // Tạo đoạn thẳng với các tọa độ đã cho
+    Line line = new Line(startX, startY, endX, endY);
+    // Đặt màu và độ dày cho đoạn thẳng
+    line.setStroke(color);
+    line.setStrokeWidth(strokeWidth);
+    return line;
+}
+
+public Circle dot(double centerX, double centerY, Color color, double radius) {
+        // Tạo một vòng tròn (dấu chấm) tại tọa độ đã cho với bán kính và màu sắc
+        Circle dot = new Circle(centerX, centerY, radius);
+        dot.setFill(color);  // Đặt màu sắc cho dấu chấm
+        return dot;
+    }
+    public VBox lineAndDotVbox(double startX, double startY, double endX, double endY,
+                           Color color, double strokeWidth){
+        Line line =  line(startX, startY, endX, endY, color, strokeWidth);
+        Line dot =  line(0, 0, 2, 0, color, strokeWidth);
+        VBox vBox = new VBox(10, line, dot);
+        vBox.setAlignment(Pos.BOTTOM_CENTER);
+        return vBox;
+    }
     private Image generateQRCodeImage(String text, int width, int height) throws WriterException, IOException {
         QRCodeWriter qrCodeWriter = new QRCodeWriter();
         BitMatrix bitMatrix = qrCodeWriter.encode(text, BarcodeFormat.QR_CODE, width, height);

@@ -69,12 +69,13 @@ public class Login {
         loginButton.setOnAction(e -> {
             String username = usernameField.getText();
             String password = passwordField.getText();
-            if (username.equals("admin") && password.equals("12345")) {
+            if (UserDAO.checkAccount(username, password)) {
                 System.out.println("Đăng nhập thành công!");
+                Noti.showSuccessMessage("Đăng nhập thành công!");
                 inf.interFaceAdmin(this);
             } else {
                 System.out.println("Sai tài khoản hoặc mật khẩu!");
-                inf.interFaceAdmin(this);
+                Noti.showFailureMessage("Sai tài khoản hoặc mật khẩu!");
             }
         });
 

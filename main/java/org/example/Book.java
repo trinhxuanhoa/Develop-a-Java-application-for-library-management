@@ -42,6 +42,8 @@ public class Book {
     private SimpleDoubleProperty price;
     private SimpleStringProperty language;
     private SimpleStringProperty status;
+    private SimpleIntegerProperty pages;
+    private SimpleIntegerProperty downloads;
     private SimpleDoubleProperty chapter;
     private SimpleStringProperty summary;
     private SimpleStringProperty detail;
@@ -65,6 +67,8 @@ public class Book {
         this.language = new SimpleStringProperty();
         this.status = new SimpleStringProperty();
         this.chapter = new SimpleDoubleProperty();
+        this.pages = new SimpleIntegerProperty();
+        this.downloads = new SimpleIntegerProperty();
         this.summary = new SimpleStringProperty();
     };
 
@@ -92,7 +96,7 @@ public class Book {
     }
     public Book(String id, String title, String author, String publisher, Integer year,
                 String genre, Integer quantity, String edition, Integer reprint, Double price,
-                String language, String status, Double chapter, String summary, byte[] qrCode,
+                String language, String status, Double chapter,Integer pages, String summary, byte[] qrCode,
                 byte[] coverImages) {
         this.id = new SimpleStringProperty(id);
         this.title = new SimpleStringProperty(title);
@@ -106,11 +110,13 @@ public class Book {
         this.price = (price != null) ? new SimpleDoubleProperty(price) : null;
         this.language = new SimpleStringProperty(language);
         this.status = new SimpleStringProperty(status);
-        this.chapter = (chapter != null) ? new SimpleDoubleProperty(price) : null;
+        this.chapter = (chapter != null) ? new SimpleDoubleProperty(chapter) : null;
         this.summary = new SimpleStringProperty(summary);
-        this.coverImages = coverImages; // Không cần sử dụng Property cho Image
+        this.pages = (pages != null) ? new SimpleIntegerProperty(pages) : null;
+        this.downloads = new SimpleIntegerProperty();
+        this.coverImages = coverImages;
         this.qrCode = qrCode;
-        this.selected = new SimpleBooleanProperty(false); // Khởi tạo giá trị mặc định
+        //this.selected = new SimpleBooleanProperty(false); // Khởi tạo giá trị mặc định
         try {
             if(qrCode!=null)
             this.qrCodeImage = new Image(new ByteArrayInputStream(qrCode));
@@ -243,6 +249,14 @@ public class Book {
     public SimpleDoubleProperty chapterProperty() {return chapter;}
     public void setChapter(Double chapter) {if(chapter!=null)this.chapter.set(chapter);else this.chapter=null;}
 
+    public Integer getPages() {return (pages!=null) ? pages.get() : null; }
+    public SimpleIntegerProperty pagesProperty() {return pages;}
+    public void setPages(Integer pages) {if(pages!=null){this.pages.set(pages); } else this.pages=null; }
+
+    public Integer getDownloads() {return downloads.get();}
+    public SimpleIntegerProperty downloadsProperty() {return downloads;}
+    public void setDownloads(Integer downloads) {if(downloads!=null)this.downloads.set(downloads);}
+
     public byte[] getQrCode() {return qrCode;}
     public void setQrCode(byte[] qrCodePath) {this.qrCode = qrCode;}
 
@@ -258,4 +272,5 @@ public class Book {
     public String getSummary() {return summary.get();}
     public void setSummary(String summary) {this.summary.set(summary);}
     public SimpleStringProperty summaryProperty() {return summary;}
+
 }

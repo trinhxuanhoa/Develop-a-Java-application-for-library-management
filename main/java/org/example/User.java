@@ -50,6 +50,8 @@ public class User {
         this.gender = new SimpleStringProperty();
         this.department = new SimpleStringProperty();
         this.className = new SimpleStringProperty();
+        this.cardRegistrationDate = new SimpleObjectProperty<>();
+        this.expiryDate = new SimpleObjectProperty<>();
     }
     public  User(String userId, String fullName, LocalDate dateOfBirth, String membershipStatus,
                  String phoneNumber, String email, Integer totalBooksBorrowed) {
