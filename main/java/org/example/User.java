@@ -17,7 +17,7 @@ public class User {
     private StringProperty membershipId; // -- Mã định danh của thẻ thư viện, duy nhất cho mỗi người dùng
     private ObjectProperty<LocalDate> joinDate;
     private StringProperty membershipStatus; // -- Trạng thái thẻ thư viện: có thể là 'active' (hoạt động), 'expired' (hết hạn), hoặc 'locked' (bị khóa). Giá trị mặc định là 'active'
-    private IntegerProperty overdueCount; //-- Số lần người dùng đã trả sách trễ hạn, kiểu số nguyên với giá trị mặc định là 0
+    private IntegerProperty totalBooksReturned; //-- Số lần người dùng đã trả sách trễ hạn, kiểu số nguyên với giá trị mặc định là 0
     private StringProperty role; //-- Vai trò của người dùng, có thể là 'member' (thành viên), 'librarian' (thủ thư), hoặc 'admin' (quản trị viên). Giá trị mặc định là 'member'
     private ObjectProperty<LocalDate> cardRegistrationDate;
     private ObjectProperty<LocalDate> expiryDate;
@@ -45,7 +45,7 @@ public class User {
         this.membershipStatus = new SimpleStringProperty();
         this.accountStatus = new SimpleStringProperty();
         this.totalBooksBorrowed = new SimpleIntegerProperty();
-        this.overdueCount = new SimpleIntegerProperty();
+        this.totalBooksReturned = new SimpleIntegerProperty();
         this.role = new SimpleStringProperty();
         this.gender = new SimpleStringProperty();
         this.department = new SimpleStringProperty();
@@ -76,31 +76,31 @@ public class User {
         this.detail = new SimpleStringProperty(detail);
     }
     public User(boolean selected, String userId, String fullName,LocalDate joinDate, String membershipStatus,
-                Integer totalBooksBorrowed, Integer overdueCount, String role, String detail) {
+                Integer totalBooksBorrowed, Integer totalBooksReturned, String role, String detail) {
         this.selected = new SimpleBooleanProperty(selected);
         this.userId = new SimpleStringProperty(userId);
         this.fullName = new SimpleStringProperty(fullName);
         this.joinDate = new SimpleObjectProperty<>(joinDate);
         this.membershipStatus = new SimpleStringProperty(membershipStatus);
         this.totalBooksBorrowed =new SimpleIntegerProperty(totalBooksBorrowed);
-        this.overdueCount = new SimpleIntegerProperty(overdueCount);
+        this.totalBooksReturned = new SimpleIntegerProperty(totalBooksReturned);
         this.role = new SimpleStringProperty(role);
         this.detail = new SimpleStringProperty(detail);
     }
     public  User(String userId, String fullName,LocalDate joinDate, String membershipStatus,
-                 String role, Integer totalBooksBorrowed, Integer overdueCount) {
+                 String role, Integer totalBooksBorrowed, Integer totalBooksReturned) {
         this.userId = new SimpleStringProperty(userId);
         this.fullName = new SimpleStringProperty(fullName);
         this.joinDate = new SimpleObjectProperty<>(joinDate);
         this.membershipStatus = new SimpleStringProperty(membershipStatus);
         this.totalBooksBorrowed = (totalBooksBorrowed!=null) ? new SimpleIntegerProperty(totalBooksBorrowed):null;
-        this.overdueCount = (overdueCount!=null) ? new SimpleIntegerProperty(overdueCount):null;
+        this.totalBooksReturned = (totalBooksReturned!=null) ? new SimpleIntegerProperty(totalBooksReturned):null;
         this.role = new SimpleStringProperty(role);
     }
     public User(String userId, String fullName, LocalDate dateOfBirth, String address,
                 String phoneNumber, String email, String username, String passwordHash,
                 String membershipId, LocalDate joinDate, String membershipStatus,
-                Integer totalBooksBorrowed, Integer overdueCount, String role) {
+                Integer totalBooksBorrowed, Integer totalBooksReturned, String role) {
 
         this.userId = new SimpleStringProperty(userId);
         this.fullName = new SimpleStringProperty(fullName);
@@ -114,7 +114,7 @@ public class User {
         this.joinDate = new SimpleObjectProperty<>(joinDate);
         this.membershipStatus = new SimpleStringProperty(membershipStatus);
         this.totalBooksBorrowed = new SimpleIntegerProperty(totalBooksBorrowed);
-        this.overdueCount = new SimpleIntegerProperty(overdueCount);
+        this.totalBooksReturned = new SimpleIntegerProperty(totalBooksReturned);
         this.role = new SimpleStringProperty(role);
     }
     public User(String userId, String fullName, LocalDate dateOfBirth, String address, String phoneNumber,
@@ -135,7 +135,7 @@ public class User {
         this.membershipId = new SimpleStringProperty(membershipId);
         this.joinDate = new SimpleObjectProperty<>(joinDate);
         this.membershipStatus = new SimpleStringProperty(membershipStatus);
-        this.overdueCount = new SimpleIntegerProperty(0);
+        this.totalBooksReturned = new SimpleIntegerProperty(0);
         this.role = new SimpleStringProperty(role);
         this.cardRegistrationDate = new SimpleObjectProperty<>(cardRegistrationDate);  // Default value
         this.expiryDate = new SimpleObjectProperty<>(expiryDate);
@@ -195,9 +195,9 @@ public class User {
     public void setTotalBooksBorrowed(Integer totalBooksBorrowed) {this.totalBooksBorrowed.set(totalBooksBorrowed);}
     public IntegerProperty totalBooksBorrowedProperty() {return totalBooksBorrowed;}
 
-    public Integer getOverdueCount() {return (overdueCount!=null)?overdueCount.get():null;}
-    public void setOverdueCount(Integer overdueCount) {this.overdueCount.set(overdueCount);}
-    public IntegerProperty overdueCountProperty() {return overdueCount;}
+    public Integer gettotalBooksReturned() {return (totalBooksReturned!=null)?totalBooksReturned.get():null;}
+    public void settotalBooksReturned(Integer totalBooksReturned) {this.totalBooksReturned.set(totalBooksReturned);}
+    public IntegerProperty totalBooksReturnedProperty() {return totalBooksReturned;}
 
     public String getRole() {return role.get();}
     public void setRole(String role) {this.role.set(role);}

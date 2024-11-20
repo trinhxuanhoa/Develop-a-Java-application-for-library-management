@@ -72,6 +72,8 @@ public class Login {
             if (UserDAO.checkAccount(username, password)) {
                 System.out.println("Đăng nhập thành công!");
                 Noti.showSuccessMessage("Đăng nhập thành công!");
+                usernameField.clear();
+                passwordField.clear();
                 inf.interFaceAdmin(this);
             } else {
                 System.out.println("Sai tài khoản hoặc mật khẩu!");

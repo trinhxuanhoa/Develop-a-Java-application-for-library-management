@@ -9,6 +9,7 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import java.util.List;
 import java.time.LocalDate;
+
 public class Table {
     public static TableView<Book> tableDocument(boolean open, double tableWidth, List<String> a, LibraryManagement library) {
         TableView<Book> tableView = new TableView<>();
@@ -83,7 +84,7 @@ public class Table {
         return tableView;
     }
 
-    public static TableView<User> tableUser(boolean open, double tableWidth, List<String> a, LibraryManagement library) {
+    public static TableView<User> tableUser(boolean open, double tableWidth, List<String> a, LibraryManagement library, Login login) {
         TableView<User> tableView = new TableView<>();
         tableView.setEditable(open); // Bật chế độ chỉnh sửa
 
@@ -135,7 +136,7 @@ public class Table {
                 // Thiết lập sự kiện nhấp chuột
                 label.setOnMouseClicked(e -> {
                     User user = getTableView().getItems().get(getIndex());
-                    library.showUser(user.getUserId());
+                    library.showUser(user.getUserId(), login);
                     System.out.println("Chi tiết cho: " + user.getFullName());
                 });
             }
@@ -157,6 +158,79 @@ public class Table {
         // Thêm tất cả các cột vào bảng
         tableView.getColumns().addAll(selectColumn, userIdColumn, fullNameColumn, phoneNumberColumn,
                 emailColumn, dateOfBirthColumn, totalBooksBorrowedColumn, statusColumn, detailCol);
+        return tableView;
+    }
+
+    public static TableView<BookAndBorrow> tableStatistical(boolean open, double tableWidth, List<String> a, LibraryManagement library) {
+        TableView<BookAndBorrow> tableView = new TableView<>();
+        tableView.setEditable(open); // Bật chế độ chỉnh sửa
+
+        // Tạo các cột
+        TableColumn<BookAndBorrow, Boolean> selectColumn = new TableColumn<>();
+        CheckBox headerCheckBox = new CheckBox();
+
+        // Thiết lập tiêu đề cột là CheckBox
+        selectColumn.setGraphic(headerCheckBox);
+        selectColumn.setCellValueFactory(cellData -> cellData.getValue().selectedProperty());
+        selectColumn.setCellFactory(CheckBoxTableCell.forTableColumn(selectColumn));
+        selectColumn.setStyle("-fx-alignment: CENTER;");
+        selectColumn.setMinWidth(20);
+        selectColumn.setMaxWidth(20);
+        headerCheckBox.setOnAction(event -> {
+            boolean isSelected = headerCheckBox.isSelected();
+
+            a.clear();
+            for (BookAndBorrow book : tableView.getItems()) {
+                book.setSelected(isSelected);
+            }
+            tableView.refresh(); // Cập nhật bảng
+        });
+
+        TableColumn<BookAndBorrow, String> idColumn = tableColumn("ID", "id", 55, 55, true);
+        TableColumn<BookAndBorrow, String> titleColumn = tableColumn("Tên Sách", "title", tableWidth - 675, 5000, true);
+        TableColumn<BookAndBorrow, String> authorColumn = tableColumn("Tác Giả", "author", 150, 150, true);
+        TableColumn<BookAndBorrow, String> genreColumn = tableColumn("Thể Loại", "genre", 100, 100, true);
+        TableColumn<BookAndBorrow, String> borrowDateColumn = tableColumnDate("Ngày Mượn", "borrowDate", 100, 100);
+        TableColumn<BookAndBorrow, String> dueDateColumn = tableColumnDate("Hạn Trả", "dueDate", 100, 100);
+        TableColumn<BookAndBorrow, String> returnDateColumn = tableColumnDate("Ngày Trả", "returnDate", 100, 100);
+        TableColumn<BookAndBorrow, String> detailCol = new TableColumn<>("Xem Thêm");
+        detailCol.setMinWidth(70);
+        detailCol.setMaxWidth(70);
+        detailCol.setCellValueFactory(new PropertyValueFactory<>("detail"));
+        detailCol.setCellFactory(col -> new TableCell<BookAndBorrow, String>() {
+            private final Label label = new Label("Chi tiết");
+            private final HBox hBox = new HBox(label);
+            {
+                hBox.setAlignment(Pos.CENTER);
+                label.setStyle("-fx-text-fill: #0000FF;"); // Màu chữ
+                // Thêm sự kiện di chuột để gạch chân
+                label.setOnMouseEntered(e -> label.setStyle("-fx-text-fill: #0000FF; -fx-underline: true;"));
+                label.setOnMouseExited(e -> label.setStyle("-fx-text-fill: #0000FF; -fx-underline: false;"));
+
+                // Thiết lập sự kiện nhấp chuột
+                label.setOnMouseClicked(e -> {
+                    BookAndBorrow book = getTableView().getItems().get(getIndex());
+                    library.showBook(book.getId());
+                    System.out.println("Chi tiết cho: " + book.getTitle());
+                });
+            }
+
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setGraphic(null); // Không hiển thị label khi ô trống
+                } else {
+                    label.setText(item);
+                    setGraphic(hBox); // Hiển thị label
+                    setText(null); // Đặt text thành null để không hiển thị văn bản mặc định của ô
+                }
+            }
+        });
+
+        // Thêm tất cả các cột vào bảng
+        tableView.getColumns().addAll(selectColumn, idColumn, titleColumn, authorColumn,
+                genreColumn, borrowDateColumn, returnDateColumn, dueDateColumn, detailCol);
         return tableView;
     }
 

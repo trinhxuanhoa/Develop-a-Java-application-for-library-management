@@ -1,9 +1,9 @@
 package org.example;
 import java.sql.*;
-
+import java.time.LocalDate;
 public class BorrowDAO {
 
-    public static void add(Borrow borrow) {
+    public static void addBorrow(Borrow borrow) {
 
             if(remainingQuantity(borrow.getBookId())>0) {
                 try (Connection conn = DatabaseConnection.connectToLibrary()) {
@@ -12,11 +12,15 @@ public class BorrowDAO {
                         stmt.setString(1, borrow.getUserId());
                         stmt.setString(2, borrow.getBookId());
                         stmt.setObject(3, borrow.getBorrowDate()); // Sử dụng setObject cho LocalDate
-                        stmt.setObject(4, borrow.getReturnDate());
-                        stmt.setObject(5, borrow.getDueDate());
+                        stmt.setObject(4, borrow.getDueDate());
+                        stmt.setObject(5, borrow.getReturnDate());
                         stmt.setString(6, borrow.getStatus());
-                        if (stmt.executeUpdate() > 0)
+                        if (stmt.executeUpdate() > 0) {
                             Noti.showSuccessMessage("Mượn sách thành công");
+                            System.out.println(booksBorrowed(borrow.getUserId()));
+                            UserDAO.updateBorrowed(borrow.getUserId(), booksBorrowed(borrow.getUserId()));
+                            UserDAO.updateReturned(borrow.getUserId(), booksreturnwed(borrow.getUserId()));
+                        }
                     }
                 } catch (SQLException e) {
                     System.err.println("Lỗi khi sql khi thêm mượn sách: " + e.getMessage());
@@ -25,19 +29,6 @@ public class BorrowDAO {
         } else {
                 Noti.showFailureMessage("Sách đã hết rồi");
             }
-    }
-
-    public static boolean delete(int borrowId) {
-        try (Connection conn = DatabaseConnection.connectToLibrary()) {
-            String sql = "DELETE FROM borrow WHERE borrow_id = ?";
-            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setInt(1, borrowId);
-                return stmt.executeUpdate() > 0; // Trả về true nếu xóa thành công
-            }
-        }catch (SQLException e) {
-            System.err.println("Lỗi khi sql khi xóa mượn sách: " + e.getMessage());
-            return false;
-        }
     }
 
     public static boolean update(Borrow borrow) {
@@ -58,26 +49,72 @@ public class BorrowDAO {
         }
     }
 
+    /*public static Borrow output1borrow() {
+        Borrow borrow = new Borrow();
+        try (Connection conn = DatabaseConnection.connectToLibrary()) {
+            String sql = "SELECT * FROM borrow WHERE ";
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            }
+            }
+    }*/
+
     public static boolean returnBook(String userId, String bookId) {
 
         String sql = "UPDATE borrow b "
-                + "SET b.status = ? "
-                + "WHERE b.user_id = ? AND b.book_id = ?";
+                + "SET b.status = ? , b.return_date = ?"
+                + "WHERE b.user_id = ? AND b.book_id = ? AND b.status = 'đã mượn'";
+
         try (Connection connection = DatabaseConnection.connectToLibrary();
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
-            statement.setString(1, "returned");
-            statement.setString(2, userId);
-            statement.setString(3, bookId);
+            if(isBorrowedAndWithinDueDate(userId, bookId))
+                statement.setString(1, "trả đúng hạn");
+            else
+                statement.setString(1, "trả quá hạn");
+
+            statement.setDate(2, java.sql.Date.valueOf(LocalDate.now()));
+            statement.setString(3, userId);
+            statement.setString(4, bookId);
 
             int rowsUpdated = statement.executeUpdate();
-            return rowsUpdated > 0; // Trả về true nếu cập nhật thành công
+
+            if(rowsUpdated > 0) {
+                    UserDAO.updateBorrowed(userId, booksBorrowed(userId));
+                    UserDAO.updateReturned(userId, booksreturnwed(userId));
+
+                return true;
+            }
 
         } catch (SQLException e) {
             e.printStackTrace();
-            return false; // Trả về false nếu có lỗi
         }
+        return false;
     }
+
+// kiểm tra ngay trả có quá hạn ko
+        public static boolean isBorrowedAndWithinDueDate(String userId, String bookId) {
+            String sql = " SELECT due_date FROM borrow" +
+                    " WHERE user_id = ? AND book_id = ? AND status = 'đã mượn' ";
+
+            try (Connection connection = DatabaseConnection.connectToLibrary();
+                 PreparedStatement statement = connection.prepareStatement(sql)) {
+                statement.setString(1, userId);
+                statement.setString(2, bookId);
+
+             ResultSet resultSet = statement.executeQuery();
+                    if (resultSet.next()) {
+                        Date dueDate = resultSet.getDate("due_date");
+                        if (dueDate != null) {
+                            LocalDate today = LocalDate.now();
+                            return !today.isAfter(dueDate.toLocalDate());
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return false;
+        }
 
     public static boolean updateQuantity(String bookId,  int quantity) {
         if(quantity>0)
@@ -97,7 +134,7 @@ public class BorrowDAO {
 
     public static boolean isBorrowed(String bookId, String userId) {
         try (Connection conn = DatabaseConnection.connectToLibrary()) {
-            String sql = "SELECT COUNT(*) FROM borrow WHERE book_id = ? AND user_id = ? AND status = 'borrowed'";
+            String sql = "SELECT COUNT(*) FROM borrow WHERE book_id = ? AND user_id = ? AND status = 'đã mượn'";
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                 stmt.setString(1, bookId);
                 stmt.setString(2, userId);
@@ -113,6 +150,43 @@ public class BorrowDAO {
             System.err.println("lỗi khi kiểm tra sách đã mượn: " + e.getMessage());
         }
         return false; // Trả về false nếu không có bản ghi nào hoặc xảy ra lỗi
+    }
+
+    public static int booksBorrowed(String userId) {
+        try (Connection conn = DatabaseConnection.connectToLibrary()) {
+            String sql = "SELECT COUNT(*) FROM borrow WHERE user_id = ? AND status = 'đã mượn'";
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setString(1, userId);
+
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        int count = rs.getInt(1);
+                        return count; // Nếu có ít nhất 1 bản ghi, trả về true
+                    }
+                }
+            }
+        }catch (SQLException e) {
+            System.err.println("lỗi khi kiểm tra sách đã mượn: " + e.getMessage());
+        }
+        return 0; // Trả về false nếu không có bản ghi nào hoặc xảy ra lỗi
+    }
+    public static int booksreturnwed(String userId) {
+        try (Connection conn = DatabaseConnection.connectToLibrary()) {
+            String sql = "SELECT COUNT(*) FROM borrow WHERE user_id = ? AND (status = 'trả đúng hạn' OR status = 'trả quá hạn')";
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setString(1, userId);
+
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        int count = rs.getInt(1);
+                        return count; // Nếu có ít nhất 1 bản ghi, trả về true
+                    }
+                }
+            }
+        }catch (SQLException e) {
+            System.err.println("lỗi khi kiểm tra sách đã mượn: " + e.getMessage());
+        }
+        return 0; // Trả về false nếu không có bản ghi nào hoặc xảy ra lỗi
     }
 
     public static int downloads(String bookId) {

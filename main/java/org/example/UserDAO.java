@@ -18,8 +18,8 @@ public class UserDAO {
     public void addUser(User user) {
         String sql = "INSERT INTO users (user_id, full_name, date_of_birth, address, " +
                 "phone_number, email, username, password_hash, membership_id, " +
-                "join_date, membership_status, total_books_borrowed, overdue_count, role, " +
-                "card_registration_date, expiry_date, account_status, avatar, gender, department, class)" +
+                "join_date, membership_status, total_books_borrowed, total_books_returned, role, " +
+                "card_registration_date, expiry_date, account_status, avatar, gender, department, class_name)" +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DatabaseConnection.connectToLibrary();
@@ -37,7 +37,7 @@ public class UserDAO {
             setDate(pstmt,10, user.getJoinDate());
             pstmt.setString(11, user.getMembershipStatus());
             pstmt.setInt(12, user.getTotalBooksBorrowed());
-            pstmt.setInt(13, user.getOverdueCount());
+            pstmt.setInt(13, user.gettotalBooksReturned());
             pstmt.setString(14, user.getRole());
             setDate(pstmt,15, user.getCardRegistrationDate());
             setDate(pstmt,16, user.getExpiryDate());
@@ -64,7 +64,7 @@ public class UserDAO {
         String sql = "UPDATE users SET full_name = ?, date_of_birth = ?, address = ?, " +
                 "phone_number = ?, email = ?, username = ?, password_hash = ?, " +
                 "membership_id = ?, join_date = ?, membership_status = ?, " +
-                "total_books_borrowed = ?, overdue_count = ?, role = ? " +
+                "total_books_borrowed = ?, total_books_returned = ?, role = ? " +
                 "WHERE user_id = ?";
 
         try (Connection conn = DatabaseConnection.connectToLibrary();
@@ -81,7 +81,7 @@ public class UserDAO {
             pstmt.setDate(9, java.sql.Date.valueOf(user.getJoinDate()));
             pstmt.setString(10, user.getMembershipStatus());
             pstmt.setInt(11, user.getTotalBooksBorrowed());
-            pstmt.setInt(12, user.getOverdueCount());
+            pstmt.setInt(12, user.gettotalBooksReturned());
             pstmt.setString(13, user.getRole());
             pstmt.setString(14, user.getUserId()); // Sử dụng userId để xác định người dùng cần sửa
 
@@ -105,7 +105,7 @@ public class UserDAO {
         e.printStackTrace();
     }
 }
-
+// lay 1 gia tri
     public User output1Value(String id) {
         User user = new User();
         try (Connection connection = DatabaseConnection.connectToLibrary()) {
@@ -126,14 +126,14 @@ public class UserDAO {
                 user.setJoinDate(getDate(resultSet,"join_date"));
                 user.setMembershipStatus(resultSet.getString("membership_status"));
                 user.setTotalBooksBorrowed(resultSet.getInt("total_books_borrowed"));
-                user.setOverdueCount(resultSet.getInt("overdue_count"));
+                user.settotalBooksReturned(resultSet.getInt("total_books_returned"));
                 user.setRole(resultSet.getString("role"));
                 user.setCardRegistrationDate(getDate(resultSet,"card_registration_date"));
                 user.setExpiryDate(getDate(resultSet,"expiry_date"));
                 user.setAccountStatus(resultSet.getString("account_status"));
                 user.setGender(resultSet.getString("gender"));
                 user.setDepartment(resultSet.getString("department"));
-                user.setClassName(resultSet.getString("class"));
+                user.setClassName(resultSet.getString("class_name"));
                 try {
                     if (resultSet.getBytes("avatar")!=null)
                         user.setAvatar(new Image(new ByteArrayInputStream(resultSet.getBytes("qr_code"))));
@@ -147,6 +147,21 @@ public class UserDAO {
         return user;
     }
 
+    public static String gender(String userId) {
+        try (Connection connection = DatabaseConnection.connectToLibrary()) {
+            String sql = "SELECT gender FROM users WHERE user_id = ?";
+            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                statement.setString(1, userId);
+                ResultSet rs = statement.executeQuery();
+                rs.next();
+                return rs.getString(1);
+            }
+            } catch (SQLException e) {
+            System.out.println("loi khi set gioi tinh: "+e.getMessage());
+            return "other";
+        }
+    }
+    // tim nguoi dung
     public ResultSet findUsers(User user) {
 
         boolean checkAnd = false;
@@ -192,10 +207,10 @@ public class UserDAO {
                 checkAnd = true;
                 System.out.println("hoa5");
             }
-            if (user.getOverdueCount()!=null) {
+            if (user.gettotalBooksReturned()!=null) {
                 if (checkAnd)
                     sql += " AND ";
-                String sqlGenre = "overdue_count = " + user.getOverdueCount();
+                String sqlGenre = "total_books_returned = " + user.gettotalBooksReturned();
                 sql += sqlGenre;
                 checkAnd = true;
                 System.out.println("hoa6");
@@ -219,7 +234,7 @@ public class UserDAO {
         }
         return null;
     }
-
+// kiểm tra acc có tn tại ko
     public static boolean checkAccount(String username, String password) {
         try (Connection connection = DatabaseConnection.connectToLibrary()) {
             String sql = "SELECT * FROM users WHERE username = ? AND password_hash = ?";
@@ -244,7 +259,7 @@ public class UserDAO {
         }
         return false;  // Nếu không có kết quả, tài khoản không tồn tại
     }
-
+//họ tên
     public static String accountName(String user_id) {
         String sql = "SELECT full_name FROM users WHERE user_id = ?";
         try (Connection conn = DatabaseConnection.connectToLibrary();
@@ -264,7 +279,61 @@ public class UserDAO {
         }
         return ""; // Trả về chuỗi rỗng nếu không tìm thấy người dùng
     }
+// thêm luợt mượn
+public static void updateBorrowed(String user_id, int borrowed) {
+    String sql = "UPDATE users SET total_books_borrowed = ? WHERE user_id = ?";
 
+    try (Connection conn = DatabaseConnection.connectToLibrary();
+
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        pstmt.setInt(1,borrowed);
+        pstmt.setString(2, user_id); // Sử dụng userId để xác định người dùng cần sửa
+
+        if(pstmt.executeUpdate()>0) // Thực thi câu lệnh SQL
+        System.out.println("update luot mươn thanh công");
+        else
+        System.out.println("update luot mươn ko thanh công");
+    } catch (SQLException e) {
+        e.printStackTrace();
+        System.out.println("update luot mươn ko thanh công" + e.getMessage());
+    }
+}
+// thêm luojt trả
+public static void updateReturned(String user_id, int returned) {
+    String sql = "UPDATE users SET total_books_returned = ? WHERE user_id = ?";
+
+    try (Connection conn = DatabaseConnection.connectToLibrary();
+
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        pstmt.setInt(1,returned);
+        pstmt.setString(2, user_id); // Sử dụng userId để xác định người dùng cần sửa
+
+        if(pstmt.executeUpdate()>0) // Thực thi câu lệnh SQL
+            System.out.println("update luot trả thanh công");
+        else
+            System.out.println("update luot trả ko thanh công");
+    } catch (SQLException e) {
+        e.printStackTrace();
+        System.out.println("update luot trả ko thanh công" + e.getMessage());
+    }
+}
+//lấy chức vụ
+    public  static String getRole(String userId) {
+        String sql = "SELECT role FROM users WHERE user_id = ?";
+        try (Connection conn = DatabaseConnection.connectToLibrary();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, userId);
+
+            ResultSet rs = pstmt.executeQuery();
+            rs.next();
+            return rs.getString("role");
+
+        } catch (SQLException e) {
+            System.out.println("loi khi lay chuc vu" + e.getMessage());
+            return "";
+        }
+    }
 
     public AtomicBoolean isCheck() {return check;}
     public void setCheck(AtomicBoolean check) {this.check=check;}

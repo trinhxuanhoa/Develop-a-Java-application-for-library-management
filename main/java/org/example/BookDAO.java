@@ -228,13 +228,134 @@ public class BookDAO {
         }
         return null;
     }
-    public ResultSet findBooksBorrow(Book book, String user_id, int localTable) {
+
+    public ResultSet findBooksUserBorrow(Book book, String user_id, String fullName, int localTable) {
         try {
             connection = DatabaseConnection.connectToLibrary();
 
             // Khởi tạo câu lệnh SQL cơ bản
             StringBuilder sql = new StringBuilder(
-                    "SELECT books.*, borrow.status FROM books " +
+                    "SELECT books.id, books.title, books.author, books.genre, " +
+                            "borrow.borrow_date, borrow.return_date, borrow.due_date, borrow.status " +
+                            "FROM books " +
+                            "JOIN borrow ON books.id = borrow.book_id " +
+                            "JOIN users ON users.user_id = borrow.user_id "
+            );
+
+            // Danh sách tham số
+            List<Object> parameters = new ArrayList<>();
+
+            // Thêm điều kiện tìm kiếm theo tiêu chí sách
+            boolean firstCondition = true;
+
+            if (!book.getTitle().isEmpty()) {
+                if (firstCondition) {
+                    sql.append(" WHERE");
+                    firstCondition = false;
+                } else {
+                    sql.append(" AND");
+                }
+                sql.append(" books.title = ?");
+                parameters.add(book.getTitle());
+            }
+
+            if (!book.getAuthor().isEmpty()) {
+                if (firstCondition) {
+                    sql.append(" WHERE");
+                    firstCondition = false;
+                } else {
+                    sql.append(" AND");
+                }
+                sql.append(" books.author = ?");
+                parameters.add(book.getAuthor());
+            }
+
+            if (!book.getGenre().isEmpty()) {
+                if (firstCondition) {
+                    sql.append(" WHERE");
+                    firstCondition = false;
+                } else {
+                    sql.append(" AND");
+                }
+                sql.append(" books.genre = ?");
+                parameters.add(book.getGenre());
+            }
+
+            // Thêm điều kiện tìm kiếm theo user_id và full_name
+            if (!user_id.isEmpty()) {
+                if (firstCondition) {
+                    sql.append(" WHERE");
+                    firstCondition = false;
+                } else {
+                    sql.append(" AND");
+                }
+                sql.append(" users.user_id = ?");
+                parameters.add(user_id);
+            }
+
+            if (!fullName.isEmpty()) {
+                if (firstCondition) {
+                    sql.append(" WHERE");
+                    firstCondition = false;
+                } else {
+                    sql.append(" AND");
+                }
+                sql.append(" users.full_name LIKE ?");
+                parameters.add("%" + fullName + "%");  // Dùng LIKE để tìm kiếm tên người dùng gần đúng
+            }
+
+            // Thêm điều kiện trạng thái mượn trả
+            if (localTable == 0) {
+                if (firstCondition) {
+                    sql.append(" WHERE");
+                    firstCondition = false;
+                } else {
+                    sql.append(" AND");
+                }
+                sql.append(" borrow.status = 'đã mượn'");
+            } else if (localTable == 1) {
+                if (firstCondition) {
+                    sql.append(" WHERE");
+                    firstCondition = false;
+                } else {
+                    sql.append(" AND");
+                }
+                sql.append(" borrow.status = 'trả đúng hạn'");
+            } else if (localTable == 2) {
+                if (firstCondition) {
+                    sql.append(" WHERE");
+                    firstCondition = false;
+                } else {
+                    sql.append(" AND");
+                }
+                sql.append(" borrow.status = 'trả quá hạn'");
+            }
+
+            // Chuẩn bị câu lệnh
+            statement = connection.prepareStatement(sql.toString());
+
+            // Gán các tham số
+            for (int i = 0; i < parameters.size(); i++) {
+                statement.setObject(i + 1, parameters.get(i));
+            }
+
+            // Thực thi câu lệnh
+            return statement.executeQuery();
+
+        } catch (SQLException e) {
+            System.out.println("Lỗi khi tìm sách: " + e.getMessage());
+        }
+        return null;
+    }
+    public ResultSet findBooksBorrowed(String userId, Book book, String keyword, int localTable) {
+        try {
+            connection = DatabaseConnection.connectToLibrary();
+
+            // Khởi tạo câu lệnh SQL cơ bản
+            StringBuilder sql = new StringBuilder(
+                    "SELECT books.id, books.title, books.author, books.genre, " +
+                            "borrow.borrow_date, borrow.return_date, borrow.due_date, borrow.status " +
+                            "FROM books " +
                             "JOIN borrow ON books.id = borrow.book_id " +
                             "JOIN users ON users.user_id = borrow.user_id " +
                             "WHERE users.user_id = ?"
@@ -242,29 +363,41 @@ public class BookDAO {
 
             // Danh sách tham số
             List<Object> parameters = new ArrayList<>();
-            parameters.add(user_id);
+            parameters.add(userId);
 
-            // Thêm điều kiện tìm kiếm theo tiêu chí sách
-            if (!book.getTitle().isEmpty()) {
-                sql.append(" AND books.title = ?");
-                parameters.add(book.getTitle());
+            // Thêm điều kiện tìm kiếm theo thuộc tính của sách (nếu có)
+            if (book != null) {
+                if (book.getTitle() != null && !book.getTitle().isEmpty()) {
+                    sql.append(" AND books.title LIKE ?");
+                    parameters.add("%" + book.getTitle() + "%"); // Tìm kiếm gần đúng theo tiêu đề
+                    //System.out.println("Title search: " + book.getTitle());
+                }
+                if (book.getAuthor() != null && !book.getAuthor().isEmpty()) {
+                    sql.append(" AND books.author LIKE ?");
+                    parameters.add("%" + book.getAuthor() + "%"); // Tìm kiếm gần đúng theo tác giả
+                    //System.out.println("Author search: " + book.getAuthor());
+                }
+                if (book.getGenre() != null && !book.getGenre().isEmpty()) {
+                    sql.append(" AND books.genre LIKE ?");
+                    parameters.add("%" + book.getGenre() + "%"); // Tìm kiếm gần đúng theo thể loại
+                    //System.out.println("Genre search: " + book.getGenre());
+                }
             }
-            if (!book.getAuthor().isEmpty()) {
-                sql.append(" AND books.author = ?");
-                parameters.add(book.getAuthor());
-            }
-            if (!book.getGenre().isEmpty()) {
-                sql.append(" AND books.genre = ?");
-                parameters.add(book.getGenre());
-            }
+
 
             // Thêm điều kiện trạng thái mượn trả
             if (localTable == 0) {
-                sql.append(" AND borrow.status = 'borrowed'");
+                sql.append(" AND borrow.status = 'đã mượn'");
             } else if (localTable == 1) {
-                sql.append(" AND borrow.status = 'returned'");
+                sql.append(" AND borrow.status = 'trả đúng hạn'");
             } else if (localTable == 2) {
-                sql.append(" AND borrow.status = 'not borrowed'");
+                sql.append(" AND borrow.status = 'trả quá hạn'");
+            }
+
+            // Thêm điều kiện tìm kiếm từ khóa (nếu có)
+            if (keyword != null && !keyword.isEmpty()) {
+                sql.append(" AND CONCAT_WS(' ', books.id, books.title, books.author, books.genre) LIKE ?");
+                parameters.add("%" + keyword + "%");
             }
 
             // Chuẩn bị câu lệnh
@@ -284,16 +417,12 @@ public class BookDAO {
         return null;
     }
 
+
+
     public ResultSet findBooksUtimate(String keyword) {
 
             try  {
                 connection = DatabaseConnection.connectToLibrary();
-                /*CAST(id AS CHAR), ' ', title, ' ', author, ' ', publisher, ' ',
-                        CAST(year AS CHAR), ' ', genre, ' ',
-                        CAST(quantity AS CHAR), ' ', edition, ' ',
-                        CAST(reprint AS CHAR), ' ', CAST(price AS CHAR), ' ',
-                        language, ' ', status, ' ', summary, ' ', CAST(chapter AS CHAR)*/
-
                 String   sql = "SELECT id,title,author,cover_image FROM books \n" +
                             "WHERE CONCAT_WS(' ', id, title, author, publisher, year," +
                             " genre, quantity, edition, reprint, price, language," +
@@ -313,43 +442,57 @@ public class BookDAO {
             }
         return null;
     }
-    public ResultSet findBooksUltimateBorrow(String keyword, int localTable) {
+    public ResultSet findBooksUserBorrowed(Book book, String userId, String fullName, String keyword, int localTable) {
         try {
             connection = DatabaseConnection.connectToLibrary();
 
-            // Base SQL query
+            // Khởi tạo câu lệnh SQL cơ bản
             StringBuilder sql = new StringBuilder(
-                    "SELECT books.*, borrow.status " +
+                    "SELECT books.id, books.title, books.author, books.genre, " +
+                            "borrow.borrow_date, borrow.return_date, borrow.due_date, borrow.status " +
                             "FROM books " +
-                            "LEFT JOIN borrow ON books.id = borrow.book_id"
+                            "JOIN borrow ON books.id = borrow.book_id " +
+                            "JOIN users ON users.user_id = borrow.user_id "
+
             );
 
             // Danh sách tham số
             List<Object> parameters = new ArrayList<>();
+            parameters.add(userId);
 
-            // Điều kiện tìm kiếm
-            List<String> conditions = new ArrayList<>();
+            // Thêm điều kiện tìm kiếm theo thuộc tính của sách (nếu có)
+            if (book != null) {
+                if (book.getTitle() != null && !book.getTitle().isEmpty()) {
+                    sql.append(" AND books.title LIKE ?");
+                    parameters.add("%" + book.getTitle() + "%"); // Tìm kiếm gần đúng theo tiêu đề
+                    //System.out.println("Title search: " + book.getTitle());
+                }
+                if (book.getAuthor() != null && !book.getAuthor().isEmpty()) {
+                    sql.append(" AND books.author LIKE ?");
+                    parameters.add("%" + book.getAuthor() + "%"); // Tìm kiếm gần đúng theo tác giả
+                    //System.out.println("Author search: " + book.getAuthor());
+                }
+                if (book.getGenre() != null && !book.getGenre().isEmpty()) {
+                    sql.append(" AND books.genre LIKE ?");
+                    parameters.add("%" + book.getGenre() + "%"); // Tìm kiếm gần đúng theo thể loại
+                    //System.out.println("Genre search: " + book.getGenre());
+                }
+            }
 
-            // Thêm điều kiện trạng thái nếu cần
+
+            // Thêm điều kiện trạng thái mượn trả
             if (localTable == 0) {
-                conditions.add("borrow.status = 'borrowed'");
+                sql.append(" AND borrow.status = 'đã mượn'");
             } else if (localTable == 1) {
-                conditions.add("borrow.status = 'returned'");
+                sql.append(" AND borrow.status = 'trả đúng hạn'");
             } else if (localTable == 2) {
-                conditions.add("borrow.status = 'not borrowed'");
+                sql.append(" AND borrow.status = 'trả quá hạn'");
             }
 
-            // Thêm điều kiện tìm kiếm từ khóa nếu có
-            if (!keyword.isEmpty()) {
-                conditions.add("CONCAT_WS(' ', books.id, books.title, books.author, books.publisher, " +
-                        "books.year, books.genre, books.quantity, books.edition, books.reprint, " +
-                        "books.price, books.language, books.status, books.summary, books.chapter) LIKE ?");
+            // Thêm điều kiện tìm kiếm từ khóa (nếu có)
+            if (keyword != null && !keyword.isEmpty()) {
+                sql.append(" AND CONCAT_WS(' ', books.id, books.title, books.author, books.genre) LIKE ?");
                 parameters.add("%" + keyword + "%");
-            }
-
-            // Gắn các điều kiện
-            if (!conditions.isEmpty()) {
-                sql.append(" WHERE ").append(String.join(" AND ", conditions));
             }
 
             // Chuẩn bị câu lệnh

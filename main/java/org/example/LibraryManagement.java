@@ -1,8 +1,6 @@
 package org.example;
 
 import com.google.zxing.WriterException;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -35,18 +33,12 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javafx.scene.shape.Circle;
-import java.io.*;
 import javafx.scene.shape.Line;
-import javafx.util.Duration;
-import javafx.geometry.Insets;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.input.KeyCode;
+
 import java.time.LocalDateTime;
 import java.util.concurrent.atomic.AtomicInteger;
-import javafx.application.Platform;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 
 public class LibraryManagement {
 
@@ -413,6 +405,7 @@ public class LibraryManagement {
         TextField chapterField = (TextField)chapterVBox.getChildren().get(1);
         TextField pagesField = (TextField)pagesVBox.getChildren().get(1);
         TextField downloadsField = (TextField)downloadsVBox.getChildren().get(1);
+        downloadsField.setEditable(false);
 
         isbnField.setText(book.getId());
          titleField.setText(book.getTitle());
@@ -805,14 +798,16 @@ public class LibraryManagement {
             Borrow borrow = new Borrow();
             borrow.setBookId(id);
             borrow.setUserId(interfaces.userId());
+
             LocalDate borrowDate = LocalDate.now();
             int loanPeriodDays = 30; // Số ngày được mượn
+
             borrow.setBorrowDate(borrowDate);
-            borrow.setStatus("borrowed");
+            borrow.setStatus("đã mượn");
             borrow.setDueDate(borrow.calculateDueDate(borrowDate, loanPeriodDays));
 
             if(!BorrowDAO.isBorrowed(id, interfaces.userId())) {
-                    BorrowDAO.add(borrow);
+                    BorrowDAO.addBorrow(borrow);
                     if(BorrowDAO.updateQuantity(id, BorrowDAO.remainingQuantity(id) - 1))
                     bookDAO.updateDownload(id, BorrowDAO.downloads(id));
                 }
@@ -1030,7 +1025,7 @@ public class LibraryManagement {
         TextField emailField = (TextField)emailVBox.getChildren().get(1);
         TextField usernameField = (TextField)usernameVBox.getChildren().get(1);
         TextField passwordHashField = (TextField)passwordHashVBox.getChildren().get(1);
-        TextField membershipjoinDateId = (TextField)membershipIdVBox.getChildren().get(1);
+        TextField membershipIdField = (TextField)membershipIdVBox.getChildren().get(1);
         TextField joinDateField = (TextField)joinDateVBox.getChildren().get(1);
         ComboBox membershipStatusField = (ComboBox)membershipStatusVBox.getChildren().get(1);
         ComboBox roleField = (ComboBox)roleVBox.getChildren().get(1);
@@ -1102,7 +1097,6 @@ public class LibraryManagement {
         deleteButton.setLayoutX(1400);
         deleteButton.setLayoutY(580);
         deleteButton.setMinSize(70,40);
-        deleteButton.setOnAction(e -> main.showInterfaceScene());
         deleteButton.setStyle("-fx-background-color: #0080FF; -fx-text-fill: #FFFFFF;-fx-font-size: 15px; -fx-font-weight: normal;");
         deleteButton.setOnMouseEntered(e-> deleteButton.setStyle("-fx-background-color: #004C99; -fx-text-fill: #FFFFFF;-fx-font-size: 15px; -fx-font-weight: bold;"));
         deleteButton.setOnMouseExited(e-> deleteButton.setStyle("-fx-background-color: #0080FF; -fx-text-fill: #FFFFFF;-fx-font-size: 15px; -fx-font-weight: normal;"));
@@ -1133,7 +1127,7 @@ public class LibraryManagement {
            emailField.clear();
            usernameField.clear();
            passwordHashField.clear();
-           membershipjoinDateId.clear();
+           membershipIdField.clear();
            joinDateField.clear();
            expiryDateField.clear();
            cardRegistrationDateField.clear();
@@ -1173,7 +1167,7 @@ public class LibraryManagement {
                     String email = emailField.getText();
                     String username = usernameField.getText();
                     String passwordHash = passwordHashField.getText();
-                    String membershipId = membershipjoinDateId.getText();
+                    String membershipId = membershipIdField.getText();
                     LocalDate joinDate =  parseDate(joinDateField.getText(), "Lỗi ngày");
                     String membershipStatus = (String) membershipStatusField.getValue();
                     String role = (String) roleField.getValue();
@@ -1211,13 +1205,244 @@ public class LibraryManagement {
         Scene scene = new Scene(root, screenWidth, screenHeight);
         primaryStage.setScene(scene);
     }
+    public void updateUser(User user) {
+
+        VBox userIdVBox = vBox("ID người dùng");
+        VBox fullNameVBox = vBox("Họ và tên");
+        VBox dateOfBirthVBox = vBox("Ngày sinh");
+        VBox addressVBox = vBox("Địa Chỉ");
+        VBox phoneNumberVBox = vBox("Số Điện Thoại");
+        VBox emailVBox = vBox("Email");
+        VBox usernameVBox = vBox("Tên đăng nhập");
+        VBox passwordHashVBox = vBox("Mật khẩu");
+        VBox membershipIdVBox = vBox("Mã thẻ thư viện");
+        VBox joinDateVBox = vBox("Ngày tạo tài khoản");
+        VBox membershipStatusVBox = comboBox("Trạng thái thẻ",  new String[] {"active","expired","'locked'"});
+        VBox roleVBox = comboBox("Chức vụ",  new String[] {"member","librarian","admin"});
+        VBox expiryDateVBox = vBox("Ngày hết hạn thẻ");
+        VBox cardRegistrationDateVBox = vBox("Ngày đăng kí thẻ");
+        VBox accountStatusVBox = comboBox("Trạng thái tài khoản",  new String[] {"active","inactive"});
+        VBox genderVBox = comboBox("Giới tính",  new String[] {"other","male","female"});
+        VBox departmentVBox = vBox("Khoa");
+        VBox classVBox = vBox("Lớp"); // 18 cái
+
+        TextField userIdField = (TextField)userIdVBox.getChildren().get(1);
+        TextField fullNameField = (TextField)fullNameVBox.getChildren().get(1);
+        TextField dateOfBirthField = (TextField)dateOfBirthVBox.getChildren().get(1);
+        TextField addressField = (TextField)addressVBox.getChildren().get(1);
+        TextField phoneNumberField = (TextField)phoneNumberVBox.getChildren().get(1);
+        TextField emailField = (TextField)emailVBox.getChildren().get(1);
+        TextField usernameField = (TextField)usernameVBox.getChildren().get(1);
+        TextField passwordHashField = (TextField)passwordHashVBox.getChildren().get(1);
+        TextField membershipIdField = (TextField)membershipIdVBox.getChildren().get(1);
+        TextField joinDateField = (TextField)joinDateVBox.getChildren().get(1);
+        ComboBox membershipStatusField = (ComboBox)membershipStatusVBox.getChildren().get(1);
+        ComboBox roleField = (ComboBox)roleVBox.getChildren().get(1);
+        TextField expiryDateField = (TextField)expiryDateVBox.getChildren().get(1);
+        TextField cardRegistrationDateField = (TextField)cardRegistrationDateVBox.getChildren().get(1);
+        ComboBox accountStatusField = (ComboBox)accountStatusVBox.getChildren().get(1);
+        ComboBox genderField = (ComboBox)genderVBox.getChildren().get(1);
+        TextField departmentField = (TextField)departmentVBox.getChildren().get(1);
+        TextField classField = (TextField)classVBox.getChildren().get(1);
+
+        // Gán giá trị ban đầu từ đối tượng User
+        userIdField.setText(user.getUserId());
+        fullNameField.setText(user.getFullName());
+        dateOfBirthField.setText((user.getDateOfBirth()!=null)?user.getDateOfBirth().toString():"");
+        addressField.setText(user.getAddress());
+        phoneNumberField.setText(user.getPhoneNumber());
+        emailField.setText(user.getEmail());
+        usernameField.setText(user.getUsername());
+        passwordHashField.setText(user.getPasswordHash());
+        membershipIdField.setText(user.getMembershipId());
+        joinDateField.setText((user.getJoinDate()!=null)?user.getJoinDate().toString():"");
+        membershipStatusField.setValue(user.getMembershipStatus());
+        roleField.setValue(user.getRole());
+        expiryDateField.setText((user.getExpiryDate()!=null)?user.getExpiryDate().toString():"");
+        cardRegistrationDateField.setText((user.getCardRegistrationDate()!=null)?user.getCardRegistrationDate().toString():"");
+        accountStatusField.setValue(user.getAccountStatus());
+        genderField.setValue(user.getGender());
+        departmentField.setText(user.getDepartment());
+        classField.setText(user.getClassName());
+        Image avatar = user.getAvatar();
+
+        //tạo tiêu đề
+        Label addFeild = new Label("Cập nhật thông tin người dùng");
+        addFeild.setStyle("-fx-font-size: 20px;-fx-font-weight: bold;");
+        addFeild.setLayoutX(70);
+        addFeild.setLayoutY(60);
+//ô bên noài
+        Rectangle whiteRectangle = rectangle(screenWidth-100, screenHeight-100,Color.WHITE,
+                Color.BLACK,2,10,10,1,60,50);
+
+        // Tạo một nút để mở hộp thoại chọn file
+        Button uploadButton = new Button("Chọn Ảnh");
+        uploadButton.setMinWidth(300);
+        uploadButton.setStyle("-fx-background-color: #0080FF; -fx-text-fill: #FFFFFF;-fx-font-size: 12px; -fx-font-weight: bold;");
+        uploadButton.setOnMouseEntered(e-> uploadButton.setStyle("-fx-background-color: #004C99; -fx-text-fill: #FFFFFF;-fx-font-size: 12px; -fx-font-weight: bold;"));
+        uploadButton.setOnMouseExited(e-> uploadButton.setStyle("-fx-background-color: #0080FF; -fx-text-fill: #FFFFFF;-fx-font-size: 12px; -fx-font-weight: bold;"));
+        ImageView imageView = new ImageView(); // Tạo một ImageView để hiển thị ảnh
+        imageView.setFitWidth(300);
+        imageView.setFitHeight(400);
+        Rectangle imgRectangle = rectangle(225,300,Color.WHITE,Color.BLACK,
+                1,0,0,1,0,0);
+        if(avatar!=null) {
+            imageView.setImage(avatar);
+        } else {
+            Random random = new Random();
+            int i = random.nextInt(2);
+            String av = UserDAO.gender(userIdField.getText());
+            if(av.compareTo("other")==0) {
+                av = "male" + i;
+            } else {
+                av +=i;
+            }
+            imageView.setImage(new Image("file:C:/Users/Dell/IdeaProjects/library/src/main/image/" + av + ".jpg"));
+        }
+
+        VBox imageVBox = new VBox(uploadButton, imageView);
+        imageVBox.getChildren().add(new Label("ID người dùng: " + userIdField.getText()));
+        imageVBox.setAlignment(Pos.CENTER);
+        imageVBox.setLayoutX(1150);
+        imageVBox.setLayoutY(95);
+        //hoạt động nút tạo qr
+        uploadButton.setOnAction(e -> {
+            if(userIdField.getText().isEmpty())
+                Noti.showErrorMessage("Xin hãy nhập ID người dùng trước", primaryStage);
+            else {
+                FileChooser fileChooser = new FileChooser(); // Khởi tạo FileChooser
+                fileChooser.getExtensionFilters().addAll(
+                        new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.gif")
+                );   // Thiết lập các loại file cho phép chọn
+                File selectedFile = fileChooser.showOpenDialog(primaryStage);  // Hiển thị hộp thoại chọn file và lưu file được chọn
+                if (selectedFile != null) {
+                    Image image = new Image(selectedFile.toURI().toString()); // Tạo đối tượng Image từ file đã chọn
+                    imageView.setImage(image); // Hiển thị ảnh lên ImageView
+                    if (imageVBox.getChildren().contains(imgRectangle))
+                        imageVBox.getChildren().set(1, imageView);
+                    imageVBox.setSpacing(0);
+                    imageVBox.getChildren().set(2, new Label("ID người dùng: " + userIdField.getText()));
+                }
+            }
+        });
+
+        VBox vBoxLeft = new VBox(15);
+        vBoxLeft.getChildren().addAll(fullNameVBox, genderVBox, dateOfBirthVBox, departmentVBox,
+                classVBox,addressVBox, phoneNumberVBox, emailVBox,accountStatusVBox);
+        VBox vBoxRight = new VBox(15);
+        vBoxRight.getChildren().addAll(userIdVBox,usernameVBox, passwordHashVBox,roleVBox,joinDateVBox,
+                membershipIdVBox, cardRegistrationDateVBox, expiryDateVBox, membershipStatusVBox);
+
+        Button deleteButton = new Button("Xóa");
+        deleteButton.setLayoutX(1400);
+        deleteButton.setLayoutY(580);
+        deleteButton.setMinSize(70,40);
+        deleteButton.setStyle("-fx-background-color: #0080FF; -fx-text-fill: #FFFFFF;-fx-font-size: 15px; -fx-font-weight: normal;");
+        deleteButton.setOnMouseEntered(e-> deleteButton.setStyle("-fx-background-color: #004C99; -fx-text-fill: #FFFFFF;-fx-font-size: 15px; -fx-font-weight: bold;"));
+        deleteButton.setOnMouseExited(e-> deleteButton.setStyle("-fx-background-color: #0080FF; -fx-text-fill: #FFFFFF;-fx-font-size: 15px; -fx-font-weight: normal;"));
+
+        Button backButton = new Button("Thoát");
+        backButton.setLayoutX(1400);
+        backButton.setLayoutY(640);
+        backButton.setMinSize(70,40);
+        backButton.setOnAction(e -> main.showInterfaceScene());
+        backButton.setStyle("-fx-background-color: #FF0000; -fx-text-fill: #FFFFFF;-fx-font-size: 15px; -fx-font-weight: normal;");
+        backButton.setOnMouseEntered(e-> backButton.setStyle("-fx-background-color: #CC0000; -fx-text-fill: #FFFFFF;-fx-font-size: 15px; -fx-font-weight: bold;"));
+        backButton.setOnMouseExited(e-> backButton.setStyle("-fx-background-color: #FF0000; -fx-text-fill: #FFFFFF;-fx-font-size: 15px; -fx-font-weight: normal;"));
+
+        Button addButton = new Button("Lưu");
+        addButton.setLayoutX(1400);
+        addButton.setLayoutY(700);
+        addButton.setMinSize(70,40);
+        addButton.setStyle("-fx-background-color: #0080FF; -fx-text-fill: white;-fx-font-size: 15px; -fx-font-weight: normal;");
+        addButton.setOnMouseEntered(e-> addButton.setStyle("-fx-background-color: #004C99; -fx-text-fill: white;-fx-font-size: 15px; -fx-font-weight: bold;"));
+        addButton.setOnMouseExited(e-> addButton.setStyle("-fx-background-color: #0080FF; -fx-text-fill: white;-fx-font-size: 15px; -fx-font-weight: normal;"));
+
+        deleteButton.setOnAction(e->{
+           Noti.showConfirmationDialog("Xác nhận xóa",
+                   "Bạn có chắc muốn toàn bộ?",
+                   "Hành động này không thể hoàn tác!");
+            userIdField.clear();
+            fullNameField.clear();
+            dateOfBirthField.clear();
+            addressField.clear();
+            phoneNumberField.clear();
+            emailField.clear();
+            usernameField.clear();
+            passwordHashField.clear();
+            membershipIdField.clear();
+            joinDateField.clear();
+            expiryDateField.clear();
+            cardRegistrationDateField.clear();
+            departmentField.clear();
+            classField.clear();
+
+imageVBox.getChildren().set(1, imgRectangle);
+imageVBox.setSpacing(50);
+imageVBox.getChildren().set(2,new Label(""));
+
+        });
+
+        addButton.setOnAction(e-> {
+            if (userIdField.getText().isEmpty())
+                Noti.showErrorMessage("ID không được để trống", primaryStage);
+            else if (fullNameField.getText().isEmpty())
+                Noti.showErrorMessage("Tên Người dùng không được để trống", primaryStage);
+            else if (usernameField.getText().isEmpty())
+                Noti.showErrorMessage("Tên đăng nhập không được để trống", primaryStage);
+            else if (passwordHashField.getText().isEmpty())
+                Noti.showErrorMessage("Mật khẩu không được để trống", primaryStage);
+            else
+                try {
+                    // Lấy giá trị từ TextField
+                    String userId = userIdField.getText();
+                    String fullName = fullNameField.getText();
+                    LocalDate dateOfBirth = parseDate(dateOfBirthField.getText(),"lỗi ngày");
+                    String address = addressField.getText();
+                    String phoneNumber = phoneNumberField.getText();
+                    String email = emailField.getText();
+                    String username = usernameField.getText();
+                    String passwordHash = passwordHashField.getText();
+                    String membershipId = membershipIdField.getText();
+                    LocalDate joinDate =  parseDate(joinDateField.getText(), "Lỗi ngày");
+                    String membershipStatus = (String) membershipStatusField.getValue();
+                    String role = (String) roleField.getValue();
+                    LocalDate expiryDate = parseDate(expiryDateField.getText(), "Lỗi ngày");
+                    LocalDate cardRegistrationDate = parseDate(cardRegistrationDateField.getText(), "Lỗi ngày");
+                    String accountStatus = (String) accountStatusField.getValue();
+                    String gender = (String) genderField.getValue();
+                    String department = departmentField.getText();
+                    String className = classField.getText();
+
+
+                    // Tạo đối tượng User
+
+                    userDAO.addUser(user);
+
+                } catch (IllegalArgumentException ex) {
+                    System.out.println(ex.getMessage());
+                    Noti.showFailureMessage("Lỗi: " + ex.getMessage());
+                }
+        });
+
+        HBox hBox = new HBox(40, vBoxLeft, vBoxRight);
+        hBox.setLayoutX(80);
+        hBox.setLayoutY(100);
+        Pane layout = new Pane( addFeild, imageVBox,
+                hBox, deleteButton, backButton, addButton);
+        StackPane root = new StackPane();
+        root.getChildren().addAll(whiteRectangle, layout);
+
+        Scene scene = new Scene(root, screenWidth, screenHeight);
+        primaryStage.setScene(scene);
+    }
     //phương thức quản lý người dùng
     public Pane managerUser() {
         // Tạo bảng TableView
         TableView<User> tableView;
         ObservableList<User> data = FXCollections.observableArrayList();
         List<String> arr = new ArrayList<>();
-        tableView = Table.tableUser(true, 1000, arr, this);
+        tableView = Table.tableUser(true, 1000, arr, this, null);
         Rectangle rectangle = rectangle(screenWidth-350, screenHeight - 170, Color.WHITE,
                 Color.BLACK, 1, 10, 10, 0.8, -25, -20 );
         // Các trường nhập liệu để thêm dữ liệu mới
@@ -1233,14 +1458,15 @@ public class LibraryManagement {
         roleField.setPromptText("Chức Vụ");
         TextField totalBooksBorrowedField = new TextField();
         totalBooksBorrowedField.setPromptText("Số Sách Đã Mượn");
-        TextField overdueCountField = new TextField();
-        overdueCountField.setPromptText("Số Lần Trả Trễ Hạn");
+        TextField totalBooksReturnedField = new TextField();
+        totalBooksReturnedField.setPromptText("Số Sách đã trả");
 
         AtomicBoolean check1 = new AtomicBoolean(false);
         AtomicBoolean check2 = new AtomicBoolean(false);
         AtomicBoolean check3 = new AtomicBoolean(false);
         Button searchButton = button("Tìm kiếm");
         searchButton.setOnAction(e->{
+            arr.clear();
             data.clear();
             try {
                 String userId = userIdField.getText();
@@ -1249,9 +1475,9 @@ public class LibraryManagement {
                 String membershipStatus = membershipStatusField.getText();
                 String role = roleField.getText();
                 Integer totalBooksBorrowed = parseIntegerForFind(totalBooksBorrowedField.getText(),check1);
-                Integer overdueCount = parseIntegerForFind(overdueCountField.getText(),check2);
+                Integer totalBooksReturned = parseIntegerForFind(totalBooksReturnedField.getText(),check2);
                 user = new User(userId, fullName, joinDate, membershipStatus,
-                        role,totalBooksBorrowed,overdueCount);
+                        role,totalBooksBorrowed,totalBooksReturned);
             }catch (NumberFormatException ex){
                 }
             if(check1.get()||check2.get()||check3.get())
@@ -1300,6 +1526,7 @@ public class LibraryManagement {
 
         Button deleteSerchButton = button("Xóa Tìm kiếm");
         deleteSerchButton.setOnAction(e-> {
+            arr.clear();
             data.clear();
             userIdField.clear();
             fullNameField.clear();
@@ -1307,7 +1534,7 @@ public class LibraryManagement {
             membershipStatusField.clear();
             roleField.clear();
             totalBooksBorrowedField.clear();
-            overdueCountField.clear();
+            totalBooksReturnedField.clear();
         });
 
         Button addButton = button("Thêm");
@@ -1318,15 +1545,23 @@ public class LibraryManagement {
 
         Button updateButton = button("Sửa");
         updateButton.setOnAction(e->{
-
+            if(arr.size()>0) {
+                for(String s : arr)
+                    System.out.println(s);
+                updateUser(userDAO.output1Value(arr.get(0)));
+            }
+            else
+                Noti.showFailureMessage("Xin hãy chọn trước!");
+            System.out.println(arr.size());
         });
         updateButton.setMinWidth(15);
 
         Button deleteButton = button("Xóa");
         deleteButton.setOnAction(e->{
             for(String id0 : arr) {
-                userDAO.deleteUser(id0);
+                bookDAO.removeBook(id0);
             }
+            arr.clear();
             data.removeIf(User::isSelected);
         });
         deleteButton.setMinWidth(15);
@@ -1338,7 +1573,7 @@ public class LibraryManagement {
         tableView.setItems(data);
 
         HBox inputLayout = new HBox(10, userIdField, fullNameField, membershipStatusField,joinDateField,
-                 roleField, totalBooksBorrowedField, overdueCountField);
+                 roleField, totalBooksBorrowedField, totalBooksReturnedField);
         inputLayout.setAlignment(Pos.CENTER);
         HBox buttonLayout = new HBox(10, searchButton, deleteSerchButton);
         buttonLayout.setAlignment(Pos.CENTER);
@@ -1347,27 +1582,31 @@ public class LibraryManagement {
         layout.setLayoutY(120);
         return layout;
     }
-    public void showUser(String id) {
+    public void showUser(String id, Login login) {
 
         user = userDAO.output1Value(id);
-        Label userIdLabel = new Label("User ID: " + user.getUserId());
-        Label fullNameLabel = new Label("Họ và tên: " + user.getFullName());
-        Label dateOfBirthLabel = new Label("Ngày sinh: " + user.getDateOfBirth());
-        Label addressLabel = new Label("Địa chỉ: " + user.getAddress());
-        Label phoneNumberLabel = new Label("Số điện thoại: " + user.getPhoneNumber());
-        Label emailLabel = new Label("Email: " + user.getEmail());
-        Label usernameLabel = new Label("Tên đăng nhập: " + user.getUsername());
-        Label passwordHashLabel = new Label("Mã hóa mật khẩu: " + user.getPasswordHash());
-        Label membershipIdLabel = new Label("Mã thành viên: " + user.getMembershipId());
-        Label joinDateLabel = new Label("Ngày tham gia: " + user.getJoinDate());
-        Label membershipStatusLabel = new Label("Trạng thái thẻ: " + user.getMembershipStatus());
-        Label roleLabel = new Label("Chức vụ: " + user.getRole());
-        Label expiryDateLabel = new Label("Ngày hết hạn thẻ: " + user.getExpiryDate());
-        Label cardRegistrationDateLabel = new Label("Ngày đăng ký thẻ: " + user.getCardRegistrationDate());
-        Label accountStatusLabel = new Label("Trạng thái tài khoản: " + user.getAccountStatus());
-        Label genderLabel = new Label("Giới tính: " + user.getGender());
-        Label departmentLabel = new Label("Khoa: " + user.getDepartment());
-        Label classLabel = new Label("Lớp: " + user.getClass());
+        HBox userIdHBox = hBoxForShowUser("ID người dùng:", user.getUserId());
+        HBox fullNameHBox = hBoxForShowUser("Họ và tên:", user.getFullName());
+        HBox dateOfBirthHBox = hBoxForShowUser("Ngày sinh:", user.getDateOfBirth() + "");
+        HBox addressHBox = hBoxForShowUser("Địa chỉ:", user.getAddress());
+        HBox phoneNumberHBox = hBoxForShowUser("Số điện thoại:", user.getPhoneNumber());
+        HBox emailHBox = hBoxForShowUser("Email:", user.getEmail());
+        HBox usernameHBox = hBoxForShowUser("Tên đăng nhập:", user.getUsername());
+        HBox passwordHashHBox = hBoxForShowUser("Mật khẩu:", user.getPasswordHash());
+        HBox membershipIdHBox = hBoxForShowUser("Mã thẻ:", user.getMembershipId());
+        HBox joinDateHBox = hBoxForShowUser("Ngày tạo tài khoản:", user.getJoinDate()+ "");
+        HBox membershipStatusHBox = hBoxForShowUser("Trạng thái thẻ:", user.getMembershipStatus());
+        HBox roleHBox = hBoxForShowUser("Chức vụ:", user.getRole());
+        HBox expiryDateHBox = hBoxForShowUser("Ngày hết hạn thẻ:", user.getExpiryDate()+ "");
+        HBox cardRegistrationDateHBox = hBoxForShowUser("Ngày đăng ký thẻ:", user.getCardRegistrationDate()+ "");
+        HBox accountStatusHBox = hBoxForShowUser("Trạng thái tài khoản:", user.getAccountStatus());
+        HBox genderHBox = hBoxForShowUser("Giới tính:", user.getGender());
+        HBox departmentHBox = hBoxForShowUser("Khoa:", user.getDepartment());
+        HBox classHBox = hBoxForShowUser("Lớp:", user.getClassName());
+        HBox totalBorrowAndDue = totalBorrowAndDue(new Label(user.getTotalBooksBorrowed().toString()), new Label(user.gettotalBooksReturned().toString()));
+
+        Rectangle rectangle = rectangle(screenWidth-60, screenHeight-80, Color.WHITE,
+                Color.BLACK, 2, 10,10, 0.8, 30, 30);
 
         ImageView coverImage;
         if(user.getAvatar()!=null) {
@@ -1375,7 +1614,16 @@ public class LibraryManagement {
             coverImage.setFitWidth(300);
             coverImage.setFitHeight(400);
         } else {
-            Image image = new Image("file:C:/Users/Dell/IdeaProjects/library/src/main/image/book.jpg");
+            Random random = new Random();
+            int i = random.nextInt(2);
+            String av = UserDAO.gender(id);
+            if(av.compareTo("other")==0) {
+                av = "male" + i;
+            } else {
+                av +=i;
+            }
+
+            Image image = new Image("file:C:/Users/Dell/IdeaProjects/library/src/main/image/" + av + ".jpg");
             if (image.isError()) {
                 System.out.println("Error loading image: " + image.getException().getMessage());
             }
@@ -1384,26 +1632,61 @@ public class LibraryManagement {
             coverImage.setFitHeight(400);
         }
 
-        Button backButton = new Button("Thoát");
+        Button backButton = buttonForShowUser(90, 30, "Thoát", "#FF0000", "#8B0000");
         backButton.setOnAction(e->main.showInterfaceScene());
+        Button updateButton = buttonForShowUser(90, 30, "Sửa", "#0000FF", "#00008B");
 
-        VBox imageHBox = new VBox(10, coverImage, backButton);
-        VBox attributeVBox1 = new VBox(10,fullNameLabel, genderLabel, dateOfBirthLabel, departmentLabel,
-                classLabel,addressLabel, phoneNumberLabel, emailLabel,accountStatusLabel);
-        VBox attributeVBox2 = new VBox(10,userIdLabel,usernameLabel, passwordHashLabel,roleLabel,joinDateLabel,
-                membershipIdLabel, cardRegistrationDateLabel, expiryDateLabel, membershipStatusLabel);
-        HBox hBox = new HBox(10,imageHBox,attributeVBox1,attributeVBox2);
-        VBox vBox = new VBox(10,hBox);
-        Scene scene = new Scene(vBox, screenWidth, screenHeight);
+        HBox buttonHBox = new HBox(10, updateButton, backButton);
+        buttonHBox.setAlignment(Pos.CENTER_LEFT);
+        if(login!=null) {
+            Button deleteButton = buttonForShowUser(90, 30, "Xóa TK", "#FF0000", "#8B0000");
+            deleteButton.setOnAction(e -> {
+                boolean confirmed = Noti.showConfirmationDialog(
+                        "Xác nhận xóa",
+                        "Bạn có chắc muốn xóa tài khoản?",
+                        "Hành động này không thể hoàn tác!"
+                );
+                if (confirmed) {
+                    userDAO.deleteUser(interfaces.userId());
+                    login.showLoginScene();
+                }
+            });
+
+            buttonHBox.getChildren().add(0, deleteButton);
+        }
+
+        VBox imageHBox = new VBox(10, coverImage, totalBorrowAndDue, buttonHBox);
+        VBox attributeVBox1 = new VBox(10,
+                fullNameHBox, genderHBox, dateOfBirthHBox, departmentHBox,
+                classHBox, addressHBox, phoneNumberHBox, emailHBox, accountStatusHBox
+        );
+
+        VBox attributeVBox2 = new VBox(10,
+                userIdHBox, usernameHBox, passwordHashHBox, roleHBox, joinDateHBox,
+                membershipIdHBox, cardRegistrationDateHBox, expiryDateHBox, membershipStatusHBox
+        );
+
+        Line line1 = line(0,0, 0, 400, Color.BLACK, 1);
+        Line line2 = line(0,0, 0, 400, Color.BLACK, 1);
+
+        HBox hBox = new HBox(30,imageHBox, new HBox(5,line1, attributeVBox1, line2 ,attributeVBox2));
+        //VBox vBox = new VBox(10,hBox);
+
+        hBox.setLayoutX(50);
+        hBox.setLayoutY(50);
+
+        Pane pane = new Pane(rectangle,hBox);
+
+        Scene scene = new Scene(pane, screenWidth, screenHeight);
         primaryStage.setScene(scene);
     }
 
-    public Pane statistical() {
+    public Pane statistical(String userId) {
             // Tạo bảng TableView
-            TableView<Book> tableView;
-            ObservableList<Book> data = FXCollections.observableArrayList();
+            TableView<BookAndBorrow> tableView;
+            ObservableList<BookAndBorrow> data = FXCollections.observableArrayList();
             List<String> a = new ArrayList<>();
-            tableView = Table.tableDocument(true, 1000, a, this);
+            tableView = Table.tableStatistical(true, 1020, a, this);
             Rectangle rectangle = rectangle(screenWidth-350, screenHeight - 170, Color.WHITE,
                     Color.BLACK, 1, 10, 10, 0.8, -25, -20 );
 
@@ -1419,6 +1702,14 @@ public class LibraryManagement {
             genreField.setPromptText("Thể Loại");
             genreField.setMinWidth(150);
 
+        TextField userIdField = new TextField();
+        genreField.setPromptText("ID người dùng");
+        genreField.setMinWidth(150);
+        TextField fullNameField = new TextField();
+        genreField.setPromptText("Tên người dùng");
+        genreField.setMinWidth(150);
+
+
         Label titleTable = new Label("Sách Đã Mượn");
         titleTable.setStyle("-fx-font-size: 30px; -fx-font-weight: bold;");
         VBox titleTableVBox = new VBox(titleTable);
@@ -1430,15 +1721,15 @@ public class LibraryManagement {
             serchField.setPromptText("Tìm kiếm");
             serchField.setMinWidth(500);
 
-            Button borrowedButton = bookButton("Sách đã mượn");
-            Button returneddButton = bookButton("Sách đã trả");
-            Button notBorrowedButton = bookButton("Sách quá hạn");
+            Button borrowedButton = bookButton("Sách đang mượn");
+            Button returneddButton = bookButton("Sách trả đúng hạn");
+            Button notBorrowedButton = bookButton("Sách trả quá hạn");
             Button returndButton = button("Trả sách");
             returndButton.setOnAction(e->{
                 if(a.size()>0) {
                     boolean check = false;
                     for (String id : a) {
-                        check = BorrowDAO.returnBook(interfaces.userId(), id);
+                        check = BorrowDAO.returnBook(userId, id);
                         BorrowDAO.updateQuantity(id, BorrowDAO.remainingQuantity(id)+1);
                     }
                     if (check)
@@ -1458,57 +1749,24 @@ public class LibraryManagement {
             searchButton.setOnAction(e->{
                 a.clear();
                 data.clear();
-                if(serchField.getText().isEmpty()) {
 
-                    book = new Book();
-                    book.setTitle(titleField.getText());
-                    book.setAuthor(authorField.getText());
-                    book.setGenre(genreField.getText());
-
-
-                ResultSet resultSet = bookDAO.findBooksBorrow(book, interfaces.userId(),localTable.get());
-                if(resultSet!=null) {
-                    try {
-                        while (resultSet.next()) {
-                            data.add(new Book(
-                                    false,
-                                    resultSet.getString("id"),
-                                    resultSet.getString("title"),
-                                    resultSet.getString("author"),
-                                    resultSet.getString("publisher"),
-                                    getInt(resultSet, "year"),
-                                    resultSet.getString("genre"),
-                                    resultSet.getInt("quantity"),
-                                    "chi tiết"
-                            ));
-                        }
-                    } catch (SQLException ex) {
-                        System.out.println("Lỗi khi đọc ResultSet: " + ex.getMessage());
-                    } finally {
-                        try {
-                            if (resultSet != null) resultSet.close();
-                        } catch (SQLException ex) {
-                            System.out.println("Lỗi khi đóng ResultSet: " + ex.getMessage());
-                        }
-                    }
-                    bookDAO.closeDatabase();
-                    }
-                }
-                else {
+                book = new Book();
+                book.setTitle(titleField.getText());
+                book.setAuthor(authorField.getText());
+                book.setGenre(genreField.getText());
                     String keyWord = serchField.getText();
-                    ResultSet resultSet = bookDAO.findBooksUltimateBorrow(keyWord, localTable.get());
+                    ResultSet resultSet = bookDAO.findBooksBorrowed(userId, book, keyWord, localTable.get());
                     if (resultSet != null) {
                         try {
                             while (resultSet.next()) {
-                                data.add(new Book(
-                                        false,
+                                data.add(new BookAndBorrow(
                                         resultSet.getString("id"),
                                         resultSet.getString("title"),
                                         resultSet.getString("author"),
-                                        resultSet.getString("publisher"),
-                                        getInt(resultSet, "year"),
                                         resultSet.getString("genre"),
-                                        resultSet.getInt("quantity"),
+                                        getDate(resultSet,"borrow_date"),
+                                        getDate(resultSet,"due_date"),
+                                        getDate(resultSet,"return_date"),
                                         "chi tiết"
                                 ));
                             }
@@ -1523,7 +1781,7 @@ public class LibraryManagement {
                         }
                         bookDAO.closeDatabase();
                     }
-                }
+
                 // Thêm lắng nghe cho từng hàng
                 tableView.getItems().forEach(book -> {
                     book.selectedProperty().addListener((observable, oldValue, newValue) -> {
@@ -1544,12 +1802,16 @@ public class LibraryManagement {
                 titleField.clear();
                 authorField.clear();
                 genreField.clear();
+                userIdField.clear();
+                fullNameField.clear();
             });
 
             tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
             tableView.setItems(data);
 
             HBox inputLayout = new HBox(10, titleField, authorField, genreField);
+            if(UserDAO.getRole(userId).compareTo("admin")==0)
+                inputLayout.getChildren().addAll(userIdField, fullNameField);
             inputLayout.setAlignment(Pos.CENTER);
             HBox buttonLayout = new HBox(10, serchField, searchButton, deleteSerchButton, returndButton);
             buttonLayout.setAlignment(Pos.CENTER_LEFT);
@@ -1620,6 +1882,32 @@ public class LibraryManagement {
         VBox vBox = new VBox(0, label, textField);
         vBox.setMinWidth(500);
         return vBox;
+    }
+    HBox hBoxForShowUser(String s1, String s2) {
+        HBox hBox = new HBox(2);
+
+        // Đặt kích thước tối thiểu và tối đa cho HBox
+        hBox.setMinWidth(545);
+        hBox.setMaxWidth(545);
+
+        Label label = new Label(s1);
+        label.setStyle("-fx-font-weight: bold; -fx-font-size: 15px;");
+        label.setMinHeight(35);
+
+        TextField textField = new TextField(s2);
+        textField.setEditable(false);
+        textField.setMinWidth(345);
+        textField.setMaxWidth(345);
+
+        // Loại bỏ viền và hiệu ứng của TextField bằng CSS
+        textField.setStyle(
+                "-fx-background-color: transparent; " +
+                        "-fx-border-color: transparent; " +
+                        "-fx-font-size: 15px;"
+        );
+
+        hBox.getChildren().addAll(label, textField);
+        return hBox;
     }
 
     public VBox comboBoxAndTextField(String s) {
@@ -1736,7 +2024,43 @@ public class LibraryManagement {
 
         return hBox; // Hoặc stackPane nếu cần thiết
     }
+    public HBox totalBorrowAndDue(Label totalBorrow, Label totalReturn) {
+        Label borrowText = new Label("Số sách đang mượn");
+        Label returnText = new Label("Số sách đã trả");
 
+        // Thiết lập cỡ chữ và màu chữ cho các Label
+        totalBorrow.setStyle("-fx-font-size: 15px; -fx-font-weight: bold;");
+        totalReturn.setStyle("-fx-font-size: 15px; -fx-font-weight: bold;");
+
+        borrowText.setStyle("-fx-font-size: 15px; -fx-text-fill: #808080; -fx-font-weight: bold;");
+        returnText.setStyle("-fx-font-size: 15px; -fx-text-fill: #808080; -fx-font-weight: bold;");
+
+        VBox lineAndDotVbox1 = lineAndDotVbox(0,0,0,30,Color.GRAY,1);
+
+        VBox borrowVBox = new VBox(totalBorrow, borrowText);
+        borrowVBox.setAlignment(Pos.CENTER);
+        borrowVBox.setMinWidth(150);
+
+        VBox dueVBox = new VBox(totalReturn, returnText);
+        dueVBox.setAlignment(Pos.CENTER);
+        dueVBox.setMinWidth(150);
+
+        // Chỉ hiển thị viền bên phải của các VBox
+        borrowVBox.setStyle("-fx-border-color: transparent transparent #808080 transparent;");
+        dueVBox.setStyle("-fx-border-color: transparent transparent #808080 transparent;");
+
+        // Tạo Region để bao quanh HBox và tạo viền cho toàn bộ
+
+        // Thiết lập HBox
+        HBox hBox = new HBox(borrowVBox, lineAndDotVbox1, dueVBox);
+        hBox.setMaxWidth(300);
+        hBox.setMinWidth(300);
+        hBox.setMaxHeight(50);
+        hBox.setMinHeight(50);
+        hBox.setAlignment(Pos.CENTER);
+
+        return hBox; // Hoặc stackPane nếu cần thiết
+    }
 
     public VBox bookVBox(String id, String title, String author, Image image,Stage primaryStage, interfaces main) {
         Label labelTitle = new Label(title);
@@ -2014,6 +2338,33 @@ public class LibraryManagement {
 
         return button;
     }
+    public Button buttonForShowUser(double width, double height, String nameButton, String color1, String color2) {
+        // Tạo button mới
+        Button button = new Button(nameButton);
+
+        // Thiết lập kích thước của button
+        button.setMinWidth(width);
+        button.setMinHeight(height);
+
+        // Đặt màu nền ban đầu cho button
+        button.setStyle("-fx-background-color: " + color1 + "; -fx-text-fill: white; -fx-font-size: 15px; -fx-font-weight: bold;");
+
+        // Hiệu ứng khi di chuột vào
+        button.setOnMouseEntered(e -> {
+            button.setStyle("-fx-background-color: " + color2 + "; -fx-text-fill: white; -fx-font-size: 15px; -fx-font-weight: bold;");
+            button.setMinWidth(width);
+            button.setMinHeight(height);
+        });
+
+        // Hiệu ứng khi di chuột ra
+        button.setOnMouseExited(e -> {
+            button.setStyle("-fx-background-color: " + color1 + "; -fx-text-fill: white; -fx-font-size: 15px; -fx-font-weight: bold;");
+            button.setMinWidth(width);
+            button.setMinHeight(height);
+        });
+
+        return button;
+    }
 
     private LocalDate parseDate(String input, String s) {
         if (input.isEmpty()) {
@@ -2095,5 +2446,6 @@ public Circle dot(double centerX, double centerY, Color color, double radius) {
 
         return new Image(inputStream);
     }
+
 }
 

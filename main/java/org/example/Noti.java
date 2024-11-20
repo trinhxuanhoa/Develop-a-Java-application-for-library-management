@@ -5,7 +5,8 @@ import javafx.animation.Timeline;
 import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-
+import javafx.scene.control.ButtonType;
+import java.util.Optional;
 
 public class Noti{
     public static void showErrorMessage(String message, Stage primaryStage) {
@@ -42,4 +43,17 @@ public class Noti{
         alert.show(); // Hiển thị thông báo
 
     }
+
+    public static boolean showConfirmationDialog(String title, String header, String content) {
+        // Tạo hộp thoại xác nhận
+        Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmAlert.setTitle(title);       // Tiêu đề hộp thoại
+        confirmAlert.setHeaderText(header); // Tiêu đề nhỏ trong hộp thoại
+        confirmAlert.setContentText(content); // Nội dung chính của hộp thoại
+
+        // Hiển thị hộp thoại và chờ kết quả
+        Optional<ButtonType> result = confirmAlert.showAndWait();
+        return result.isPresent() && result.get() == ButtonType.OK;
+    }
+
 }

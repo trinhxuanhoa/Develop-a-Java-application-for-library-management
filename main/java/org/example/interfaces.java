@@ -36,7 +36,7 @@ public class interfaces {
         this.primaryStage = primaryStage;
         library = new LibraryManagement(primaryStage, this);
     }
-    public void interFaceAdmin(Login main) {
+    public void interFaceAdmin(Login login) {
         Pane common = new Pane();
         common.setLayoutX(350);
         common.setLayoutY(15);
@@ -62,7 +62,7 @@ public class interfaces {
         Pane paneRectangle = new Pane(tableRectangle2,tableRectangle1);
 
         // Tạo các nút cho menu
-HBox accountHBox =  accountHBox("Thông Tin Tài Khoản");
+HBox accountHBox =  accountHBox("Thông Tin Tài Khoản", login);
         Button dashboardButton = button("Bảng Điều Khiển");
     Button managerDocumentButton = button("Quản Lý Tài Liệu");
     Button managerUserButton = button("Quản Lý Người Dùng");
@@ -92,9 +92,9 @@ HBox accountHBox =  accountHBox("Thông Tin Tài Khoản");
         });
         statisticsButton.setOnAction(e->{
             common.getChildren().clear();
-            common.getChildren().add(library.statistical());
+            common.getChildren().add(library.statistical(interfaces.userId()));
         });
-        logOutButton.setOnAction(e-> showLogoutConfirmation(main));
+        logOutButton.setOnAction(e-> showLogoutConfirmation(login));
     // Layout
         VBox layout = new VBox(2);
         layout.getChildren().addAll(dashboardButton, notificationsButton,managerDocumentButton,
@@ -142,7 +142,7 @@ HBox accountHBox =  accountHBox("Thông Tin Tài Khoản");
        return button0;
    }
 
-   HBox accountHBox(String s) {
+   HBox accountHBox(String s, Login login) {
        Label accountLabel = new Label(s);
        accountLabel.setStyle("-fx-text-fill: white;-fx-font-size: 15px;"); // Màu chữ
        // Thêm sự kiện di chuột để gạch chân
@@ -154,7 +154,7 @@ HBox accountHBox =  accountHBox("Thông Tin Tài Khoản");
        accountHBox.setLayoutY(0);
        accountHBox.setLayoutY(185);
        accountLabel.setOnMouseClicked(e -> {
-           library.showUser(userId());
+           library.showUser(userId(), login);
        });
        return accountHBox;
    }
