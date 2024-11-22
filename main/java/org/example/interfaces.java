@@ -36,7 +36,6 @@ public class interfaces {
 
     public void interFaceAdmin(Login login) {
         Pane common = new Pane();
-        // Adjust the position of 'common' pane to align with the white area
         common.setLayoutX(320);
         common.setLayoutY(70);
         common.setPrefWidth(screenWidth - 320);
@@ -60,7 +59,6 @@ public class interfaces {
         imageView.setClip(circle);
         Pane paneRectangle = new Pane(tableRectangle2, tableRectangle1);
 
-        // Create menu buttons
         HBox accountHBox = accountHBox("Thông Tin Tài Khoản", login);
         Button dashboardButton = button("Bảng Điều Khiển");
         Button managerDocumentButton = button("Quản Lý Tài Liệu");
@@ -75,7 +73,14 @@ public class interfaces {
         Button settingsButton = button("Cài Đặt");
         Button logOutButton = button("Đăng Xuất");
 
-        // Add event handlers for buttons
+        // Event for notificationsButton
+        notificationsButton.setOnAction(e -> {
+            common.getChildren().clear();
+            Notification notification = new Notification(library);
+            common.getChildren().add(notification.showNotifications());
+        });
+
+
         managerDocumentButton.setOnAction(e -> {
             common.getChildren().clear();
             common.getChildren().add(library.managerDocument());
@@ -94,10 +99,9 @@ public class interfaces {
         });
         logOutButton.setOnAction(e -> showLogoutConfirmation(login));
 
-        // Add event handler for helpButton
         helpButton.setOnAction(e -> {
             common.getChildren().clear();
-            common.getChildren().add(help.showHelpOptions(common.getPrefWidth(), common.getPrefHeight()));
+            common.getChildren().add(help.showHelpOptions());
         });
 
         VBox layout = new VBox(2);
@@ -109,7 +113,6 @@ public class interfaces {
 
         pane.getChildren().addAll(imageView, accountHBox, layout);
 
-        // Use AnchorPane to position panes
         AnchorPane root = new AnchorPane();
         root.getChildren().addAll(paneRectangle, pane, common);
 
@@ -180,7 +183,6 @@ public class interfaces {
         return userId;
     }
 
-    // Function to display logout confirmation window
     private void showLogoutConfirmation(Login main) {
         Stage logoutStage = new Stage();
         logoutStage.initModality(Modality.APPLICATION_MODAL);
