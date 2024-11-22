@@ -24,8 +24,8 @@ public class Help {
 
     // Method to initialize and display the Help section
     public Node showHelpOptions() {
-        double width = 1150;  // Desired width
-        double height = 600; // Desired height
+        double width = 1150;  
+        double height = 600;
 
         // Initialize the main container
         mainContainer = new VBox(20);
@@ -41,14 +41,7 @@ public class Help {
         Node helpTopicsNode = displayHelpTopics();
 
         // "Contact Us" Button
-        Button contactAdminButton = new Button("Liên hệ với chúng tôi");
-        contactAdminButton.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;");
-        contactAdminButton.setMaxWidth(width / 3);
-        contactAdminButton.setMinHeight(40);
-        contactAdminButton.setOnAction(e -> {
-            mainContainer.getChildren().clear();
-            mainContainer.getChildren().add(showContactForm());
-        });
+        Button contactAdminButton = createContactButton();
 
         // Add all components to the main container
         mainContainer.getChildren().addAll(helpLabel, helpTopicsNode, contactAdminButton);
@@ -178,7 +171,7 @@ public class Help {
         // Send Button
         Button sendButton = new Button("Gửi");
         sendButton.setStyle("-fx-background-color: #0080FF; -fx-text-fill: white;-fx-font-size: 15px; -fx-font-weight: normal;");
-        sendButton.setOnMouseEntered(e -> sendButton.setStyle("-fx-background-color: #004C99; -fx-text-fill: white;-fx-font-size: 15px; -fx-font-weight: bold;"));
+        sendButton.setOnMouseEntered(e -> sendButton.setStyle("-fx-background-color: #005BB5; -fx-text-fill: white;-fx-font-size: 15px; -fx-font-weight: bold;"));
         sendButton.setOnMouseExited(e -> sendButton.setStyle("-fx-background-color: #0080FF; -fx-text-fill: white;-fx-font-size: 15px; -fx-font-weight: normal;"));
 
         // Send Button Action
@@ -241,10 +234,19 @@ public class Help {
         contactAdminButton.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;");
         contactAdminButton.setMaxWidth(800 / 3);
         contactAdminButton.setMinHeight(40);
+        contactAdminButton.setOnMouseEntered(e -> {
+            contactAdminButton.setStyle("-fx-background-color: #0D47A1; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;");
+        });
+
+        contactAdminButton.setOnMouseExited(e -> {
+            contactAdminButton.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;");
+        });
+
         contactAdminButton.setOnAction(e -> {
             mainContainer.getChildren().clear();
             mainContainer.getChildren().add(showContactForm());
         });
+
         return contactAdminButton;
     }
 }
