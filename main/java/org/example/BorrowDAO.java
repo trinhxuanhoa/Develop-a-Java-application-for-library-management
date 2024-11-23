@@ -132,9 +132,57 @@ public class BorrowDAO {
         return false;
     }
 
+    public static int totalBooksBorrowed() {
+        String sql = "select count(*) as total_books_borrowed from borrow\n" +
+                "where status = 'đã mượn'";
+
+        try (Connection conn = DatabaseConnection.connectToLibrary();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            ResultSet resultSet = pstmt.executeQuery();
+            resultSet.next();
+            return resultSet.getInt(1);
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            return 0;
+        }
+    }
+    public static int totalBooksReturned() {
+        String sql = "select count(*) as total_books_borrowed from borrow\n" +
+                "where status != 'đã mượn'";
+
+        try (Connection conn = DatabaseConnection.connectToLibrary();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            ResultSet resultSet = pstmt.executeQuery();
+            resultSet.next();
+            return resultSet.getInt(1);
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            return 0;
+        }
+    }
+
     public static boolean isBorrowed(String bookId, String userId) {
         try (Connection conn = DatabaseConnection.connectToLibrary()) {
             String sql = "SELECT COUNT(*) FROM borrow WHERE book_id = ? AND user_id = ? AND status = 'đã mượn'";
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setString(1, bookId);
+                stmt.setString(2, userId);
+
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        int count = rs.getInt(1);
+                        return count > 0; // Nếu có ít nhất 1 bản ghi, trả về true
+                    }
+                }
+            }
+        }catch (SQLException e) {
+            System.err.println("lỗi khi kiểm tra sách đã mượn: " + e.getMessage());
+        }
+        return false; // Trả về false nếu không có bản ghi nào hoặc xảy ra lỗi
+    }
+    public static boolean isBorrowedOrReturned(String bookId, String userId) {
+        try (Connection conn = DatabaseConnection.connectToLibrary()) {
+            String sql = "SELECT COUNT(*) FROM borrow WHERE book_id = ? AND user_id = ?";
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                 stmt.setString(1, bookId);
                 stmt.setString(2, userId);

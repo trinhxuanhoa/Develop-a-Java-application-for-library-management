@@ -26,7 +26,7 @@ public class interfaces {
     private Stage primaryStage;
     LibraryManagement library;
     private Scene interfaceScene;
-
+    private Help help;
     // Lấy kích thước visual bounds (phần hiển thị không bị che bởi Taskbar/Dock)
     Rectangle2D visualBounds = Screen.getPrimary().getVisualBounds();
     double screenWidth = visualBounds.getWidth();
@@ -35,6 +35,7 @@ public class interfaces {
     public interfaces(Stage primaryStage) {
         this.primaryStage = primaryStage;
         library = new LibraryManagement(primaryStage, this);
+        help = new Help(library);
     }
     public void interFaceAdmin(Login login) {
         Pane common = new Pane();
@@ -76,7 +77,20 @@ HBox accountHBox =  accountHBox("Thông Tin Tài Khoản", login);
         Button settingsButton = button("Cài Đặt");
     Button logOutButton = button("Đăng Xuất");
 
-    //dashboardButton.setOnAction(e->);
+        common.getChildren().clear();
+        common.getChildren().add(library.dashboard());
+
+        notificationsButton.setOnAction(e -> {
+            common.getChildren().clear();
+            Notification notification = new Notification(library);
+            common.getChildren().add(notification.showNotifications());
+        });
+
+
+        dashboardButton.setOnAction(e->{
+        common.getChildren().clear();
+        common.getChildren().add(library.dashboard());
+    });
 
         managerDocumentButton.setOnAction(e-> {
                 common.getChildren().clear();
@@ -94,6 +108,10 @@ HBox accountHBox =  accountHBox("Thông Tin Tài Khoản", login);
             common.getChildren().clear();
             common.getChildren().add(library.statistical(interfaces.userId()));
         });
+        helpButton.setOnAction(e -> {
+            common.getChildren().clear();
+            common.getChildren().add(help.showHelpOptions());
+        });
         logOutButton.setOnAction(e-> showLogoutConfirmation(login));
     // Layout
         VBox layout = new VBox(2);
@@ -109,6 +127,87 @@ HBox accountHBox =  accountHBox("Thông Tin Tài Khoản", login);
         root.getChildren().addAll(paneRectangle,pane);
 
     interfaceScene = new Scene(root, screenWidth, screenHeight);
+        primaryStage.setScene(interfaceScene);
+    }
+    public void interFaceUser(Login login) {
+        Pane common = new Pane();
+        common.setLayoutX(350);
+        common.setLayoutY(15);
+
+        Rectangle tableRectangle1 = rectangle(300,screenHeight-70,Color.rgb(10, 10, 240),Color.WHITE,
+                0,10,10,0.8,0,70);
+        Rectangle tableRectangle2 = rectangle(screenWidth,68,Color.rgb(0, 0, 240),Color.rgb(45, 45, 240),
+                2,0,0,0.8,0,0);
+
+        Circle circle = new Circle(50);
+        circle.setCenterX(50);
+        circle.setCenterY(50);
+        Image image = new Image("file:C:/Users/Dell/IdeaProjects/library/src/main/image/hoa.jpg"); // Đường dẫn đến hình ảnh
+        ImageView imageView = new ImageView(image);
+        // Đặt kích thước cho ImageView
+        imageView.setFitWidth(100); // Kích thước chiều rộng
+        imageView.setFitHeight(100); // Kích thước chiều cao
+        Pane pane = new Pane();
+        imageView.setLayoutX(100);
+        imageView.setLayoutY(80);
+        // Cắt hình ảnh thành hình tròn
+        imageView.setClip(circle);
+        Pane paneRectangle = new Pane(tableRectangle2,tableRectangle1);
+
+        // Tạo các nút cho menu
+        HBox accountHBox =  accountHBox("Thông Tin Tài Khoản", login);
+        Button dashboardButton = button("Bảng Điều Khiển");
+        Button borrowButton = button("Mượn Tài Liệu");
+        Button statisticsButton = button("Thống Kê");
+        Button cardButton = button("Đăng Kí Thẻ");
+        Button renewButton = button("Gia Hạn Thẻ");
+        Button notificationsButton = button("Thông Báo");
+        Button introduceButton = button("Giới Thiệu");
+        Button helpButton = button("Trợ Giúp");
+        Button settingsButton = button("Cài Đặt");
+        Button logOutButton = button("Đăng Xuất");
+
+        common.getChildren().clear();
+        common.getChildren().add(library.dashboard());
+
+        notificationsButton.setOnAction(e -> {
+            common.getChildren().clear();
+            Notification notification = new Notification(library);
+            common.getChildren().add(notification.showNotifications());
+        });
+
+
+        dashboardButton.setOnAction(e->{
+            common.getChildren().clear();
+            common.getChildren().add(library.dashboard());
+        });
+        borrowButton.setOnAction(e->{
+            common.getChildren().clear();
+            common.getChildren().add(library.showBooks());
+        });
+        statisticsButton.setOnAction(e->{
+            common.getChildren().clear();
+            common.getChildren().add(library.statistical(interfaces.userId()));
+        });
+        helpButton.setOnAction(e -> {
+            common.getChildren().clear();
+            common.getChildren().add(help.showHelpOptions());
+        });
+        logOutButton.setOnAction(e-> showLogoutConfirmation(login));
+        // Layout
+        VBox layout = new VBox(2);
+        layout.getChildren().addAll(dashboardButton, notificationsButton,
+                borrowButton,statisticsButton,cardButton, renewButton,
+                introduceButton, helpButton,settingsButton, logOutButton
+        );
+        layout.setLayoutY(240);
+
+        pane.getChildren().addAll(imageView,accountHBox,layout,common);
+        // Dùng StackPane để xếp hình nền, hình chữ nhật và form
+        StackPane root = new StackPane();
+        root.getChildren().addAll(paneRectangle,pane);
+
+        interfaceScene = new Scene(root, screenWidth, screenHeight);
         primaryStage.setScene(interfaceScene);
     }
 
@@ -161,7 +260,7 @@ HBox accountHBox =  accountHBox("Thông Tin Tài Khoản", login);
     public static String userId() {
         String userId = null;
 
-        try (BufferedReader reader = new BufferedReader(new FileReader("C:\\Users\\Dell\\IdeaProjects\\library\\src\\main\\user_id.txt"))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader("C:\\Users\\Dell\\IdeaProjects\\library\\src\\main\\text\\user_id.txt"))) {
             userId = reader.readLine();  // Đọc dòng đầu tiên (chỉ một dòng)
             System.out.println("Đã đọc ID từ file: " + userId);
         } catch (IOException e) {

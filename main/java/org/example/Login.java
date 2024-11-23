@@ -28,7 +28,7 @@ public class Login {
         double screenHeight = visualBounds.getHeight();
 
         interfaces inf = new interfaces(primaryStage);
-        Image backgroundImage = new Image("file:C:/Users/Dell/IdeaProjects/library/src/kho-tang-tri-thuc-vu-tru.jpg"); // Đường dẫn ảnh
+        Image backgroundImage = new Image("file:C:/Users/Dell/IdeaProjects/library/src/main/image/kho-tang-tri-thuc-vu-tru.jpg"); // Đường dẫn ảnh
         ImageView backgroundImageView = new ImageView(backgroundImage);
         backgroundImageView.setFitWidth(screenWidth); // Đặt kích thước nền
         backgroundImageView.setFitHeight(screenHeight);
@@ -74,7 +74,10 @@ public class Login {
                 Noti.showSuccessMessage("Đăng nhập thành công!");
                 usernameField.clear();
                 passwordField.clear();
-                inf.interFaceAdmin(this);
+                if(UserDAO.getRole(interfaces.userId()).compareTo("admin")==0)
+                    inf.interFaceAdmin(this);
+                else
+                    inf.interFaceUser(this);
             } else {
                 System.out.println("Sai tài khoản hoặc mật khẩu!");
                 Noti.showFailureMessage("Sai tài khoản hoặc mật khẩu!");

@@ -9,6 +9,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
+import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
@@ -36,9 +37,15 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
-
+import javafx.geometry.Insets;
 import java.time.LocalDateTime;
 import java.util.concurrent.atomic.AtomicInteger;
+import javafx.scene.layout.Priority;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
+import javafx.application.Platform;
+import javafx.util.Duration;
 
 public class LibraryManagement {
 
@@ -65,38 +72,37 @@ public class LibraryManagement {
         VBox isbnVBox = vBox("ISBN");
         VBox titleVBox = vBox("Tiêu đề");
         VBox authorVBox = vBox("Tác giả");
-        VBox yearVBox = vBox("Năm xuất bản");
-        VBox genreVBox = vBox("Thể loại");
+        VBox yearVBox =  comboBoxAndTextField("Năm xuất bản", new FileHandler("years.txt").readFromFile());
+        VBox genreVBox = comboBoxAndTextField("Thể loại", new FileHandler("genre.txt").readFromFile());
         VBox publisherVBox = vBox("Nhà xuất bản");
         VBox quantityVBox = vBox("Số lượng");
         VBox editionVBox = vBox("Phiên bản");
         VBox reprintVBox = vBox("Số lần tái bản");
         VBox priceVBox = vBox("Giá");
-        VBox languageVBox = vBox("Ngôn ngữ");
-        VBox statusVBox = comboBox("Trạng thái",  new String[] {"available", "not available"});
+        VBox languageVBox = comboBoxAndTextField("Ngôn ngữ", new FileHandler("languages.txt").readFromFile());
+        VBox statusVBox = comboBox("Trạng thái",Arrays.asList("available", "not available"));
         VBox chapterVBox = vBox("Số chương");
         VBox pagesVBox = vBox("Số trang");
         genreVBox.setMinWidth(400);
         chapterVBox.setMinWidth(90);
-        HBox chapAndGenreHBox = new HBox(10,genreVBox,chapterVBox);
-        chapAndGenreHBox.setMaxWidth(500);
-        quantityVBox.setMinWidth(400);
+
+
+        quantityVBox.setMinWidth(300);
         pagesVBox.setMinWidth(90);
         pagesVBox.setMaxWidth(90);
-        HBox quantityAndPagesHBox = new HBox(10,quantityVBox,pagesVBox);
-        chapAndGenreHBox.setMaxWidth(500);
+        HBox quantityAndPagesHBox = new HBox(10,quantityVBox,chapterVBox,pagesVBox);
 
         TextField isbnTextField = (TextField)isbnVBox.getChildren().get(1);
         TextField titleField = (TextField)titleVBox.getChildren().get(1);
         TextField authorField = (TextField)authorVBox.getChildren().get(1);
         TextField publisherField = (TextField)publisherVBox.getChildren().get(1);
-        TextField yearField = (TextField)yearVBox.getChildren().get(1);
-        TextField genreField = (TextField)genreVBox.getChildren().get(1);
+        TextField yearField = (TextField)((StackPane) yearVBox.getChildren().get(1)).getChildren().get(0);
+        TextField genreField = (TextField)((StackPane) genreVBox.getChildren().get(1)).getChildren().get(0);
         TextField quantityField = (TextField)quantityVBox.getChildren().get(1);
         TextField editionField = (TextField)editionVBox.getChildren().get(1);
         TextField reprintField = (TextField)reprintVBox.getChildren().get(1);
         TextField priceField = (TextField)priceVBox.getChildren().get(1);
-        TextField languageField = (TextField)languageVBox.getChildren().get(1);
+        TextField languageField = (TextField)((StackPane) languageVBox.getChildren().get(1)).getChildren().get(0);
         ComboBox statusField = (ComboBox)statusVBox.getChildren().get(1);
         TextField chapterField = (TextField)chapterVBox.getChildren().get(1);
         TextField pagesField = (TextField)pagesVBox.getChildren().get(1);
@@ -187,7 +193,7 @@ public class LibraryManagement {
 
         VBox vBoxLeft = new VBox(15);
         vBoxLeft.getChildren().addAll(titleVBox, authorVBox, publisherVBox,
-                yearVBox,chapAndGenreHBox, quantityAndPagesHBox);
+                yearVBox,genreVBox, quantityAndPagesHBox);
         VBox vBoxRight = new VBox(15);
         vBoxRight.getChildren().addAll(isbnVBox,editionVBox,
               reprintVBox,languageVBox,priceVBox,statusVBox);
@@ -277,11 +283,11 @@ public class LibraryManagement {
                     Integer pages = parseInteger(pagesField.getText(), "số trang không hợp lệ");
                     String description = textArea.getText();
 
-                    // Tạo đối tượng Book
-                    Book book = new Book(isbn, title, author, publisher, year, genre, quantity,
-                            edition, reprint, price, language, status, chapter, pages, description,
-                            ImageConverter.imageToByteArray(qrImageView),
-                            ImageConverter.imageToByteArray(imageView));
+
+                        Book book = new Book(isbn, title, author, publisher, year, genre, quantity,
+                                edition, reprint, price, language, status, chapter, pages, description,
+                                ImageConverter.imageToByteArray(qrImageView),
+                                ImageConverter.imageToByteArray(imageView));
 
                     // Thêm vào cơ sở dữ liệu
                     bookDAO.addBook(book);
@@ -366,41 +372,38 @@ public class LibraryManagement {
         VBox isbnVBox = vBox("ISBN");
         VBox titleVBox = vBox("Tiêu đề");
         VBox authorVBox = vBox("Tác giả");
-        VBox yearVBox = vBox("Năm xuất bản");
-        VBox genreVBox = vBox("Thể loại");
+        VBox yearVBox =  comboBoxAndTextField("Năm xuất bản", new FileHandler("years.txt").readFromFile());
+        VBox genreVBox = comboBoxAndTextField("Thể loại", new FileHandler("genre.txt").readFromFile());
         VBox publisherVBox = vBox("Nhà xuất bản");
         VBox quantityVBox = vBox("Số lượng");
         VBox editionVBox = vBox("Phiên bản");
         VBox reprintVBox = vBox("Số lần tái bản");
         VBox priceVBox = vBox("Giá");
-        VBox languageVBox = vBox("Ngôn ngữ");
-        VBox statusVBox = comboBox("Trạng thái",  new String[] {"available", "not available"});
+        VBox languageVBox = comboBoxAndTextField("Ngôn ngữ", new FileHandler("languages.txt").readFromFile());
+        VBox statusVBox = comboBox("Trạng thái",  Arrays.asList("available", "not available"));
         VBox chapterVBox = vBox("Số chương");
         VBox pagesVBox = vBox("Số trang");
         VBox downloadsVBox = vBox("Số lượt tải");
-        genreVBox.setMinWidth(400);
-        chapterVBox.setMinWidth(90);
-        HBox chapAndGenreHBox = new HBox(10,genreVBox,chapterVBox);
-        chapAndGenreHBox.setMaxWidth(500);
-        quantityVBox.setMinWidth(300);
+        quantityVBox.setMinWidth(200);
         pagesVBox.setMinWidth(90);
         pagesVBox.setMaxWidth(90);
+        chapterVBox.setMinWidth(90);
+        chapterVBox.setMaxWidth(90);
         downloadsVBox.setMinWidth(100);
         downloadsVBox.setMaxWidth(100);
-        HBox quantityAndPagesHBox = new HBox(10,quantityVBox, downloadsVBox, pagesVBox);
-        chapAndGenreHBox.setMaxWidth(500);
+        HBox quantityAndPagesHBox = new HBox(10,quantityVBox,chapterVBox, downloadsVBox, pagesVBox);
 
         TextField isbnField = (TextField)isbnVBox.getChildren().get(1);
         TextField titleField = (TextField)titleVBox.getChildren().get(1);
         TextField authorField = (TextField)authorVBox.getChildren().get(1);
         TextField publisherField = (TextField)publisherVBox.getChildren().get(1);
-        TextField yearField = (TextField)yearVBox.getChildren().get(1);
-        TextField genreField = (TextField)genreVBox.getChildren().get(1);
+        TextField yearField = (TextField)((StackPane) yearVBox.getChildren().get(1)).getChildren().get(0);
+        TextField genreField = (TextField)((StackPane) genreVBox.getChildren().get(1)).getChildren().get(0);
         TextField quantityField = (TextField)quantityVBox.getChildren().get(1);
         TextField editionField = (TextField)editionVBox.getChildren().get(1);
         TextField reprintField = (TextField)reprintVBox.getChildren().get(1);
         TextField priceField = (TextField)priceVBox.getChildren().get(1);
-        TextField languageField = (TextField)languageVBox.getChildren().get(1);
+        TextField languageField = (TextField)((StackPane) languageVBox.getChildren().get(1)).getChildren().get(0);
         ComboBox statusField = (ComboBox)statusVBox.getChildren().get(1);
         TextField chapterField = (TextField)chapterVBox.getChildren().get(1);
         TextField pagesField = (TextField)pagesVBox.getChildren().get(1);
@@ -468,7 +471,7 @@ public class LibraryManagement {
 
         VBox vBoxLeft = new VBox(15);
         vBoxLeft.getChildren().addAll(titleVBox, authorVBox, publisherVBox,
-                yearVBox,chapAndGenreHBox, quantityAndPagesHBox);
+                yearVBox,genreVBox, quantityAndPagesHBox);
         VBox vBoxRight = new VBox(15);
         vBoxRight.getChildren().addAll(isbnVBox,editionVBox,
                 reprintVBox,languageVBox,priceVBox,statusVBox);
@@ -606,6 +609,8 @@ public class LibraryManagement {
         TextField quantityField = new TextField();
         quantityField.setPromptText("Số lượng");
 
+        Label titleTable = titleTable("Quản Lý Tài Liệu");
+
         AtomicBoolean check1 = new AtomicBoolean(false);
         AtomicBoolean check2 = new AtomicBoolean(false);
         Button searchButton = button("Tìm kiếm");
@@ -707,8 +712,10 @@ public class LibraryManagement {
         });
         deleteButton.setMinWidth(15);
 
-        HBox buttonLayout1 = new HBox(10, addButton, updateButton, deleteButton);
-        buttonLayout1.setAlignment(Pos.TOP_RIGHT);
+        HBox buttonLayout1 = new HBox(726, titleTable, new HBox(10, addButton, updateButton, deleteButton));
+        buttonLayout1.setAlignment(Pos.BOTTOM_RIGHT);
+        buttonLayout1.setMinHeight(30);
+        buttonLayout1.setMaxHeight(30);
 
         tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         tableView.setItems(data);
@@ -716,10 +723,10 @@ public class LibraryManagement {
         HBox inputLayout = new HBox(10, idField, titleField, authorField, publisherField,
                 yearField, genreField, quantityField);
         inputLayout.setAlignment(Pos.CENTER);
-        HBox buttonLayout = new HBox(10, searchButton, deleteSerchButton);
-        buttonLayout.setAlignment(Pos.CENTER);
-        VBox buttonLayout2 = new VBox( buttonLayout, buttonLayout1);
-        Pane layout = new Pane(rectangle,new VBox(20, inputLayout, buttonLayout2, tableView));
+        HBox buttonLayout2 = new HBox(10, searchButton, deleteSerchButton);
+        buttonLayout2.setAlignment(Pos.CENTER);
+        VBox buttonLayout = new VBox(7, buttonLayout2, buttonLayout1, tableView);
+        Pane layout = new Pane(rectangle,new VBox(20, inputLayout, buttonLayout));
         layout.setLayoutY(120);
         return layout;
     }
@@ -818,17 +825,19 @@ public class LibraryManagement {
         Button ratingButton = buttonForShowBook(90, 30, "Đánh giá", "#008000", "#006400");
         AtomicInteger rating = new AtomicInteger(0);
         ratingButton.setOnAction(e->{
-            if(rating.get()-1>=1) {
+            if(BorrowDAO.isBorrowedOrReturned(id, interfaces.userId()))
+            if(rating.get()>=1) {
                 BookReviews bookReviews = new BookReviews();
                 bookReviews.setBookId(id);
                 bookReviews.setUserId(interfaces.userId());
-                bookReviews.setRating(rating.get()-1);
+                bookReviews.setRating(rating.get());
                 bookReviews.setReviewDate(LocalDate.now());
                 BookReviewsDAO.add(bookReviews);
             } else {
                 Noti.showFailureMessage("Xin vui lòng chọn đánh giá của bạn trước");
             }
-
+            else
+                Noti.showFailureMessage("Bạn không thể đánh giá khi chưa mượn sách");
         });
 
         HBox buttonHBox = new HBox(10, ratingButton, borrowButton, backButton);
@@ -865,7 +874,7 @@ public class LibraryManagement {
         VBox leftVBox = new VBox(5, new VBox(10,titleBox, authorBox, publisherBox,
                 yearBox, genreAndChapter, quantityBox), pagesAndDownloads);
         VBox rightVBox = new VBox(30,new VBox(10, isbnBox, editionBox, reprintBox,
-                languageBox, priceBox, statusBox), new HBox(25,Shape.startHBox(rating), buttonHBox));
+                languageBox, priceBox, statusBox), new HBox(25, Star.createRatingHBox(rating), buttonHBox));
         leftVBox.setMaxWidth(548);
         leftVBox.setMinWidth(548);
         rightVBox.setMaxWidth(548);
@@ -878,9 +887,6 @@ public class LibraryManagement {
 
         VBox vBox = new VBox(30, LRhBox, summaryVBox, myCommentVbox);
 
-
-        vBox.getChildren().add(commentPage.commentPage());
-
         HBox hBox = new HBox(20, imageVBox, vBox);
         hBox.setAlignment(Pos.CENTER);
         hBox.setMinHeight(screenHeight*2+100);
@@ -891,10 +897,7 @@ public class LibraryManagement {
         summaryArea.setMinWidth(1116);
         summaryArea.setMaxWidth(1116);
 
-
-
-        ScrollPane scrollPane = new ScrollPane(hBox);
-        scrollPane.setFocusTraversable(false);
+        ScrollPane scrollPane = new ScrollPane();
         scrollPane.setLayoutX(33);
         scrollPane.setLayoutY(50);
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
@@ -905,7 +908,11 @@ public class LibraryManagement {
         scrollPane.setFitToHeight(true);
         scrollPane.setFitToWidth(true);
         commentPage.setScrollPane(scrollPane);
-
+        vBox.getChildren().add(commentPage.commentPage());
+        Platform.runLater(() -> {
+            scrollPane.setContent(hBox);
+        });
+        scrollPane.setPannable(true); // Kéo nội dung bằng chuột
         Pane pane = new Pane(rectangle,scrollPane);
 
         Scene scene = new Scene(pane, screenWidth, screenHeight);
@@ -1000,41 +1007,41 @@ public class LibraryManagement {
 
         VBox userIdVBox = vBox("ID người dùng");
         VBox fullNameVBox = vBox("Họ và tên");
-        VBox dateOfBirthVBox = vBox("Ngày sinh");
+        VBox dateOfBirthVBox = datePicker("Ngày sinh");
         VBox addressVBox = vBox("Địa Chỉ");
         VBox phoneNumberVBox = vBox("Số Điện Thoại");
         VBox emailVBox = vBox("Email");
         VBox usernameVBox = vBox("Tên đăng nhập");
         VBox passwordHashVBox = vBox("Mật khẩu");
         VBox membershipIdVBox = vBox("Mã thẻ thư viện");
-        VBox joinDateVBox = vBox("Ngày tạo tài khoản");
-        VBox membershipStatusVBox = comboBox("Trạng thái thẻ",  new String[] {"active","expired","'locked'"});
-        VBox roleVBox = comboBox("Chức vụ",  new String[] {"member","librarian","admin"});
-        VBox expiryDateVBox = vBox("Ngày hết hạn thẻ");
-        VBox cardRegistrationDateVBox = vBox("Ngày đăng kí thẻ");
-        VBox accountStatusVBox = comboBox("Trạng thái tài khoản",  new String[] {"active","inactive"});
-        VBox genderVBox = comboBox("Giới tính",  new String[] {"other","male","female"});
-        VBox departmentVBox = vBox("Khoa");
-        VBox classVBox = vBox("Lớp"); // 18 cái
+        VBox joinDateVBox = datePicker("Ngày tạo tài khoản");
+        VBox membershipStatusVBox = comboBox("Trạng thái thẻ", Arrays.asList("active","expired","locked"));
+        VBox roleVBox = comboBox("Chức vụ",  Arrays.asList("member","librarian","admin"));
+        VBox expiryDateVBox = datePicker("Ngày hết hạn thẻ");
+        VBox cardRegistrationDateVBox = datePicker("Ngày đăng kí thẻ");
+        VBox accountStatusVBox = comboBox("Trạng thái tài khoản", Arrays.asList("active","inactive"));
+        VBox genderVBox = comboBox("Giới tính",  Arrays.asList("other","male","female"));
+        VBox departmentVBox = comboBoxAndTextField("Khoa", new FileHandler("departments.txt").readFromFile());
+        VBox classVBox = comboBoxAndTextField("Lớp", new FileHandler("class_name.txt").readFromFile()); // 18 cái
 
         TextField userIdField = (TextField)userIdVBox.getChildren().get(1);
         TextField fullNameField = (TextField)fullNameVBox.getChildren().get(1);
-        TextField dateOfBirthField = (TextField)dateOfBirthVBox.getChildren().get(1);
+        DatePicker dateOfBirthField = (DatePicker)dateOfBirthVBox.getChildren().get(1);
         TextField addressField = (TextField)addressVBox.getChildren().get(1);
         TextField phoneNumberField = (TextField)phoneNumberVBox.getChildren().get(1);
         TextField emailField = (TextField)emailVBox.getChildren().get(1);
         TextField usernameField = (TextField)usernameVBox.getChildren().get(1);
         TextField passwordHashField = (TextField)passwordHashVBox.getChildren().get(1);
         TextField membershipIdField = (TextField)membershipIdVBox.getChildren().get(1);
-        TextField joinDateField = (TextField)joinDateVBox.getChildren().get(1);
+        DatePicker joinDateField = (DatePicker)joinDateVBox.getChildren().get(1);
         ComboBox membershipStatusField = (ComboBox)membershipStatusVBox.getChildren().get(1);
         ComboBox roleField = (ComboBox)roleVBox.getChildren().get(1);
-        TextField expiryDateField = (TextField)expiryDateVBox.getChildren().get(1);
-        TextField cardRegistrationDateField = (TextField)cardRegistrationDateVBox.getChildren().get(1);
+        DatePicker expiryDateField = (DatePicker)expiryDateVBox.getChildren().get(1);
+        DatePicker cardRegistrationDateField = (DatePicker)cardRegistrationDateVBox.getChildren().get(1);
         ComboBox accountStatusField = (ComboBox)accountStatusVBox.getChildren().get(1);
         ComboBox genderField = (ComboBox)genderVBox.getChildren().get(1);
-        TextField departmentField = (TextField)departmentVBox.getChildren().get(1);
-        TextField classField = (TextField)classVBox.getChildren().get(1);
+        TextField departmentField = (TextField)((StackPane) departmentVBox.getChildren().get(1)).getChildren().get(0);
+        TextField classField = (TextField)((StackPane) classVBox.getChildren().get(1)).getChildren().get(0);
 
         //tạo tiêu đề
         Label addFeild = new Label("Thêm người dùng");
@@ -1121,16 +1128,16 @@ public class LibraryManagement {
        deleteButton.setOnAction(e->{
            userIdField.clear();
            fullNameField.clear();
-           dateOfBirthField.clear();
+           //dateOfBirthField.clear();
            addressField.clear();
            phoneNumberField.clear();
            emailField.clear();
            usernameField.clear();
            passwordHashField.clear();
            membershipIdField.clear();
-           joinDateField.clear();
-           expiryDateField.clear();
-           cardRegistrationDateField.clear();
+           //joinDateField.clear();
+           //expiryDateField.clear();
+           //cardRegistrationDateField.clear();
            departmentField.clear();
            classField.clear();
            imageView.setImage(null);
@@ -1161,18 +1168,18 @@ public class LibraryManagement {
                     // Lấy giá trị từ TextField
                     String userId = userIdField.getText();
                     String fullName = fullNameField.getText();
-                    LocalDate dateOfBirth = parseDate(dateOfBirthField.getText(),"lỗi ngày");
+                    LocalDate dateOfBirth = parseDate(dateOfBirthField.getValue(),"lỗi ngày");
                     String address = addressField.getText();
-                    String phoneNumber = phoneNumberField.getText();
-                    String email = emailField.getText();
+                    String phoneNumber = validatePhoneNumber(phoneNumberField.getText());
+                    String email = validateEmail(emailField.getText());
                     String username = usernameField.getText();
                     String passwordHash = passwordHashField.getText();
                     String membershipId = membershipIdField.getText();
-                    LocalDate joinDate =  parseDate(joinDateField.getText(), "Lỗi ngày");
+                    LocalDate joinDate =  parseDate(joinDateField.getValue(), "Lỗi ngày");
                     String membershipStatus = (String) membershipStatusField.getValue();
                     String role = (String) roleField.getValue();
-                    LocalDate expiryDate = parseDate(expiryDateField.getText(), "Lỗi ngày");
-                    LocalDate cardRegistrationDate = parseDate(cardRegistrationDateField.getText(), "Lỗi ngày");
+                    LocalDate expiryDate = parseDate(expiryDateField.getValue(), "Lỗi ngày");
+                    LocalDate cardRegistrationDate = parseDate(cardRegistrationDateField.getValue(), "Lỗi ngày");
                     String accountStatus = (String) accountStatusField.getValue();
                     String gender = (String) genderField.getValue();
                     String department = departmentField.getText();
@@ -1209,57 +1216,59 @@ public class LibraryManagement {
 
         VBox userIdVBox = vBox("ID người dùng");
         VBox fullNameVBox = vBox("Họ và tên");
-        VBox dateOfBirthVBox = vBox("Ngày sinh");
+        VBox dateOfBirthVBox = datePicker("Ngày sinh");
         VBox addressVBox = vBox("Địa Chỉ");
         VBox phoneNumberVBox = vBox("Số Điện Thoại");
         VBox emailVBox = vBox("Email");
         VBox usernameVBox = vBox("Tên đăng nhập");
         VBox passwordHashVBox = vBox("Mật khẩu");
         VBox membershipIdVBox = vBox("Mã thẻ thư viện");
-        VBox joinDateVBox = vBox("Ngày tạo tài khoản");
-        VBox membershipStatusVBox = comboBox("Trạng thái thẻ",  new String[] {"active","expired","'locked'"});
-        VBox roleVBox = comboBox("Chức vụ",  new String[] {"member","librarian","admin"});
-        VBox expiryDateVBox = vBox("Ngày hết hạn thẻ");
-        VBox cardRegistrationDateVBox = vBox("Ngày đăng kí thẻ");
-        VBox accountStatusVBox = comboBox("Trạng thái tài khoản",  new String[] {"active","inactive"});
-        VBox genderVBox = comboBox("Giới tính",  new String[] {"other","male","female"});
-        VBox departmentVBox = vBox("Khoa");
-        VBox classVBox = vBox("Lớp"); // 18 cái
+        VBox joinDateVBox = datePicker("Ngày tạo tài khoản");
+        VBox membershipStatusVBox = comboBox("Trạng thái thẻ",   Arrays.asList("active","expired","locked"));
+        VBox roleVBox = comboBox("Chức vụ",   Arrays.asList("member","librarian","admin"));
+        VBox expiryDateVBox =  datePicker("Ngày hết hạn thẻ");
+        VBox cardRegistrationDateVBox = datePicker("Ngày đăng kí thẻ");
+        VBox accountStatusVBox = comboBox("Trạng thái tài khoản",   Arrays.asList("active","inactive"));
+        VBox genderVBox = comboBox("Giới tính",  Arrays.asList("other","male","female"));
+        VBox departmentVBox = comboBoxAndTextField("Khoa", new FileHandler("departments.txt").readFromFile());
+        VBox classVBox = comboBoxAndTextField("Lớp", new FileHandler("class_name.txt").readFromFile()); // 18 cái
+
 
         TextField userIdField = (TextField)userIdVBox.getChildren().get(1);
         TextField fullNameField = (TextField)fullNameVBox.getChildren().get(1);
-        TextField dateOfBirthField = (TextField)dateOfBirthVBox.getChildren().get(1);
+        DatePicker dateOfBirthField = (DatePicker)dateOfBirthVBox.getChildren().get(1);
         TextField addressField = (TextField)addressVBox.getChildren().get(1);
         TextField phoneNumberField = (TextField)phoneNumberVBox.getChildren().get(1);
         TextField emailField = (TextField)emailVBox.getChildren().get(1);
         TextField usernameField = (TextField)usernameVBox.getChildren().get(1);
         TextField passwordHashField = (TextField)passwordHashVBox.getChildren().get(1);
         TextField membershipIdField = (TextField)membershipIdVBox.getChildren().get(1);
-        TextField joinDateField = (TextField)joinDateVBox.getChildren().get(1);
+        DatePicker joinDateField = (DatePicker)joinDateVBox.getChildren().get(1);
         ComboBox membershipStatusField = (ComboBox)membershipStatusVBox.getChildren().get(1);
         ComboBox roleField = (ComboBox)roleVBox.getChildren().get(1);
-        TextField expiryDateField = (TextField)expiryDateVBox.getChildren().get(1);
-        TextField cardRegistrationDateField = (TextField)cardRegistrationDateVBox.getChildren().get(1);
+        DatePicker expiryDateField = (DatePicker)expiryDateVBox.getChildren().get(1);
+        DatePicker cardRegistrationDateField = (DatePicker)cardRegistrationDateVBox.getChildren().get(1);
         ComboBox accountStatusField = (ComboBox)accountStatusVBox.getChildren().get(1);
         ComboBox genderField = (ComboBox)genderVBox.getChildren().get(1);
-        TextField departmentField = (TextField)departmentVBox.getChildren().get(1);
-        TextField classField = (TextField)classVBox.getChildren().get(1);
+        TextField departmentField = (TextField)((StackPane) departmentVBox.getChildren().get(1)).getChildren().get(0);
+        TextField classField = (TextField)((StackPane) classVBox.getChildren().get(1)).getChildren().get(0);
+
 
         // Gán giá trị ban đầu từ đối tượng User
         userIdField.setText(user.getUserId());
         fullNameField.setText(user.getFullName());
-        dateOfBirthField.setText((user.getDateOfBirth()!=null)?user.getDateOfBirth().toString():"");
+        dateOfBirthField.setValue(user.getDateOfBirth());
         addressField.setText(user.getAddress());
         phoneNumberField.setText(user.getPhoneNumber());
         emailField.setText(user.getEmail());
         usernameField.setText(user.getUsername());
         passwordHashField.setText(user.getPasswordHash());
         membershipIdField.setText(user.getMembershipId());
-        joinDateField.setText((user.getJoinDate()!=null)?user.getJoinDate().toString():"");
+        joinDateField.setValue(user.getJoinDate());
         membershipStatusField.setValue(user.getMembershipStatus());
         roleField.setValue(user.getRole());
-        expiryDateField.setText((user.getExpiryDate()!=null)?user.getExpiryDate().toString():"");
-        cardRegistrationDateField.setText((user.getCardRegistrationDate()!=null)?user.getCardRegistrationDate().toString():"");
+        expiryDateField.setValue(user.getExpiryDate());
+        cardRegistrationDateField.setValue(user.getCardRegistrationDate());
         accountStatusField.setValue(user.getAccountStatus());
         genderField.setValue(user.getGender());
         departmentField.setText(user.getDepartment());
@@ -1364,16 +1373,16 @@ public class LibraryManagement {
                    "Hành động này không thể hoàn tác!");
             userIdField.clear();
             fullNameField.clear();
-            dateOfBirthField.clear();
+            //dateOfBirthField.clear();
             addressField.clear();
             phoneNumberField.clear();
             emailField.clear();
             usernameField.clear();
             passwordHashField.clear();
             membershipIdField.clear();
-            joinDateField.clear();
-            expiryDateField.clear();
-            cardRegistrationDateField.clear();
+            //joinDateField.clear();
+            //expiryDateField.clear();
+            //cardRegistrationDateField.clear();
             departmentField.clear();
             classField.clear();
 
@@ -1397,27 +1406,43 @@ imageVBox.getChildren().set(2,new Label(""));
                     // Lấy giá trị từ TextField
                     String userId = userIdField.getText();
                     String fullName = fullNameField.getText();
-                    LocalDate dateOfBirth = parseDate(dateOfBirthField.getText(),"lỗi ngày");
+                    LocalDate dateOfBirth = parseDate(dateOfBirthField.getValue(),"lỗi ngày");
                     String address = addressField.getText();
-                    String phoneNumber = phoneNumberField.getText();
-                    String email = emailField.getText();
+                    String phoneNumber = validatePhoneNumber(phoneNumberField.getText());
+                    String email = validateEmail(emailField.getText());
                     String username = usernameField.getText();
                     String passwordHash = passwordHashField.getText();
                     String membershipId = membershipIdField.getText();
-                    LocalDate joinDate =  parseDate(joinDateField.getText(), "Lỗi ngày");
+                    LocalDate joinDate =  parseDate(joinDateField.getValue(), "Lỗi ngày");
                     String membershipStatus = (String) membershipStatusField.getValue();
                     String role = (String) roleField.getValue();
-                    LocalDate expiryDate = parseDate(expiryDateField.getText(), "Lỗi ngày");
-                    LocalDate cardRegistrationDate = parseDate(cardRegistrationDateField.getText(), "Lỗi ngày");
+                    LocalDate expiryDate = parseDate(expiryDateField.getValue(), "Lỗi ngày");
+                    LocalDate cardRegistrationDate = parseDate(cardRegistrationDateField.getValue(), "Lỗi ngày");
                     String accountStatus = (String) accountStatusField.getValue();
                     String gender = (String) genderField.getValue();
                     String department = departmentField.getText();
                     String className = classField.getText();
 
-
+                    user.setUserId(userId);
+                    user.setFullName(fullName);
+                    user.setDateOfBirth(dateOfBirth);
+                    user.setAddress(address);
+                    user.setPhoneNumber(phoneNumber);
+                    user.setEmail(email);
+                    user.setUsername(username);
+                    user.setPasswordHash(passwordHash);
+                    user.setMembershipId(membershipId);
+                    user.setJoinDate(joinDate);
+                    user.setMembershipStatus(membershipStatus);
+                    user.setRole(role);
+                    user.setExpiryDate(expiryDate);
+                    user.setCardRegistrationDate(cardRegistrationDate);
+                    user.setAccountStatus(accountStatus);
+                    user.setGender(gender);
+                    user.setDepartment(department);
+                    user.setClassName(className);
                     // Tạo đối tượng User
-
-                    userDAO.addUser(user);
+                    userDAO.updateUser(user);
 
                 } catch (IllegalArgumentException ex) {
                     System.out.println(ex.getMessage());
@@ -1460,6 +1485,8 @@ imageVBox.getChildren().set(2,new Label(""));
         totalBooksBorrowedField.setPromptText("Số Sách Đã Mượn");
         TextField totalBooksReturnedField = new TextField();
         totalBooksReturnedField.setPromptText("Số Sách đã trả");
+
+        Label titleTable = titleTable("Quản Lý Người Dùng");
 
         AtomicBoolean check1 = new AtomicBoolean(false);
         AtomicBoolean check2 = new AtomicBoolean(false);
@@ -1566,8 +1593,10 @@ imageVBox.getChildren().set(2,new Label(""));
         });
         deleteButton.setMinWidth(15);
 
-        HBox buttonLayout1 = new HBox(10, addButton, updateButton, deleteButton);
-        buttonLayout1.setAlignment(Pos.TOP_RIGHT);
+        HBox buttonLayout1 = new HBox(660, titleTable, new HBox(10, addButton, updateButton, deleteButton));
+        buttonLayout1.setAlignment(Pos.BOTTOM_LEFT);
+        buttonLayout1.setMaxHeight(30);
+        buttonLayout1.setMinHeight(30);
 
         tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         tableView.setItems(data);
@@ -1575,10 +1604,10 @@ imageVBox.getChildren().set(2,new Label(""));
         HBox inputLayout = new HBox(10, userIdField, fullNameField, membershipStatusField,joinDateField,
                  roleField, totalBooksBorrowedField, totalBooksReturnedField);
         inputLayout.setAlignment(Pos.CENTER);
-        HBox buttonLayout = new HBox(10, searchButton, deleteSerchButton);
-        buttonLayout.setAlignment(Pos.CENTER);
-        VBox buttonLayout2 = new VBox( buttonLayout, buttonLayout1);
-        Pane layout = new Pane(rectangle, new VBox(20, inputLayout, buttonLayout2, tableView));
+        HBox buttonLayout2 = new HBox(10, searchButton, deleteSerchButton);
+        buttonLayout2.setAlignment(Pos.CENTER);
+        VBox buttonLayout = new VBox(7, buttonLayout2, buttonLayout1, tableView);
+        Pane layout = new Pane(rectangle, new VBox(20, inputLayout, buttonLayout));
         layout.setLayoutY(120);
         return layout;
     }
@@ -1587,18 +1616,18 @@ imageVBox.getChildren().set(2,new Label(""));
         user = userDAO.output1Value(id);
         HBox userIdHBox = hBoxForShowUser("ID người dùng:", user.getUserId());
         HBox fullNameHBox = hBoxForShowUser("Họ và tên:", user.getFullName());
-        HBox dateOfBirthHBox = hBoxForShowUser("Ngày sinh:", user.getDateOfBirth() + "");
+        HBox dateOfBirthHBox = hBoxForShowUser("Ngày sinh:", (user.getDateOfBirth()!=null)?user.getDateOfBirth()+ "":"");
         HBox addressHBox = hBoxForShowUser("Địa chỉ:", user.getAddress());
         HBox phoneNumberHBox = hBoxForShowUser("Số điện thoại:", user.getPhoneNumber());
         HBox emailHBox = hBoxForShowUser("Email:", user.getEmail());
         HBox usernameHBox = hBoxForShowUser("Tên đăng nhập:", user.getUsername());
         HBox passwordHashHBox = hBoxForShowUser("Mật khẩu:", user.getPasswordHash());
         HBox membershipIdHBox = hBoxForShowUser("Mã thẻ:", user.getMembershipId());
-        HBox joinDateHBox = hBoxForShowUser("Ngày tạo tài khoản:", user.getJoinDate()+ "");
+        HBox joinDateHBox = hBoxForShowUser("Ngày tạo tài khoản:", (user.getJoinDate()!=null)?user.getJoinDate()+ "":"");
         HBox membershipStatusHBox = hBoxForShowUser("Trạng thái thẻ:", user.getMembershipStatus());
         HBox roleHBox = hBoxForShowUser("Chức vụ:", user.getRole());
-        HBox expiryDateHBox = hBoxForShowUser("Ngày hết hạn thẻ:", user.getExpiryDate()+ "");
-        HBox cardRegistrationDateHBox = hBoxForShowUser("Ngày đăng ký thẻ:", user.getCardRegistrationDate()+ "");
+        HBox expiryDateHBox = hBoxForShowUser("Ngày hết hạn thẻ:", (user.getExpiryDate()!=null)?user.getExpiryDate()+ "":"");
+        HBox cardRegistrationDateHBox = hBoxForShowUser("Ngày đăng ký thẻ:",(user.getCardRegistrationDate()!=null)?user.getCardRegistrationDate()+ "":"");
         HBox accountStatusHBox = hBoxForShowUser("Trạng thái tài khoản:", user.getAccountStatus());
         HBox genderHBox = hBoxForShowUser("Giới tính:", user.getGender());
         HBox departmentHBox = hBoxForShowUser("Khoa:", user.getDepartment());
@@ -1682,11 +1711,14 @@ imageVBox.getChildren().set(2,new Label(""));
     }
 
     public Pane statistical(String userId) {
-            // Tạo bảng TableView
+
+        boolean role;
+        role = UserDAO.getRole(userId).compareTo("admin")==0;
+        // Tạo bảng TableView
             TableView<BookAndBorrow> tableView;
             ObservableList<BookAndBorrow> data = FXCollections.observableArrayList();
             List<String> a = new ArrayList<>();
-            tableView = Table.tableStatistical(true, 1020, a, this);
+                tableView = Table.tableStatistical(true, 1020, a, this, role);
             Rectangle rectangle = rectangle(screenWidth-350, screenHeight - 170, Color.WHITE,
                     Color.BLACK, 1, 10, 10, 0.8, -25, -20 );
 
@@ -1703,17 +1735,14 @@ imageVBox.getChildren().set(2,new Label(""));
             genreField.setMinWidth(150);
 
         TextField userIdField = new TextField();
-        genreField.setPromptText("ID người dùng");
-        genreField.setMinWidth(150);
+        userIdField.setPromptText("ID người dùng");
+        userIdField.setMinWidth(150);
         TextField fullNameField = new TextField();
-        genreField.setPromptText("Tên người dùng");
-        genreField.setMinWidth(150);
+        fullNameField.setPromptText("Tên người dùng");
+        fullNameField.setMinWidth(150);
 
 
-        Label titleTable = new Label("Sách Đã Mượn");
-        titleTable.setStyle("-fx-font-size: 30px; -fx-font-weight: bold;");
-        VBox titleTableVBox = new VBox(titleTable);
-        titleTableVBox.setAlignment(Pos.CENTER);
+        Label titleTable = titleTable("Sách Đã Mượn");
 
         AtomicInteger localTable = new AtomicInteger(0);
 
@@ -1755,7 +1784,10 @@ imageVBox.getChildren().set(2,new Label(""));
                 book.setAuthor(authorField.getText());
                 book.setGenre(genreField.getText());
                     String keyWord = serchField.getText();
-                    ResultSet resultSet = bookDAO.findBooksBorrowed(userId, book, keyWord, localTable.get());
+                ResultSet resultSet;
+                if(role) {
+                    resultSet = bookDAO.findBooksUserBorrowed(book, userIdField.getText(),
+                            fullNameField.getText(), keyWord, localTable.get());
                     if (resultSet != null) {
                         try {
                             while (resultSet.next()) {
@@ -1764,9 +1796,11 @@ imageVBox.getChildren().set(2,new Label(""));
                                         resultSet.getString("title"),
                                         resultSet.getString("author"),
                                         resultSet.getString("genre"),
-                                        getDate(resultSet,"borrow_date"),
-                                        getDate(resultSet,"due_date"),
-                                        getDate(resultSet,"return_date"),
+                                        getDate(resultSet, "borrow_date"),
+                                        getDate(resultSet, "due_date"),
+                                        getDate(resultSet, "return_date"),
+                                        resultSet.getString("user_id"),
+                                        resultSet.getString("full_name"),
                                         "chi tiết"
                                 ));
                             }
@@ -1779,6 +1813,33 @@ imageVBox.getChildren().set(2,new Label(""));
                                 System.out.println("Lỗi khi đóng ResultSet: " + ex.getMessage());
                             }
                         }
+                    }
+                } else {
+                     resultSet = bookDAO.findBooksBorrowed(userId, book, keyWord, localTable.get());
+                    if (resultSet != null) {
+                        try {
+                            while (resultSet.next()) {
+                                data.add(new BookAndBorrow(
+                                        resultSet.getString("id"),
+                                        resultSet.getString("title"),
+                                        resultSet.getString("author"),
+                                        resultSet.getString("genre"),
+                                        getDate(resultSet, "borrow_date"),
+                                        getDate(resultSet, "due_date"),
+                                        getDate(resultSet, "return_date"),
+                                        "chi tiết"
+                                ));
+                            }
+                        } catch (SQLException ex) {
+                            System.out.println("Lỗi khi đọc ResultSet: " + ex.getMessage());
+                        } finally {
+                            try {
+                                if (resultSet != null) resultSet.close();
+                            } catch (SQLException ex) {
+                                System.out.println("Lỗi khi đóng ResultSet: " + ex.getMessage());
+                            }
+                        }
+                    }
                         bookDAO.closeDatabase();
                     }
 
@@ -1810,7 +1871,7 @@ imageVBox.getChildren().set(2,new Label(""));
             tableView.setItems(data);
 
             HBox inputLayout = new HBox(10, titleField, authorField, genreField);
-            if(UserDAO.getRole(userId).compareTo("admin")==0)
+            if(role)
                 inputLayout.getChildren().addAll(userIdField, fullNameField);
             inputLayout.setAlignment(Pos.CENTER);
             HBox buttonLayout = new HBox(10, serchField, searchButton, deleteSerchButton, returndButton);
@@ -1851,6 +1912,75 @@ imageVBox.getChildren().set(2,new Label(""));
             layout.setLayoutY(120);
             return layout;
         }
+
+    public Pane dashboard() {
+
+        TableView tableViewUser  = Table.tableTopUser(560);
+        ObservableList<TopUser> dataUser = UserDAO.dataTopUser();
+        TableView tableViewBook  = Table.tableTopBook( 560);
+        ObservableList<TopBook> dataBook = BookDAO.dataTopBook();
+
+        Label titleTopUser = new Label("Bảng xếp hạng người dùng");
+        titleTopUser.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
+        Label titleTopBook = new Label("Bảng xếp hạng Sácch");
+        titleTopBook.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
+
+        HBox tableHBox = new HBox(20, new VBox(titleTopUser, tableViewUser), new VBox(titleTopBook, tableViewBook));
+
+        Rectangle rectangle = rectangle(screenWidth-350, screenHeight - 170, Color.WHITE,
+                Color.BLACK, 1, 10, 10, 0.8, -25, 100 );
+
+        int totalUsers = UserDAO.totalUsers();
+        int totalBooks = BookDAO.totalBooks();
+        int totalBooksReturned = BorrowDAO.totalBooksReturned();
+        int totalUsersBorroed = BorrowDAO.totalBooksBorrowed();
+
+        StackPane customBox1 = createCustomBox(totalUsers,"Người dùng",  Color.rgb(30, 144, 255),
+                "#4169E1", "file:C:/Users/Dell/IdeaProjects/library/src/main/icons/icons8_Conference_26px.png");
+
+        StackPane customBox2 = createCustomBox(totalBooks,"Sách",  Color.rgb(34, 139, 34),
+                "#007000", "file:C:/Users/Dell/IdeaProjects/library/src/main/icons/icons8_Books_26px.png");
+
+        StackPane customBox3 = createCustomBox(totalBooksReturned,"Tổng sách đã trả", Color.rgb(255, 165, 0),
+                "#D2691E", "file:C:/Users/Dell/IdeaProjects/library/src/main/icons/icons8_Book_26px.png");
+
+        StackPane customBox4 = createCustomBox(totalUsersBorroed,"Tổng sách đang mượn",  Color.rgb(255, 0, 0),
+                "#B22222", "file:C:/Users/Dell/IdeaProjects/library/src/main/icons/icons8_Book_26px.png");
+
+        HBox hBoxBox = new HBox(20, customBox1, customBox2, customBox3, customBox4);
+
+        Label label = titleTable("Bảng điều khiển");
+
+        tableViewUser.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        tableViewUser.setItems(dataUser);
+        tableViewBook.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        tableViewBook.setItems(dataBook);
+
+        VBox vBox = new VBox(20, new VBox(10,label, hBoxBox), tableHBox);
+
+        // Tạo ScrollPane
+        ScrollPane scrollPane = new ScrollPane(vBox);
+        scrollPane.setLayoutX(-5);
+        scrollPane.setLayoutY(120);
+
+
+        scrollPane.setStyle(
+                "-fx-background-color: white;" +  // Nền trắng
+                        "-fx-border-color: transparent;" + // Không có viền
+                        "-fx-background-insets: 0;" +
+                        "-fx-background: #FFFFFF;"+
+                        "-fx-padding: 0;"
+        );
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER); // Tắt thanh cuộn dọc
+        // Cố định kích thước ScrollPane
+        scrollPane.setPrefSize(1146, screenHeight-220);
+        // Tùy chỉnh thanh cuộn
+        scrollPane.setPannable(true); // Kéo nội dung bằng chuột
+
+        Pane pane = new Pane();
+        pane.getChildren().addAll(rectangle, scrollPane);
+        return pane;
+    }
 
     Button button(String s) {
         Button button0 = new Button(s);
@@ -1910,7 +2040,7 @@ imageVBox.getChildren().set(2,new Label(""));
         return hBox;
     }
 
-    public VBox comboBoxAndTextField(String s) {
+    public VBox comboBoxAndTextField(String s, List<String> arr) {
         Label label = new Label(s);
         label.setStyle("-fx-font-size: 12px;-fx-font-weight: bold;");
 
@@ -1918,29 +2048,30 @@ imageVBox.getChildren().set(2,new Label(""));
         TextField textField = new TextField();
         textField.setPromptText(s);
         textField.setMinHeight(20);
+        textField.setStyle("-fx-text-inner-padding: 0 400 0 10;");
 
         // Tạo ComboBox
         ComboBox<String> statusComboBox = new ComboBox<>();
-        statusComboBox.getItems().addAll("available", "not available");
-        statusComboBox.setValue("available"); // giá trị mặc định
+        statusComboBox.getItems().addAll(arr);
+        //statusComboBox.setValue(arr.get(0)); // giá trị mặc định
         statusComboBox.setStyle(
-                "-fx-background-color: #FFFFFF; " +
-                        "-fx-border-color:transparent #ccc transparent transparent; " +
-                        "-fx-border-radius: 2px; " +
-                        "-fx-padding: 0px; " +
+                        "-fx-background-color: #FFFFFF;" + // Màu nền của ComboBox
+                        "-fx-border-color: transparent #ccc transparent #ccc;" + // Màu viền
+                        "-fx-border-radius: 2px;" +
+                        "-fx-padding: 0px;" +
                         "-fx-border-width: 1px;"
         );
 
-        statusComboBox.setPrefSize(20,20);
-        statusComboBox.setMinSize(20,20);
-        statusComboBox.setMaxSize(20,20);
+
+        statusComboBox.setMinSize(200,24);
+        statusComboBox.setMaxSize(200,24);
 
         // Thiết lập giá trị mặc định cho TextField
-        textField.setText(statusComboBox.getValue());
+        //textField.setText(statusComboBox.getValue());
         textField.setStyle("-fx-background-color: white; -fx-border-color: #ccc; -fx-padding: 4px 25px 4px 5px;-fx-border-radius: 2px;");
         // Thêm Listener để cập nhật TextField khi giá trị của ComboBox thay đổi
         statusComboBox.valueProperty().addListener((observable, oldValue, newValue) -> {
-            textField.setText(newValue);
+            textField.setText(newValue);  // Gán giá trị cho TextField
         });
 
         // Bố cục HBox và VBox
@@ -1953,14 +2084,14 @@ imageVBox.getChildren().set(2,new Label(""));
 
         return vBox;
     }
-    public VBox comboBox(String s, String[] arr) {
+    public VBox comboBox(String s, List<String> arr) {
         Label label = new Label(s);
         label.setStyle("-fx-font-size: 12px;-fx-font-weight: bold;");
 
         // Tạo ComboBox
         ComboBox<String> comboBox = new ComboBox<>();
         comboBox.getItems().addAll(arr);
-        comboBox.setValue(arr[0]); // giá trị mặc định
+        comboBox.setValue(arr.get(0)); // giá trị mặc định
         comboBox.setStyle(
                 "-fx-background-color: #FFFFFF; " +
                         "-fx-border-color:#ccc #ccc #ccc #ccc; " +
@@ -1978,6 +2109,35 @@ imageVBox.getChildren().set(2,new Label(""));
 
         return vBox;
     }
+    public VBox datePicker(String s) {
+        // Tạo Label
+        Label label = new Label(s);
+        label.setStyle("-fx-font-size: 12px;-fx-font-weight: bold;");
+
+        // Tạo DatePicker
+        DatePicker datePicker = new DatePicker();
+        datePicker.setStyle(
+                "-fx-background-color: #FFFFFF; " +
+                        "-fx-border-color:#ccc #ccc #ccc #ccc; " +
+                        "-fx-border-radius: 2px; " +
+                        "-fx-padding: 0px; " +
+                        "-fx-border-width: 1px;"
+        );
+
+        datePicker.setPrefSize(500, 28);
+        datePicker.setMinSize(500, 28);
+        datePicker.setMaxSize(500, 28);
+
+        // Đặt giá trị mặc định là ngày hiện tại
+        //datePicker.setValue(java.time.LocalDate.now());
+
+        // Tạo VBox chứa Label và DatePicker
+        VBox vBox = new VBox(0, label, datePicker);
+        vBox.setMinWidth(500);
+
+        return vBox;
+    }
+
     public HBox pagesAndDownloads(Label pages, Label downloads, Label rating) {
         Label pagesText = new Label("Trang");
         Label downloadsText = new Label("Lượt mượn");
@@ -2124,7 +2284,15 @@ imageVBox.getChildren().set(2,new Label(""));
         return vbox;
     }
 
-
+    Label titleTable (String s) {
+    Label titleTable = new Label(s);
+    titleTable.setStyle("-fx-font-size: 30px; -fx-font-weight: bold;");
+    VBox titleTableVBox = new VBox(titleTable);
+    titleTableVBox.setAlignment(Pos.CENTER);
+    titleTable.setMaxHeight(40);
+    titleTable.setMinHeight(40);
+    return titleTable;
+}
 
     TextArea textArea() {
         TextArea textArea = new TextArea();
@@ -2263,19 +2431,96 @@ imageVBox.getChildren().set(2,new Label(""));
 
         return vbox;
     }
+// tạo box cho bảng điều khiển
+    public static StackPane createCustomBox(int number, String meaning, Color mainColor, String colorButton, String imageUrl) {
 
-    // Phương thức chuyển đổi kiểu Integer
+        Rectangle rectangle = new Rectangle(270, 120, mainColor);
+
+        // Label in đậm và chỉnh font size
+        Label numberLabel = new Label(number + "");
+        numberLabel.setStyle(
+                " -fx-padding: 0px;-fx-font-weight: bold; -fx-font-size: 30px;" +
+                "-fx-text-fill: white;");
+        numberLabel.setMaxHeight(35);
+        numberLabel.setMinHeight(35);
+        numberLabel.setAlignment(Pos.TOP_RIGHT);
+        Label meaningLabel = new Label(meaning);
+        meaningLabel.setStyle(
+                " -fx-padding: 0px;-fx-font-weight: bold; -fx-font-size: 15px;" +
+                "-fx-text-fill: white;");
+//fx-border-color: black; -fx-border-width: 1px;
+        VBox labelVBox = new VBox(10, numberLabel, meaningLabel);
+        labelVBox.setStyle("-fx-padding: 0px 10px 0px 10px;-fx-border-width: 1px;");
+        labelVBox.setMinSize(200, 70);
+        labelVBox.setMaxSize(200, 70);
+        // Hình ảnh bên trái
+        ImageView imageView = new ImageView(new Image(imageUrl));
+        imageView.setFitWidth(75);
+        imageView.setFitHeight(75);
+
+        // Nút hoặc chữ "xem thêm"
+        Button seeMoreButton = new Button("Xem thêm");
+        seeMoreButton.setMinWidth(270);
+        seeMoreButton.setMaxWidth(270);
+        seeMoreButton.setStyle("-fx-background-color: " + colorButton + "; -fx-text-fill: white;");
+
+        // Hover effect for button
+        //seeMoreButton.setOnMouseEntered(event -> seeMoreButton.setStyle("-fx-background-color: " + colorButton + "; -fx-text-fill: white;-fx-font-weight: bold;"));
+        //seeMoreButton.setOnMouseExited(event -> seeMoreButton.setStyle("-fx-background-color: " + colorButton + "; -fx-text-fill: white;-fx-font-weight: normal;"));
+
+        VBox labelAndButton = new VBox(20, labelVBox, seeMoreButton);
+        labelAndButton.setAlignment(Pos.BOTTOM_LEFT);
+        StackPane stackPane = new StackPane(rectangle, labelAndButton, imageView);
+        stackPane.setMaxSize(270, 120);
+
+        StackPane.setAlignment(labelAndButton, Pos.BOTTOM_LEFT); // Đặt nút ở dưới cùng
+        StackPane.setAlignment(imageView, Pos.TOP_RIGHT); // Đặt hình ảnh ở góc phải trên
+        StackPane.setMargin(imageView, new Insets(10, 20, 0, 0)); // Cách 10px từ tất cả các cạnh
+
+        // Tạo hiệu ứng khi di chuột vào StackPane để làm hình ảnh to lên
+        // Khi chuột di vào StackPane
+        stackPane.setOnMouseEntered(event -> {
+            Timeline timeline = new Timeline();
+            KeyValue keyValueWidth = new KeyValue(imageView.fitWidthProperty(), 80);
+            KeyValue keyValueHeight = new KeyValue(imageView.fitHeightProperty(), 80);
+            KeyFrame keyFrame = new KeyFrame(Duration.millis(300), keyValueWidth, keyValueHeight); // Thời gian hiệu ứng là 300ms
+            timeline.getKeyFrames().add(keyFrame);
+            timeline.play(); // Chạy hiệu ứng
+        });
+
+// Khi chuột di ra khỏi StackPane
+        stackPane.setOnMouseExited(event -> {
+            Timeline timeline = new Timeline();
+            KeyValue keyValueWidth = new KeyValue(imageView.fitWidthProperty(), 75);
+            KeyValue keyValueHeight = new KeyValue(imageView.fitHeightProperty(), 75);
+            KeyFrame keyFrame = new KeyFrame(Duration.millis(300), keyValueWidth, keyValueHeight); // Thời gian hiệu ứng là 300ms
+            timeline.getKeyFrames().add(keyFrame);
+            timeline.play(); // Chạy hiệu ứng
+        });
+
+        return stackPane;
+    }
+
+
+    // Phương thức chuyển đổi kiểu Integer và kiểm tra số âm
     private Integer parseInteger(String input, String s) {
         if (input.isEmpty()) {
             return null; // Nếu trường rỗng, trả về null
         } else {
             try {
-                return Integer.parseInt(input);
+                Integer parsedValue = Integer.parseInt(input);
+
+                if (parsedValue < 0) {
+                    throw new IllegalArgumentException(s);
+                }
+
+                return parsedValue; // Trả về giá trị nếu hợp lệ
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException(s);
             }
         }
     }
+
     private Integer parseIntegerForFind(String input,AtomicBoolean  check) {
         if (input.isEmpty()) {
             check.set(false);
@@ -2296,12 +2541,46 @@ imageVBox.getChildren().set(2,new Label(""));
             return null; // Nếu trường rỗng, trả về null
         } else {
             try {
-                return Double.parseDouble(input);
+                Double parsedValue = Double.parseDouble(input);
+                if (parsedValue < 0) {
+                    throw new IllegalArgumentException(s);
+                }
+                return parsedValue;
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException(s);
             }
         }
     }
+
+    public String validatePhoneNumber(String phoneNumber) {
+        if (phoneNumber == null || phoneNumber.isEmpty()) {
+            return phoneNumber; // Trả về chính chuỗi nếu nó rỗng
+        }
+        // Kiểm tra chuỗi có chứa chữ số không
+        if (phoneNumber.matches("\\d+")) {
+            return phoneNumber; // Trả về chính chuỗi nếu chỉ chứa số
+        } else {
+            throw new IllegalArgumentException("Số điện thoại không hợp lệ: chứa ký tự không phải số.");
+        }
+    }
+    public String validateEmail(String email) {
+        // Kiểm tra email không rỗng
+        if (email.isEmpty()) {
+            return email;  // Trả về email rỗng nếu input là rỗng
+        }
+
+        // Biểu thức chính quy kiểm tra định dạng email
+        String emailRegex = "^[A-Za-z0-9+_.-]+@(.+)$";
+
+        // Kiểm tra nếu email khớp với biểu thức chính quy
+        if (email.matches(emailRegex)) {
+            return email;  // Nếu email hợp lệ, trả về chính nó
+        } else {
+            // Nếu không hợp lệ, ném ngoại lệ
+            throw new IllegalArgumentException("Email không hợp lệ");
+        }
+    }
+
     public Integer getInt(ResultSet resultSet, String type) throws SQLException {
         Integer type0 = resultSet.getInt(type);
         return resultSet.wasNull() ? null : type0;
@@ -2325,8 +2604,8 @@ imageVBox.getChildren().set(2,new Label(""));
         // Hiệu ứng khi di chuột vào
         button.setOnMouseEntered(e -> {
             button.setStyle("-fx-background-color: " + color2 + "; -fx-text-fill: white; -fx-font-size: 15px; -fx-font-weight: bold;");
-            button.setMinWidth(width+2);
-            button.setMinHeight(height+2);
+            button.setMinWidth(width);
+            button.setMinHeight(height);
         });
 
         // Hiệu ứng khi di chuột ra
@@ -2366,17 +2645,20 @@ imageVBox.getChildren().set(2,new Label(""));
         return button;
     }
 
-    private LocalDate parseDate(String input, String s) {
-        if (input.isEmpty()) {
-            return null; // Nếu trường rỗng, trả về null
+
+    private LocalDate parseDate(LocalDate input, String s) {
+        if (input == null) {
+       return null;
         } else {
             try {
-                return java.time.LocalDate.parse(input);
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException(s);
+                // Ở đây không cần phải parse lại, vì input đã là LocalDate
+                return input;
+            } catch (Exception e) {
+                throw new IllegalArgumentException(s); // Nếu có lỗi, ném ngoại lệ với thông báo lỗi
             }
         }
     }
+
     private LocalDate parseDateForFind(String dateString, AtomicBoolean check) {
         if (dateString == null || dateString.isEmpty()) {
             check.set(false);

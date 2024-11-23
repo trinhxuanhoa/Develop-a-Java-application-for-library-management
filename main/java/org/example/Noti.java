@@ -56,4 +56,14 @@ public class Noti{
         return result.isPresent() && result.get() == ButtonType.OK;
     }
 
+    public static void checkEmail(String email) {
+    if (!email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Cảnh báo");
+            alert.setHeaderText(null);
+            alert.setContentText("Vui lòng nhập một địa chỉ email hợp lệ.");
+            alert.showAndWait();
+        }
+    }
+
 }

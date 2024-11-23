@@ -1,8 +1,12 @@
 package org.example;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.scene.image.Image;
 import java.io.*;
 import java.io.ByteArrayInputStream;
 import java.sql.*;
+import java.util.List;
+import java.util.ArrayList;
 import java.time.LocalDate;
 import java.util.concurrent.atomic.AtomicBoolean;
 public class UserDAO {
@@ -61,36 +65,59 @@ public class UserDAO {
     }
     //sửa
     public void updateUser(User user) {
+        // Câu lệnh SQL với tất cả các cột cần cập nhật
         String sql = "UPDATE users SET full_name = ?, date_of_birth = ?, address = ?, " +
                 "phone_number = ?, email = ?, username = ?, password_hash = ?, " +
                 "membership_id = ?, join_date = ?, membership_status = ?, " +
-                "total_books_borrowed = ?, total_books_returned = ?, role = ? " +
+                "total_books_borrowed = ?, total_books_returned = ?, role = ?, " +
+                "expiry_date = ?, card_registration_date = ?, account_status = ?, " +
+                "gender = ?, department = ?, class_name = ? " +
                 "WHERE user_id = ?";
 
         try (Connection conn = DatabaseConnection.connectToLibrary();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
+            // Gán giá trị cho các tham số trong câu lệnh SQL
             pstmt.setString(1, user.getFullName());
-            pstmt.setDate(2, java.sql.Date.valueOf(user.getDateOfBirth()));
+            pstmt.setDate(2, user.getDateOfBirth() != null ? java.sql.Date.valueOf(user.getDateOfBirth()) : null);
             pstmt.setString(3, user.getAddress());
             pstmt.setString(4, user.getPhoneNumber());
             pstmt.setString(5, user.getEmail());
             pstmt.setString(6, user.getUsername());
             pstmt.setString(7, user.getPasswordHash());
             pstmt.setString(8, user.getMembershipId());
-            pstmt.setDate(9, java.sql.Date.valueOf(user.getJoinDate()));
+            pstmt.setDate(9, user.getJoinDate() != null ? java.sql.Date.valueOf(user.getJoinDate()) : null);
             pstmt.setString(10, user.getMembershipStatus());
-            pstmt.setInt(11, user.getTotalBooksBorrowed());
-            pstmt.setInt(12, user.gettotalBooksReturned());
+            pstmt.setInt(11, user.getTotalBooksBorrowed() != null ? user.getTotalBooksBorrowed() : 0);
+            pstmt.setInt(12, user.gettotalBooksReturned() != null ? user.gettotalBooksReturned() : 0);
             pstmt.setString(13, user.getRole());
-            pstmt.setString(14, user.getUserId()); // Sử dụng userId để xác định người dùng cần sửa
+            pstmt.setDate(14, user.getExpiryDate() != null ? java.sql.Date.valueOf(user.getExpiryDate()) : null);
+            pstmt.setDate(15, user.getCardRegistrationDate() != null ? java.sql.Date.valueOf(user.getCardRegistrationDate()) : null);
+            pstmt.setString(16, user.getAccountStatus());
+            pstmt.setString(17, user.getGender());
+            pstmt.setString(18, user.getDepartment());
+            pstmt.setString(19, user.getClassName());
+            pstmt.setString(20, user.getUserId()); // `userId` dùng để xác định người dùng cần cập nhật
 
-            pstmt.executeUpdate(); // Thực thi câu lệnh SQL
+            // Thực thi câu lệnh SQL
+            int rowsUpdated = pstmt.executeUpdate();
+
+            // Kiểm tra số dòng bị ảnh hưởng
+            if (rowsUpdated > 0) {
+                Noti.showSuccessMessage("Cập nhật thông tin người dùng thành công!");
+                System.out.println("Cập nhật thông tin người dùng thành công!");
+            } else {
+                Noti.showFailureMessage("Không tìm thấy người dùng để cập nhật.");
+                System.out.println("Không tìm thấy người dùng để cập nhật.");
+            }
 
         } catch (SQLException e) {
+            // In lỗi chi tiết
+            System.err.println("Lỗi khi cập nhật thông tin người dùng: " + e.getMessage());
             e.printStackTrace();
         }
     }
+
     //xoá
     public void deleteUser(String userId) {
     String sql = "DELETE FROM users WHERE user_id = ?";
@@ -163,78 +190,70 @@ public class UserDAO {
     }
     // tim nguoi dung
     public ResultSet findUsers(User user) {
-
-        boolean checkAnd = false;
-        if(check.get()==false)
-        try  {
+        try {
             connection = DatabaseConnection.connectToLibrary();
-            String sql = "SELECT * FROM users WHERE ";
+
+            // Khởi tạo câu lệnh SQL cơ bản
+            StringBuilder sql = new StringBuilder("SELECT * FROM users");
+
+            // List để lưu trữ các tham số cho PreparedStatement
+            List<Object> parameters = new ArrayList<>();
+
+            // Kiểm tra và thêm các điều kiện vào câu lệnh SQL
             if (!user.getUserId().isEmpty()) {
-                String sqlId = "user_id = '" + user.getUserId() + "'";
-                sql += sqlId;
-                checkAnd = true;
-                System.out.println("hoa1");
+                sql.append(" WHERE user_id = ?");
+                parameters.add(user.getUserId());
             }
             if (!user.getFullName().isEmpty()) {
-                if (checkAnd)
-                    sql += " AND ";
-                String sqlTitle = "full_name = '" + user.getFullName() + "'";
-                sql += sqlTitle;
-                checkAnd = true;
-                System.out.println("hoa2");
+                // Nếu đã có điều kiện WHERE, thêm AND, ngược lại, thêm WHERE
+                sql.append(sql.indexOf("WHERE") == -1 ? " WHERE" : " AND").append(" full_name = ?");
+                parameters.add(user.getFullName());
             }
-            if (user.getJoinDate()!=null) {
-                if (checkAnd)
-                    sql += " AND ";
-                String sqlAuthor = "join_date = '" + user.getJoinDate() + "'";
-                sql += sqlAuthor;
-                checkAnd = true;
-                System.out.println("hoa3");
+            if (user.getJoinDate() != null) {
+                sql.append(sql.indexOf("WHERE") == -1 ? " WHERE" : " AND").append(" join_date = ?");
+                parameters.add(user.getJoinDate());
             }
             if (!user.getMembershipStatus().isEmpty()) {
-                if (checkAnd)
-                    sql += " AND ";
-                String sqlPublisher = "membership_status = '" + user.getMembershipStatus() + "'";
-                sql += sqlPublisher;
-                checkAnd = true;
-                System.out.println("hoa4");
+                sql.append(sql.indexOf("WHERE") == -1 ? " WHERE" : " AND").append(" membership_status = ?");
+                parameters.add(user.getMembershipStatus());
             }
-            if (user.getTotalBooksBorrowed()!=null) {
-                if (checkAnd)
-                    sql += " AND ";
-                String sqlYear = "total_books_borrowed = " + user.getTotalBooksBorrowed();
-                sql += sqlYear;
-                checkAnd = true;
-                System.out.println("hoa5");
+            if (user.getTotalBooksBorrowed() != null) {
+                sql.append(sql.indexOf("WHERE") == -1 ? " WHERE" : " AND").append(" total_books_borrowed = ?");
+                parameters.add(user.getTotalBooksBorrowed());
             }
-            if (user.gettotalBooksReturned()!=null) {
-                if (checkAnd)
-                    sql += " AND ";
-                String sqlGenre = "total_books_returned = " + user.gettotalBooksReturned();
-                sql += sqlGenre;
-                checkAnd = true;
-                System.out.println("hoa6");
+            if (user.gettotalBooksReturned() != null) {
+                sql.append(sql.indexOf("WHERE") == -1 ? " WHERE" : " AND").append(" total_books_returned = ?");
+                parameters.add(user.gettotalBooksReturned());
             }
             if (!user.getRole().isEmpty()) {
-                if (checkAnd)
-                    sql += " AND ";
-                String sqlQuantity = "role = '" + user.getRole() + "'";
-                sql += sqlQuantity;
-                checkAnd = true;
-                System.out.println("hoa7");
+                sql.append(sql.indexOf("WHERE") == -1 ? " WHERE" : " AND").append(" role = ?");
+                parameters.add(user.getRole());
             }
-            if (!checkAnd) {
-                sql = "SELECT * FROM users";
+
+            // Nếu không có điều kiện nào, câu lệnh SQL sẽ chỉ là "SELECT * FROM users"
+            if (parameters.isEmpty()) {
+                sql = new StringBuilder("SELECT * FROM users");
             }
-            statement = connection.prepareStatement(sql);
+
+            // Tạo prepared statement với câu lệnh SQL đã được xây dựng
+            statement = connection.prepareStatement(sql.toString());
+
+            // Gán các tham số vào PreparedStatement
+            for (int i = 0; i < parameters.size(); i++) {
+                statement.setObject(i + 1, parameters.get(i));
+            }
+
+            // Thực thi truy vấn và trả về kết quả
             ResultSet resultSet = statement.executeQuery();
             return resultSet;
+
         } catch (SQLException e) {
             System.out.println("Lỗi khi tìm người dùng: " + e.getMessage());
         }
         return null;
     }
-// kiểm tra acc có tn tại ko
+
+    // kiểm tra acc có tn tại ko
     public static boolean checkAccount(String username, String password) {
         try (Connection connection = DatabaseConnection.connectToLibrary()) {
             String sql = "SELECT * FROM users WHERE username = ? AND password_hash = ?";
@@ -245,7 +264,7 @@ public class UserDAO {
                 // Thực thi truy vấn và kiểm tra kết quả
                 try (ResultSet rs = pstmt.executeQuery()) {
                     if (rs.next()) {  // Nếu có kết quả trả về, tài khoản tồn tại
-                        try (BufferedWriter writer = new BufferedWriter(new FileWriter("C:\\Users\\Dell\\IdeaProjects\\library\\src\\main\\user_id.txt"))) {
+                        try (BufferedWriter writer = new BufferedWriter(new FileWriter("C:\\Users\\Dell\\IdeaProjects\\library\\src\\main\\text\\user_id.txt"))) {
                             writer.write(rs.getString("user_id"));
                         } catch (IOException e) {
                             System.out.println("Lỗi khi ghi vào file: " + e.getMessage());
@@ -318,7 +337,7 @@ public static void updateReturned(String user_id, int returned) {
     }
 }
 //lấy chức vụ
-    public  static String getRole(String userId) {
+    public static String getRole(String userId) {
         String sql = "SELECT role FROM users WHERE user_id = ?";
         try (Connection conn = DatabaseConnection.connectToLibrary();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -335,6 +354,30 @@ public static void updateReturned(String user_id, int returned) {
         }
     }
 
+    public static ObservableList<TopUser> dataTopUser() {
+        ObservableList<TopUser> data =  FXCollections.observableArrayList();
+
+        String sql = "SELECT b.user_id, u.full_name, COUNT(b.user_id) AS count\n" +
+                "FROM borrow b\n" +
+                "JOIN users u ON b.user_id = u.user_id\n" +
+                "GROUP BY b.user_id, u.full_name\n" +
+                "ORDER BY count DESC\n" +
+                "LIMIT 0, 100;";
+
+        try (Connection conn = DatabaseConnection.connectToLibrary();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                data.add(new TopUser(rs.getString("user_id"),
+                        rs.getString("full_name"), rs.getInt("count")));
+            }
+
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return data;
+    }
+
     public AtomicBoolean isCheck() {return check;}
     public void setCheck(AtomicBoolean check) {this.check=check;}
 
@@ -347,6 +390,21 @@ public static void updateReturned(String user_id, int returned) {
             pstmt.setNull(parameterIndex, java.sql.Types.DATE); // Đẩy lên SQL là null
         } else {
             pstmt.setDate(parameterIndex, Date.valueOf(date)); // Đẩy ngày lên SQL
+        }
+    }
+
+    public static int totalUsers() {
+        String sql = "select count(*) as total_users from users\n" +
+                "where role != 'admin'";
+
+        try (Connection conn = DatabaseConnection.connectToLibrary();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                ResultSet resultSet = pstmt.executeQuery();
+                resultSet.next();
+                return resultSet.getInt(1);
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            return 0;
         }
     }
 

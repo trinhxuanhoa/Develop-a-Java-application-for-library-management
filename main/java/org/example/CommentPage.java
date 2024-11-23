@@ -12,9 +12,11 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.scene.control.ScrollPane;
 import javafx.util.Duration;
-
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
 import java.util.ArrayList;
 import java.util.List;
+import javafx.scene.layout.Pane;
 
 public class CommentPage {
 
@@ -36,7 +38,6 @@ public class CommentPage {
     // Hàm khởi tạo giao diện và các phần tử phân trang
     public VBox commentPage() {
         updatePage();
-
         // Thêm FlowPane và paginationBox vào VBox
         VBox root = new VBox(10);
         root.getChildren().addAll(flowPane, paginationBox);
@@ -45,6 +46,8 @@ public class CommentPage {
 
     // Hàm cập nhật nội dung của trang dựa trên currentPage
     public void updatePage() {
+        // Lưu vị trí cuộn hiện tại
+       double currentScrollPosition = scrollPane.getVvalue();
         flowPane.getChildren().clear(); // Xóa các phần tử cũ
 
         // Tính toán các phần tử cần hiển thị cho trang hiện tại
@@ -58,11 +61,28 @@ public class CommentPage {
 
         // Cập nhật các nút phân trang
         updatePagination();
+        // Đảm bảo rằng ScrollPane giữ nguyên vị trí cuộn
+        // Nếu bạn muốn cuộn mượt, bạn có thể sử dụng Timeline ở đây
+        /*if (check) {
+            Timeline timeline = new Timeline(
+                    new KeyFrame(
+                            Duration.millis(500), // Thời gian cuộn mượt
+                            new KeyValue(scrollPane.vvalueProperty(), currentScrollPosition) // Quay lại vị trí cuộn cũ
+                    )
+            );
+            timeline.play(); // Chạy hiệu ứng cuộn mượt
+        } else {
+            check = true; // Lần đầu không cuộn mượt
+        }*/
     }
 
     // Hàm cập nhật các nút phân trang
     private void updatePagination() {
         paginationBox.getChildren().clear();  // Xóa các nút phân trang cũ
+        paginationBox.setStyle("-fx-alignment: center; -fx-padding: 10px;");
+        paginationBox.getChildren().forEach(button -> {
+            button.setStyle("-fx-background-color: lightblue; -fx-border-color: darkblue; -fx-border-radius: 5px;");
+        });
 
         int totalPages = (int) Math.ceil((double) allComments.size() / ITEMS_PER_PAGE); // Tổng số trang
         int maxPage = Math.min(totalPages, 10);  // Chỉ hiển thị tối đa 10 trang trên thanh phân trang
@@ -70,6 +90,7 @@ public class CommentPage {
         // Thêm nút "Trang 1"
         Button firstPageButton = new Button("1");
         firstPageButton.setOnAction(e -> {
+            
             currentPage = 0;  // Chuyển đến trang 1
             updatePage();
         });
@@ -111,21 +132,25 @@ public class CommentPage {
         // Thêm nút "Trang cuối"
         Button lastPageButton = new Button(String.valueOf(totalPages));
         lastPageButton.setOnAction(e -> {
+            
             currentPage = totalPages - 1;  // Chuyển đến trang cuối cùng
             updatePage();
-            scrollPane.setVvalue(currentScrollPosition);
         });
         paginationBox.getChildren().add(lastPageButton);
-        if(check) {
-            Timeline timeline = new Timeline(new KeyFrame(Duration.millis(1), event -> {
-                Platform.runLater(() -> {
-                    scrollPane.requestLayout();
-                    scrollPane.setVvalue(currentScrollPosition);
-                });
-            }));
-            timeline.play(); // Chạy Timeline
+
+        if (check) {
+            // Tạo hiệu ứng cuộn mượt
+            //double currentScrollPosition = scrollPane.getVvalue(); // Lấy vị trí hiện tại
+            Timeline timeline = new Timeline(
+                    new KeyFrame(
+                            Duration.millis(500), // Thời gian cuộn
+                            new KeyValue(scrollPane.vvalueProperty(), currentScrollPosition) // Cuộn đến cuối (1.0)
+                    )
+            );
+            timeline.play();
+
         } else {
-            check = true;
+            check = true; // Lần đầu không cuộn
         }
 
     }

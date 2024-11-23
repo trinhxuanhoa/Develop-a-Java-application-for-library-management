@@ -4,13 +4,13 @@ import javafx.beans.property.*;
 import java.time.LocalDate;
 
 public class Borrow {
-    private final SimpleIntegerProperty borrowId;        // ID duy nhất cho mỗi lần mượn
-    private final SimpleStringProperty userId;           // ID của người mượn
-    private final SimpleStringProperty bookId;           // ID của sách mượn
-    private final ObjectProperty<LocalDate> borrowDate;  // Ngày mượn
-    private final ObjectProperty<LocalDate> returnDate;  // Ngày trả
-    private final ObjectProperty<LocalDate> dueDate;     // ngày hết hạn
-    private final SimpleStringProperty status;           // Trạng thái: chưa mượn, đang mượn, đã trả
+    private SimpleIntegerProperty borrowId;        // ID duy nhất cho mỗi lần mượn
+    private SimpleStringProperty userId;           // ID của người mượn
+    private SimpleStringProperty bookId;           // ID của sách mượn
+    private ObjectProperty<LocalDate> borrowDate;  // Ngày mượn
+    private ObjectProperty<LocalDate> returnDate;  // Ngày trả
+    private ObjectProperty<LocalDate> dueDate;     // ngày hết hạn
+    private SimpleStringProperty status;           // Trạng thái: chưa mượn, đang mượn, đã trả
 
     // Constructor
     public Borrow() {
@@ -22,7 +22,8 @@ public class Borrow {
         this.status = new SimpleStringProperty();
         this.dueDate = new SimpleObjectProperty<>();
     }
-    public Borrow(int borrowId, String userId, String bookId, LocalDate borrowDate, LocalDate returnDate, String status, LocalDate dueDate) {
+    public Borrow(int borrowId, String userId, String bookId, LocalDate borrowDate,
+                  LocalDate returnDate, String status, LocalDate dueDate) {
         this.borrowId = new SimpleIntegerProperty(borrowId);
         this.userId = new SimpleStringProperty(userId);
         this.bookId = new SimpleStringProperty(bookId);
