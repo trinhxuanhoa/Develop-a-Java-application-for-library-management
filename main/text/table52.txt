@@ -1,0 +1,24 @@
+CREATE TEMPORARY TABLE proposeBooks AS
+(
+    SELECT id, title, author, cover_image, genre, downloads, date_added,status, priority
+    FROM (
+        (
+            SELECT id, title, author, cover_image, genre, downloads, date_added,status, priority
+            FROM Priority1ToRemove
+        )
+        UNION ALL
+        (
+            SELECT id, title, author, cover_image, genre, downloads, date_added,status, priority
+            FROM Priority2ToRemove
+        )
+        ORDER BY priority ASC, downloads DESC, date_added DESC
+         
+    ) AS CombinedPriority12
+)
+UNION ALL
+(
+    SELECT id, title, author, cover_image, genre, downloads, date_added,status, priority
+    FROM Priority34
+)
+ORDER BY priority ASC, downloads DESC, date_added DESC
+ ;

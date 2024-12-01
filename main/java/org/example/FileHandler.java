@@ -35,7 +35,20 @@ public class FileHandler {
             return data;
         }
 
-        // Phương thức xóa nội dung tệp (nếu cần)
+        public String readFromFileAsString() {
+        StringBuilder data = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new FileReader("C:\\Users\\Dell\\IdeaProjects\\library\\src\\main\\text\\" + fileName))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                data.append(line).append(System.lineSeparator()); // Thêm dòng mới sau mỗi dòng đọc
+            }
+        } catch (IOException e) {
+            System.out.println("Lỗi khi đọc tệp: " + e.getMessage());
+        }
+        return data.toString();
+    }
+
+    // Phương thức xóa nội dung tệp (nếu cần)
         public void clearFile() {
             try (BufferedWriter writer = new BufferedWriter(new FileWriter("C:\\Users\\Dell\\IdeaProjects\\library\\src\\main\\text\\"+fileName))) {
                 // Mở tệp với `new FileWriter` để xóa toàn bộ nội dung

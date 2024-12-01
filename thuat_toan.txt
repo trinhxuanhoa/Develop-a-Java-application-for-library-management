@@ -1,0 +1,178 @@
+DROP TABLE IF EXISTS TempBooks;
+
+CREATE  TABLE TempBooks AS
+SELECT id, title, author, cover_image, genre, downloads, date_added, priority
+FROM (
+    -- Ưu tiên 1: Trùng cả tác giả và thể loại
+    SELECT id, title, author, cover_image, genre, downloads, date_added, 1 AS priority
+    FROM books
+    WHERE author IN (
+        SELECT b.author 
+        FROM borrow br
+        JOIN books b ON br.book_id = b.id
+        WHERE br.user_id = '123'
+        GROUP BY b.author
+    )
+    AND genre IN (
+        SELECT b.genre
+        FROM borrow br
+        JOIN books b ON br.book_id = b.id
+        WHERE br.user_id = '123' AND b.genre != ''
+        GROUP BY b.genre
+    )
+    UNION ALL
+    -- Ưu tiên 2: Trùng thể loại nhưng không trùng tác giả
+    SELECT id, title, author, cover_image, genre, downloads, date_added, 2 AS priority
+    FROM books
+    WHERE genre IN (
+        SELECT b.genre
+        FROM borrow br
+        JOIN books b ON br.book_id = b.id
+        WHERE br.user_id = '123' AND b.genre != ''
+        GROUP BY b.genre
+    )
+    AND author NOT IN (
+        SELECT b.author 
+        FROM borrow br
+        JOIN books b ON br.book_id = b.id
+        WHERE br.user_id = '123'
+        GROUP BY b.author
+    )
+    UNION ALL
+    -- Ưu tiên 3: Trùng tác giả nhưng không trùng thể loại
+    SELECT id, title, author, cover_image, genre, downloads, date_added, 3 AS priority
+    FROM books
+    WHERE genre NOT IN (
+        SELECT b.genre
+        FROM borrow br
+        JOIN books b ON br.book_id = b.id
+        WHERE br.user_id = '123' AND b.genre != ''
+        GROUP BY b.genre
+    )
+    AND author IN (
+        SELECT b.author 
+        FROM borrow br
+        JOIN books b ON br.book_id = b.id
+        WHERE br.user_id = '123'
+        GROUP BY b.author
+    )
+    UNION ALL
+    -- Ưu tiên 4: Các sách khác
+    SELECT id, title, author, cover_image, genre, downloads, date_added, 4 AS priority
+    FROM books
+) AS AllBooks;
+
+DROP TEMPORARY TABLE IF EXISTS Priority1ToRemove;
+CREATE TEMPORARY TABLE Priority1ToRemove AS
+WITH RankedBooks AS (
+    SELECT id, title, author, cover_image, genre, downloads, date_added, priority,
+           ROW_NUMBER() OVER (PARTITION BY id ORDER BY priority ASC, downloads DESC, date_added DESC) AS row_num
+    FROM TempBooks
+),
+GenresToRemove AS (
+    SELECT genre
+    FROM books
+    WHERE genre IN (
+        WITH BorrowedBooks AS (
+            SELECT 
+                br.user_id, 
+                br.book_id, 
+                b.genre, 
+                DATEDIFF(CURDATE(), br.return_date) AS days_difference,
+                ROW_NUMBER() OVER (PARTITION BY br.book_id ORDER BY DATEDIFF(CURDATE(), br.return_date) ASC) AS row_num
+            FROM borrow br
+            JOIN books b ON b.id = br.book_id
+            WHERE br.user_id = '123' 
+              AND br.status != 'đã mượn'
+        )
+        SELECT genre
+        FROM BorrowedBooks
+        WHERE row_num = 1 
+          AND genre != '' 
+          AND days_difference > 30
+    )
+)
+(SELECT id, title, author, cover_image, genre, downloads, date_added, priority
+FROM TempBooks
+WHERE priority IN (1, 2)
+  AND genre NOT IN (SELECT genre FROM GenresToRemove)
+ORDER BY downloads desc, date_added desc
+LIMIT 30);
+
+
+DROP TEMPORARY TABLE IF EXISTS Priority2ToRemove;
+CREATE TEMPORARY TABLE Priority2ToRemove AS
+WITH RankedBooks AS (
+    SELECT id, title, author, cover_image, genre, downloads, date_added, priority,
+           ROW_NUMBER() OVER (PARTITION BY id ORDER BY priority ASC, downloads DESC, date_added DESC) AS row_num
+    FROM TempBooks
+),
+GenresToRemove AS (
+    SELECT genre
+    FROM books
+    WHERE genre IN (
+        WITH BorrowedBooks AS (
+            SELECT 
+                br.user_id, 
+                br.book_id, 
+                b.genre, 
+                DATEDIFF(CURDATE(), br.return_date) AS days_difference,
+                ROW_NUMBER() OVER (PARTITION BY br.book_id ORDER BY DATEDIFF(CURDATE(), br.return_date) ASC) AS row_num
+            FROM borrow br
+            JOIN books b ON b.id = br.book_id
+            WHERE br.user_id = '123' 
+              AND br.status != 'đã mượn'
+        )
+        SELECT genre
+        FROM BorrowedBooks
+        WHERE row_num = 1 
+          AND genre != '' 
+          AND days_difference > 30
+    )
+)
+(SELECT id, title, author, cover_image, genre, downloads, date_added, priority
+FROM TempBooks
+WHERE priority IN (1, 2)
+  AND genre IN (SELECT genre FROM GenresToRemove)
+ AND (SELECT COUNT(*) FROM Priority1ToRemove) < 30
+ORDER BY downloads DESC, date_added DESC
+LIMIT 30
+);
+
+DROP TEMPORARY TABLE IF EXISTS Priority34;
+CREATE TEMPORARY TABLE Priority34 AS
+WITH RankedBooks AS (
+    SELECT id, title, author, cover_image, genre, downloads, date_added, priority,
+           ROW_NUMBER() OVER (PARTITION BY id ORDER BY priority ASC, downloads DESC, date_added DESC) AS row_num
+    FROM TempBooks
+)
+SELECT id, title, author, cover_image, genre, downloads, date_added, priority
+FROM TempBooks
+WHERE priority IN (3, 4)
+ORDER BY priority ASC, downloads DESC, date_added DESC;
+
+
+(
+    SELECT id, title, author, cover_image, genre, downloads, date_added, priority
+    FROM (
+        (
+            SELECT id, title, author, cover_image, genre, downloads, date_added, priority
+            FROM Priority1ToRemove
+        )
+        UNION ALL
+        (
+            SELECT id, title, author, cover_image, genre, downloads, date_added, priority
+            FROM Priority2ToRemove
+        )
+        ORDER BY priority ASC, downloads DESC, date_added DESC
+        LIMIT 30
+    ) AS CombinedPriority12
+)
+UNION ALL
+(
+    SELECT id, title, author, cover_image, genre, downloads, date_added, priority
+    FROM Priority34
+)
+ORDER BY priority ASC, downloads DESC, date_added DESC
+LIMIT 30;
+

@@ -1,0 +1,10 @@
+CREATE TEMPORARY TABLE Priority34 AS
+WITH RankedBooks AS (
+    SELECT id, title, author, cover_image, genre, downloads, date_added,status, priority,
+           ROW_NUMBER() OVER (PARTITION BY id ORDER BY priority ASC, downloads DESC, date_added DESC) AS row_num
+    FROM TempBooks
+)
+SELECT id, title, author, cover_image, genre, downloads, date_added,status, priority
+FROM TempBooks
+WHERE priority IN (3, 4)
+ORDER BY priority ASC, downloads DESC, date_added DESC;

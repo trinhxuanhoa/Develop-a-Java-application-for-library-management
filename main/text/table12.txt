@@ -1,0 +1,61 @@
+CREATE  TABLE TempBooks AS
+SELECT id, title, author, cover_image, genre, downloads, date_added, status, priority
+FROM (
+    -- Ưu tiên 1: Trùng cả tác giả và thể loại
+    SELECT id, title, author, cover_image, genre, downloads, date_added, status, 1 AS priority
+    FROM books
+    WHERE author IN (
+        SELECT b.author 
+        FROM borrow br
+        JOIN books b ON br.book_id = b.id
+        WHERE br.user_id =  ?
+        GROUP BY b.author
+    )
+    AND genre IN (
+        SELECT b.genre
+        FROM borrow br
+        JOIN books b ON br.book_id = b.id
+        WHERE br.user_id =  ? AND b.genre != ''
+        GROUP BY b.genre
+    )
+    UNION ALL
+    -- Ưu tiên 2: Trùng thể loại nhưng không trùng tác giả
+    SELECT id, title, author, cover_image, genre, downloads, date_added,status, 2 AS priority
+    FROM books
+    WHERE genre IN (
+        SELECT b.genre
+        FROM borrow br
+        JOIN books b ON br.book_id = b.id
+        WHERE br.user_id =  ? AND b.genre != ''
+        GROUP BY b.genre
+    )
+    AND author NOT IN (
+        SELECT b.author 
+        FROM borrow br
+        JOIN books b ON br.book_id = b.id
+        WHERE br.user_id =  ?
+        GROUP BY b.author
+    )
+    UNION ALL
+    -- Ưu tiên 3: Trùng tác giả nhưng không trùng thể loại
+    SELECT id, title, author, cover_image, genre, downloads, date_added, status,3 AS priority
+    FROM books
+    WHERE genre NOT IN (
+        SELECT b.genre
+        FROM borrow br
+        JOIN books b ON br.book_id = b.id
+        WHERE br.user_id =  ? AND b.genre != ''
+        GROUP BY b.genre
+    )
+    AND author IN (
+        SELECT b.author 
+        FROM borrow br
+        JOIN books b ON br.book_id = b.id
+        WHERE br.user_id =  ?
+        GROUP BY b.author
+    )
+    UNION ALL
+    -- Ưu tiên 4: Các sách khác
+    SELECT id, title, author, cover_image, genre, downloads, date_added, status,4 AS priority
+    FROM books
+) AS AllBooks;

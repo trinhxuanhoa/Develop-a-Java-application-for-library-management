@@ -2,6 +2,7 @@ package org.example;
 
 import javafx.animation.FadeTransition;
 import javafx.animation.ScaleTransition;
+import javafx.beans.property.*;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
@@ -14,21 +15,57 @@ import javafx.scene.text.Font;
 import javafx.stage.Screen;
 import javafx.util.Duration;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public class Help {
     private LibraryManagement library;
-
+    private SimpleIntegerProperty helpId;
+    private SimpleStringProperty userId;
+    private SimpleStringProperty fullName;
+    private SimpleStringProperty title;
+    private SimpleStringProperty conten;
+    private ObjectProperty<LocalDate> requestDate;
+    private BooleanProperty selected;
     // Main container to switch between views
     private VBox mainContainer;
     private Rectangle2D visualBounds = Screen.getPrimary().getVisualBounds();
     private double screenWidth = visualBounds.getWidth();
     private double screenHeight = visualBounds.getHeight();
 
+    public Help() {
+    }
+
     public Help(LibraryManagement library) {
         this.library = library;
     }
 
+    public Help(int helpId,String userId, String fullName, String title,
+                LocalDate requestDate, boolean selected) {
+        this.helpId = new SimpleIntegerProperty(helpId);
+        this.userId = new SimpleStringProperty(userId);
+        this.fullName = new SimpleStringProperty(fullName);
+        this.title = new SimpleStringProperty(title);
+        this.requestDate = new SimpleObjectProperty<>(requestDate);
+        this.selected = new SimpleBooleanProperty(selected);
+    }
+    public Help(String userId, String fullName, String title,
+                LocalDate requestDate, boolean selected) {
+        this.userId = new SimpleStringProperty(userId);
+        this.fullName = new SimpleStringProperty(fullName);
+        this.title = new SimpleStringProperty(title);
+        this.requestDate = new SimpleObjectProperty<>(requestDate);
+        this.selected = new SimpleBooleanProperty(selected);
+    }
+
+
+    public Help(String userId, String fullName, String title,
+                LocalDate requestDate) {
+        this.userId = new SimpleStringProperty(userId);
+        this.fullName = new SimpleStringProperty(fullName);
+        this.title = new SimpleStringProperty(title);
+        this.requestDate = new SimpleObjectProperty<>(requestDate);
+    }
     //khởi tạo và hiển thị phần Trợ giúp
     public Node showHelpOptions() {
         double width = 1150;  // Desired width
@@ -69,7 +106,7 @@ public class Help {
 
     //hiển thị các chủ đề trợ giúp được lấy từ cơ sở dữ liệu, tương ứng với vai trò của người dùng
     private Node displayHelpTopics() {
-        String userId = interfaces.userId();
+        String userId = Createinterface.userId();
         String role = UserDAO.getRole(userId);
         if ("member".equalsIgnoreCase(role)) {
             role = "user";
@@ -177,7 +214,7 @@ public class Help {
         emailField.setMaxWidth(maxWidth);
 
         // Fetch email from database
-        String userId = interfaces.userId();
+        String userId = Createinterface.userId();
         String email = HelpDAO.getEmail(userId);
         emailField.setText(email);
         emailField.setEditable(false);  // Make email field read-only
@@ -267,4 +304,90 @@ public class Help {
         });
         return contactAdminButton;
     }
+
+    public int getHelpId() {
+        return helpId.get();
+    }
+
+    public SimpleIntegerProperty helpIdProperty() {
+        return helpId;
+    }
+
+    public void setHelpId(int helpId) {
+        this.helpId.set(helpId);
+    }
+
+    public String getUserId() {
+        return userId.get();
+    }
+
+    public SimpleStringProperty userIdProperty() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId.set(userId);
+    }
+
+    public String getFullName() {
+        return fullName.get();
+    }
+
+    public SimpleStringProperty fullNameProperty() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName.set(fullName);
+    }
+
+    public String getTitle() {
+        return title.get();
+    }
+
+    public SimpleStringProperty titleProperty() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title.set(title);
+    }
+
+    public String getConten() {
+        return conten.get();
+    }
+
+    public SimpleStringProperty contenProperty() {
+        return conten;
+    }
+
+    public void setConten(String conten) {
+        this.conten.set(conten);
+    }
+
+    public LocalDate getRequestDate() {
+        return requestDate.get();
+    }
+
+    public ObjectProperty<LocalDate> requestDateProperty() {
+        return requestDate;
+    }
+
+    public void setRequestDate(LocalDate requestDate) {
+        this.requestDate.set(requestDate);
+    }
+
+    public boolean isSelected() {
+        return selected.get();
+    }
+
+    public BooleanProperty selectedProperty() {
+        return selected;
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected.set(selected);
+    }
+
+
 }

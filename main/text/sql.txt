@@ -1,0 +1,16 @@
+WITH RankedBooks AS (
+    SELECT 
+        id, title, author, cover_image, genre, downloads, date_added, priority,
+        ROW_NUMBER() OVER (
+            PARTITION BY id 
+            ORDER BY priority ASC, downloads DESC, date_added DESC
+        ) AS row_num
+    FROM proposeBooks
+)
+SELECT
+    b.id,  b.title,  b.author,  b.cover_image,  b.genre,  b.downloads,  b.date_added,  b.priority,  AVG(r.rating) AS average_rating
+FROM RankedBooks b
+LEFT JOIN book_reviews r ON b.id = r.book_id
+WHERE row_num = 1
+GROUP BY b.id,  b.title,  b.author,  b.cover_image,  b.genre,  b.downloads,  b.date_added,  b.priority
+ORDER BY priority ASC, downloads DESC,average_rating DESC, date_added DESC,  b.id

@@ -212,6 +212,22 @@ vbox.setMinWidth(1116);
         return commentVBoxes;
     }
 
+    public static int totalComments(String book_id) {
+        String sql = "select count(*) as total_comments from comments\n" +
+                "where book_id = ?";
+        try (Connection conn = DatabaseConnection.connectToLibrary();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, book_id);
+            ResultSet resultSet = stmt.executeQuery();
+            resultSet.next();
+            return resultSet.getInt(1);
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            return 0;
+        }
+    }
+
     public static int adjustTextFieldWidth(TextField textField) {
         // Tính toán chiều rộng dựa trên độ dài của nội dung
         String text = textField.getText();

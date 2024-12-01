@@ -6,6 +6,7 @@ import java.time.LocalDate;
 
 public class BookAndBorrow {
 
+    private SimpleIntegerProperty borrowId;
     private SimpleStringProperty genre;
     private SimpleStringProperty id;
     private SimpleStringProperty title;
@@ -18,7 +19,7 @@ public class BookAndBorrow {
     private SimpleStringProperty fullName;
     private SimpleStringProperty userId;
     // Constructor
-    public BookAndBorrow( String id, String title, String author, String genre, LocalDate borrowDate,
+    public BookAndBorrow(String id, String title, String author, String genre, LocalDate borrowDate,
                           LocalDate dueDate, LocalDate returnDate, String detail) {
 
         this.id = new SimpleStringProperty(id);
@@ -32,8 +33,8 @@ public class BookAndBorrow {
         this.selected = new SimpleBooleanProperty(false); // Mặc định chưa được chọn
     }
 
-    public BookAndBorrow( String id, String title, String author, String genre, LocalDate borrowDate,
-                          LocalDate dueDate, LocalDate returnDate,String userId, String fullName, String detail) {
+    public BookAndBorrow(String id, String title, String author, String genre, LocalDate borrowDate,
+                         LocalDate dueDate, LocalDate returnDate,String userId, String fullName, String detail) {
 
         this.id = new SimpleStringProperty(id);
         this.title = new SimpleStringProperty(title);
@@ -47,6 +48,27 @@ public class BookAndBorrow {
         this.detail = new SimpleStringProperty(detail);
         this.selected = new SimpleBooleanProperty(false); // Mặc định chưa được chọn
     }
+
+    public BookAndBorrow(int borrowId,  String id, String title, String author, String genre, LocalDate borrowDate,
+                         LocalDate dueDate, LocalDate returnDate,String userId, String fullName, String detail) {
+
+        this.borrowId = new SimpleIntegerProperty(borrowId);
+        this.id = new SimpleStringProperty(id);
+        this.title = new SimpleStringProperty(title);
+        this.author = new SimpleStringProperty(author);
+        this.genre = new SimpleStringProperty(genre);
+        this.borrowDate = new SimpleObjectProperty<>(borrowDate);
+        this.returnDate = new SimpleObjectProperty<>(returnDate);
+        this.dueDate = new SimpleObjectProperty<>(dueDate);
+        this.userId = new SimpleStringProperty(userId);
+        this.fullName = new SimpleStringProperty(fullName);
+        this.detail = new SimpleStringProperty(detail);
+        this.selected = new SimpleBooleanProperty(false); // Mặc định chưa được chọn
+    }
+
+    public int getBorrowId() {return borrowId.get();}
+    public SimpleIntegerProperty borrowIdProperty() {return borrowId;}
+    public void setBorrowId(int borrowId) {this.borrowId.set(borrowId);}
 
     public String getId() {return id.get();}
     public SimpleStringProperty idProperty() {return id;}

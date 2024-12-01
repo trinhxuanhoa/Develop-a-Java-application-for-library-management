@@ -1,5 +1,5 @@
 package org.example;
-
+import javafx.util.Pair;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -17,14 +17,31 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.scene.shape.Polygon;
 
 public class Table {
+
     public static TableView<Book> tableDocument(boolean open, double tableWidth, List<String> a, LibraryManagement library) {
         TableView<Book> tableView = new TableView<>();
-        tableView.setEditable(open); // Bật chế độ chỉnh sửa
+        tableView.setMinHeight(480);
 
+        tableView.setEditable(open); // Bật chế độ chỉnh sửa
+        tableView.getItems().forEach(book -> {
+            book.selectedProperty().addListener((observable, oldValue, newValue) -> {
+                if (newValue) {
+                    a.add(book.getId()); // Thêm ID vào danh sách khi chọn
+                } else {
+                    a.remove(book.getId()); // Xóa ID khỏi danh sách khi bỏ chọn
+                }
+            });
+        });
         // Tạo các cột
         TableColumn<Book, Boolean> selectColumn = new TableColumn<>();
         CheckBox headerCheckBox = new CheckBox();
-
+        // Cột đánh số
+        TableColumn<Book, Integer> numberColumn = new TableColumn<>("STT");
+        numberColumn.setMinWidth(50);
+        numberColumn.setMaxWidth(50);
+        numberColumn.setStyle("-fx-alignment: CENTER;");
+        numberColumn.setCellValueFactory((TableColumn.CellDataFeatures<Book, Integer> param) ->
+                new SimpleIntegerProperty(tableView.getItems().indexOf(param.getValue()) + 1).asObject());
         // Thiết lập tiêu đề cột là CheckBox
         selectColumn.setGraphic(headerCheckBox);
         selectColumn.setCellValueFactory(cellData -> cellData.getValue().selectedProperty());
@@ -38,14 +55,15 @@ public class Table {
                 a.clear();
             for (Book book : tableView.getItems()) {
                 book.setSelected(isSelected);
+                a.add(book.getId());
             }
             tableView.refresh(); // Cập nhật bảng
         });
 
         TableColumn<Book, String> idColumn = tableColumn("ID", "id", 55, 55, true);
-        TableColumn<Book, String> titleColumn = tableColumn("Tên Sách", "title", tableWidth - 670, 5000, true);
+        TableColumn<Book, String> titleColumn = tableColumn("Tên Sách", "title", tableWidth - 747, 5000, true);
         TableColumn<Book, String> authorColumn = tableColumn("Tác Giả", "author", 150, 150, true);
-        TableColumn<Book, String> publisherColumn = tableColumn("Nhà Xuất Bản", "publisher", 150, 150,  true);
+        TableColumn<Book, String> statusColumn = tableColumn("Trạng Thái", "status", 150, 150,  true);
         TableColumn<Book, Integer> yearColumn = tableColumn("Năm", "year", 50, 50, false);
         TableColumn<Book, String> genreColumn = tableColumn("Thể Loại", "genre", 100, 100, true);
         TableColumn<Book, Integer> quantityColumn = tableColumn("Số Lượng", "quantity", 75, 75, false);
@@ -85,19 +103,27 @@ public class Table {
         });
 
         // Thêm tất cả các cột vào bảng
-        tableView.getColumns().addAll(selectColumn, idColumn, titleColumn, authorColumn,
-                publisherColumn, yearColumn, genreColumn, quantityColumn, detailCol);
+        tableView.getColumns().addAll(selectColumn, numberColumn, idColumn, titleColumn, authorColumn,
+                 yearColumn, genreColumn, quantityColumn, statusColumn, detailCol);
         return tableView;
     }
 
     public static TableView<User> tableUser(boolean open, double tableWidth, List<String> a, LibraryManagement library, Login login) {
+
         TableView<User> tableView = new TableView<>();
+        tableView.setMinHeight(480);
         tableView.setEditable(open); // Bật chế độ chỉnh sửa
 
         // Tạo các cột
         TableColumn<User, Boolean> selectColumn = new TableColumn<>();
         CheckBox headerCheckBox = new CheckBox();
-
+        // Cột đánh số
+        TableColumn<User, Integer> numberColumn = new TableColumn<>("STT");
+        numberColumn.setMinWidth(50);
+        numberColumn.setMaxWidth(50);
+        numberColumn.setStyle("-fx-alignment: CENTER;");
+        numberColumn.setCellValueFactory((TableColumn.CellDataFeatures<User, Integer> param) ->
+                new SimpleIntegerProperty(tableView.getItems().indexOf(param.getValue()) + 1).asObject());
         // Thiết lập tiêu đề cột là CheckBox
         selectColumn.setGraphic(headerCheckBox);
         selectColumn.setCellValueFactory(cellData -> cellData.getValue().selectedProperty());
@@ -117,12 +143,12 @@ public class Table {
             tableView.refresh(); // Cập nhật bảng
         });
 
-        TableColumn<User, String> userIdColumn = tableColumn("ID Người dùng", "userId", 105, 105, true);
-        TableColumn<User, String> fullNameColumn = tableColumn("Họ và Tên", "fullName", tableWidth-830, 5000, true);
-        TableColumn<User, String> phoneNumberColumn = tableColumn("Số Điện Thoại", "phoneNumber", 150, 150, true);
-        TableColumn<User, String> emailColumn = tableColumn("Email", "email", 225, 225, true);
+        TableColumn<User, String> userIdColumn = tableColumn("ID Người dùng", "userId", 120, 120, true);
+        TableColumn<User, String> fullNameColumn = tableColumn("Họ và Tên", "fullName", tableWidth-790, 5000, true);
         TableColumn<User, String> dateOfBirthColumn = tableColumnDate("Ngày Sinh", "dateOfBirth", 80, 80);
-        TableColumn<User, Integer> totalBooksBorrowedColumn = tableColumn("Sách Đã Mượn", "totalBooksBorrowed", 100, 100, false);
+        TableColumn<User, Integer> totalBooksBorrowedColumn = tableColumn("Đang Mượn", "totalBooksBorrowed", 100, 100, false);
+        TableColumn<User, String> totalBooksReturnedColumn = tableColumn("Đã Trả", "totalBooksReturned", 100, 100, true);
+        TableColumn<User, String> accountStatusColumn = tableColumn("Trạng Thái Tài khoản", "accountStatus", 150, 150, true);
         TableColumn<User, String> statusColumn = tableColumn("Trạng Thái Thẻ", "membershipStatus", 100, 100, true);
 
         TableColumn<User, String> detailCol = new TableColumn<>("Xem Thêm");
@@ -162,19 +188,26 @@ public class Table {
         });
 
         // Thêm tất cả các cột vào bảng
-        tableView.getColumns().addAll(selectColumn, userIdColumn, fullNameColumn, phoneNumberColumn,
-                emailColumn, dateOfBirthColumn, totalBooksBorrowedColumn, statusColumn, detailCol);
+        tableView.getColumns().addAll(selectColumn, numberColumn, userIdColumn, fullNameColumn, dateOfBirthColumn,
+                totalBooksBorrowedColumn, totalBooksReturnedColumn, statusColumn, accountStatusColumn, detailCol);
         return tableView;
     }
 
-    public static TableView<BookAndBorrow> tableStatistical(boolean open, double tableWidth, List<String> a, LibraryManagement library, boolean role) {
+    public static TableView<BookAndBorrow> tableStatistical(boolean open, double tableWidth, List<?> list, LibraryManagement library, boolean role) {
+
         TableView<BookAndBorrow> tableView = new TableView<>();
         tableView.setEditable(open); // Bật chế độ chỉnh sửa
 
         // Tạo các cột
         TableColumn<BookAndBorrow, Boolean> selectColumn = new TableColumn<>();
         CheckBox headerCheckBox = new CheckBox();
-
+        // Cột đánh số
+        TableColumn<BookAndBorrow, Integer> numberColumn = new TableColumn<>("STT");
+        numberColumn.setMinWidth(30);
+        numberColumn.setMaxWidth(30);
+        numberColumn.setStyle("-fx-alignment: CENTER;");
+        numberColumn.setCellValueFactory((TableColumn.CellDataFeatures<BookAndBorrow, Integer> param) ->
+                new SimpleIntegerProperty(tableView.getItems().indexOf(param.getValue()) + 1).asObject());
         // Thiết lập tiêu đề cột là CheckBox
         selectColumn.setGraphic(headerCheckBox);
         selectColumn.setCellValueFactory(cellData -> cellData.getValue().selectedProperty());
@@ -182,22 +215,23 @@ public class Table {
         selectColumn.setStyle("-fx-alignment: CENTER;");
         selectColumn.setMinWidth(20);
         selectColumn.setMaxWidth(20);
-        headerCheckBox.setOnAction(event -> {
-            boolean isSelected = headerCheckBox.isSelected();
 
-            a.clear();
-            for (BookAndBorrow book : tableView.getItems()) {
-                book.setSelected(isSelected);
-            }
-            tableView.refresh(); // Cập nhật bảng
-        });
+            headerCheckBox.setOnAction(event -> {
+                boolean isSelected = headerCheckBox.isSelected();
+
+                list.clear();
+                for (BookAndBorrow book : tableView.getItems()) {
+                    book.setSelected(isSelected);
+                }
+                tableView.refresh(); // Cập nhật bảng
+            });
 
         TableColumn<BookAndBorrow, String> idColumn = tableColumn("ID Sách", "id", 55, 55, true);
         TableColumn<BookAndBorrow, String> titleColumn;
         if(role)
-            titleColumn = tableColumn("Tên Sách", "title", tableWidth - 800, 5000, true);
+            titleColumn = tableColumn("Tên Sách", "title", tableWidth - 900, 5000, true);
         else
-            titleColumn = tableColumn("Tên Sách", "title", tableWidth - 675, 5000, true);
+            titleColumn = tableColumn("Tên Sách", "title", tableWidth - 775, 5000, true);
         TableColumn<BookAndBorrow, String> authorColumn = tableColumn("Tác Giả", "author", 150, 150, true);
         TableColumn<BookAndBorrow, String> genreColumn = tableColumn("Thể Loại", "genre", 100, 100, true);
         TableColumn<BookAndBorrow, String> borrowDateColumn = tableColumnDate("Ngày Mượn", "borrowDate", 100, 100);
@@ -242,10 +276,10 @@ public class Table {
 
         // Thêm tất cả các cột vào bảng
         if(role)
-            tableView.getColumns().addAll(selectColumn, userIdColumn, fullNameColumn, idColumn,
+            tableView.getColumns().addAll(selectColumn, numberColumn, userIdColumn, fullNameColumn, idColumn,
                     titleColumn, authorColumn, borrowDateColumn, returnDateColumn, dueDateColumn, detailCol);
         else
-            tableView.getColumns().addAll(selectColumn, idColumn, titleColumn, authorColumn,
+            tableView.getColumns().addAll(selectColumn,numberColumn, idColumn, titleColumn, authorColumn,
                 genreColumn, borrowDateColumn, returnDateColumn, dueDateColumn, detailCol);
 
         return tableView;
@@ -343,7 +377,7 @@ public class Table {
                 hbox.setAlignment(Pos.BOTTOM_CENTER);
                 // Thêm giá trị rating vào HBox
                 Label ratingText = new Label(String.format("%.1f", rating));  // Hiển thị giá trị đánh giá
-                hbox.getChildren().add(ratingText);
+                hbox.getChildren().add(0,ratingText);
 
                 int numStars = (int) Math.round(rating);  // Làm tròn số đánh giá
                 for (int i = 0; i < numStars; i++) {
@@ -364,6 +398,101 @@ public class Table {
 
         return tableView;
     }
+
+    public static TableView<Card> tableCards(boolean open, double tableWidth, List<String> list) {
+
+        TableView<Card> tableView = new TableView<>();
+        tableView.setEditable(open); // Bật chế độ chỉnh sửa
+
+        // Tạo các cột
+        TableColumn<Card, Boolean> selectColumn = new TableColumn<>();
+        CheckBox headerCheckBox = new CheckBox();
+        // Cột đánh số
+        TableColumn<Card, Integer> numberColumn = new TableColumn<>("STT");
+        numberColumn.setMinWidth(50);
+        numberColumn.setMaxWidth(50);
+        numberColumn.setStyle("-fx-alignment: CENTER;");
+        numberColumn.setCellValueFactory((TableColumn.CellDataFeatures<Card, Integer> param) ->
+                new SimpleIntegerProperty(tableView.getItems().indexOf(param.getValue()) + 1).asObject());
+        // Thiết lập tiêu đề cột là CheckBox
+        selectColumn.setGraphic(headerCheckBox);
+        selectColumn.setCellValueFactory(cellData -> cellData.getValue().selectedProperty());
+        selectColumn.setCellFactory(CheckBoxTableCell.forTableColumn(selectColumn));
+        selectColumn.setStyle("-fx-alignment: CENTER;");
+        selectColumn.setMinWidth(20);
+        selectColumn.setMaxWidth(20);
+
+        headerCheckBox.setOnAction(event -> {
+            boolean isSelected = headerCheckBox.isSelected();
+
+            list.clear();
+            for (Card book : tableView.getItems()) {
+                book.setSelected(isSelected);
+            }
+            tableView.refresh(); // Cập nhật bảng
+        });
+
+        TableColumn<Card, String> cardIdColumn = tableColumn("Mã Thẻ", "cardId", 200, 200, true);
+        TableColumn<Card, String> userIdColumn = tableColumn("ID Người Dùng", "userId", 150, 150, true);
+        TableColumn<Card, String> fullNameColumn = tableColumn("Họ Và Tên", "fullName", tableWidth - 720, 5000, true);
+        TableColumn<Card, String> typeCardColumn = tableColumn("Loại thẻ", "typeCard", 100, 100, true);
+        TableColumn<Card, String> cardRegistrationDateColumn = tableColumnDate("Ngày Đăng Kí", "cardRegistrationDate", 100, 100);
+        TableColumn<Card, String> expiryDateColumn = tableColumnDate("Ngày Hết Hạn", "expiryDate", 100, 100);
+
+
+
+            tableView.getColumns().addAll(selectColumn, numberColumn, cardIdColumn, userIdColumn, fullNameColumn, cardRegistrationDateColumn,
+                    expiryDateColumn, typeCardColumn);
+        return tableView;
+    }
+
+    public static TableView<Help> tableHelp(boolean open, double tableWidth, List<Integer> list) {
+
+        TableView<Help> tableView = new TableView<>();
+        tableView.setEditable(open); // Bật chế độ chỉnh sửa
+
+        // Tạo các cột
+        TableColumn<Help, Boolean> selectColumn = new TableColumn<>();
+        CheckBox headerCheckBox = new CheckBox();
+
+        // Cột đánh số
+        TableColumn<Help, Integer> numberColumn = new TableColumn<>("STT");
+        numberColumn.setMinWidth(50);
+        numberColumn.setMaxWidth(50);
+        numberColumn.setStyle("-fx-alignment: CENTER;");
+        numberColumn.setCellValueFactory((TableColumn.CellDataFeatures<Help, Integer> param) ->
+                new SimpleIntegerProperty(tableView.getItems().indexOf(param.getValue()) + 1).asObject());
+        // Thiết lập tiêu đề cột là CheckBox
+        selectColumn.setGraphic(headerCheckBox);
+        selectColumn.setCellValueFactory(cellData -> cellData.getValue().selectedProperty());
+        selectColumn.setCellFactory(CheckBoxTableCell.forTableColumn(selectColumn));
+        selectColumn.setStyle("-fx-alignment: CENTER;");
+        selectColumn.setMinWidth(20);
+        selectColumn.setMaxWidth(20);
+
+        headerCheckBox.setOnAction(event -> {
+            boolean isSelected = headerCheckBox.isSelected();
+
+            list.clear();
+            for (Help book : tableView.getItems()) {
+                book.setSelected(isSelected);
+            }
+            tableView.refresh(); // Cập nhật bảng
+        });
+
+
+        TableColumn<Help, String> userIdColumn = tableColumn("ID Người Dùng", "userId", 150, 150, true);
+        TableColumn<Help, String> fullNameColumn = tableColumn("Họ Và Tên", "fullName", 300, 5000, true);
+        TableColumn<Help, String> titleColumn = tableColumn("Tiêu Đề", "title", tableWidth - 620, 300, true);
+        TableColumn<Help, String> requestDateColumn = tableColumnDate("Ngày Gửi", "requestDate", 100, 100);
+
+
+
+
+        tableView.getColumns().addAll(selectColumn, numberColumn, userIdColumn, fullNameColumn, titleColumn, requestDateColumn);
+        return tableView;
+    }
+
 
     public static TableColumn tableColumn(String nameColum, String setValue, double width, double hight, boolean isString) {
         if(isString) {

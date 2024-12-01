@@ -1,5 +1,6 @@
 package org.example;
 
+import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
@@ -11,11 +12,14 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.stage.Screen;
-
+import javafx.concurrent.Task;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import javafx.application.Platform;
 
 import java.util.Date;
 
@@ -25,7 +29,8 @@ public class Notification {
     private Rectangle2D visualBounds = Screen.getPrimary().getVisualBounds();
     private double screenWidth = visualBounds.getWidth();
     private double screenHeight = visualBounds.getHeight();
-
+    private ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private Task<Void> currentTask = null;
     public Notification(LibraryManagement library) {
         this.library = library;
     }
@@ -73,9 +78,8 @@ public class Notification {
 
     }
 
-    // Lấy và hiển thị danh sách thông báo
     private Node fetchAndDisplayNotifications() {
-        String userId = interfaces.userId(); // Lấy mã người dùng từ file
+        String userId = Createinterface.userId(); // Lấy mã người dùng từ file
         List<NotificationItem> notifications = new ArrayList<>();
 
         // Lấy thông báo từ tất cả các nguồn
@@ -93,16 +97,48 @@ public class Notification {
         notificationsBox.setMinWidth(1125);
         notificationsBox.setMaxWidth(1125);
 
-        for (NotificationItem notification : notifications) {
-            if (notification.getMessage().startsWith("Hệ thống:")) {
-                notificationsBox.getChildren().add(createSystemNotificationCard(notification.getMessage()));
-            } else {
-                notificationsBox.getChildren().add(createNotificationCard(notification.getMessage()));
+        // Tắt Task và ExecutorService cũ
+        library.shutdownCurrentTask();
+
+        // Tạo ExecutorService mới
+        executorService = Executors.newSingleThreadExecutor();
+
+        // Tạo Task mới để xử lý hiển thị thông báo tuần tự
+        currentTask = new Task<>() {
+            @Override
+            protected Void call() {
+                for (NotificationItem notification : notifications) {
+                    if (isCancelled()) {
+                        break;
+                    }
+                    try {
+                        // Tạm dừng trước khi thêm thông báo
+                        Thread.sleep(50); // 100ms
+                    } catch (InterruptedException e) {
+                        if (isCancelled()) {
+                            break;
+                        }
+                    }
+
+                    // Cập nhật giao diện
+                    Platform.runLater(() -> {
+                        if (notification.getMessage().startsWith("Hệ thống:")) {
+                            notificationsBox.getChildren().add(createSystemNotificationCard(notification.getMessage()));
+                        } else {
+                            notificationsBox.getChildren().add(createNotificationCard(notification.getMessage()));
+                        }
+                    });
+                }
+                return null;
             }
-        }
+        };
+
+        // Thực thi Task trong ExecutorService mới
+        executorService.submit(currentTask);
 
         return notificationsBox;
     }
+
 
     // Tạo thẻ thông báo 
     private HBox createNotificationCard(String notification) {

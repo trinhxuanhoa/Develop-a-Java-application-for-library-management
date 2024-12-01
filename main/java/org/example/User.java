@@ -63,15 +63,15 @@ public class User {
         this.email = new SimpleStringProperty(email);
         this.totalBooksBorrowed = new SimpleIntegerProperty(totalBooksBorrowed);
     }
-    public  User(boolean selected,String userId, String fullName, String phoneNumber, String email,
-                 LocalDate dateOfBirth,  Integer totalBooksBorrowed, String membershipStatus, String detail) {
+    public  User(boolean selected,String userId, String fullName, LocalDate dateOfBirth, Integer totalBooksBorrowed,
+                 Integer totalBooksReturned, String membershipStatus, String accountStatus, String detail) {
         this.selected = new SimpleBooleanProperty(selected);
         this.userId = new SimpleStringProperty(userId);
         this.fullName = new SimpleStringProperty(fullName);
         this.dateOfBirth = new SimpleObjectProperty<>(dateOfBirth);
         this.membershipStatus = new SimpleStringProperty(membershipStatus);
-        this.phoneNumber = new SimpleStringProperty(phoneNumber);
-        this.email = new SimpleStringProperty(email);
+        this.totalBooksReturned = new SimpleIntegerProperty(totalBooksReturned);
+        this.accountStatus = new SimpleStringProperty(accountStatus);
         this.totalBooksBorrowed = new SimpleIntegerProperty(totalBooksBorrowed);
         this.detail = new SimpleStringProperty(detail);
     }

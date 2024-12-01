@@ -1,0 +1,58 @@
+/* Phong cách cho tiêu đề biểu mẫu */
+.form-title {
+    -fx-font-size: 24px;
+    -fx-text-fill: #ffffff;
+    -fx-padding: 0 0 20 0;
+}
+
+/* Phong cách cho nhãn của ô nhập liệu */
+.input-label {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 14px;
+    -fx-padding: 5 0 5 0;
+}
+
+/* Phong cách cho ô nhập liệu */
+.text-field, .text-area {
+    -fx-background-color: rgba(255, 255, 255, 0.7);
+    -fx-text-fill: #000000;
+    -fx-border-color: #ffffff;
+    -fx-border-width: 1;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+    -fx-padding: 5 10 5 10;
+    -fx-effect: dropshadow(one-pass-box, rgba(0,0,0,0.5), 5, 0.0, 0, 1);
+}
+
+.text-field:focused, .text-area:focused {
+    -fx-background-color: rgba(255, 255, 255, 0.9);
+    -fx-border-color: #66afe9;
+}
+
+/* Phong cách cho nút chính */
+.primary-button {
+    -fx-background-color: #007bff;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 14px;
+    -fx-padding: 10 20 10 20;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+}
+
+/* Phong cách cho nút phụ */
+.secondary-button {
+    -fx-background-color: #6c757d;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 14px;
+    -fx-padding: 10 20 10 20;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+}
+
+/* Phong cách cho nút liên kết */
+.link-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #ffffff;
+    -fx-underline: true;
+    -fx-padding: 5;
+}

@@ -1,0 +1,35 @@
+CREATE TEMPORARY TABLE Priority1ToRemove AS
+WITH RankedBooks AS (
+    SELECT id, title, author, cover_image, genre, downloads, date_added, status, priority,
+           ROW_NUMBER() OVER (PARTITION BY id ORDER BY priority ASC, downloads DESC, date_added DESC) AS row_num
+    FROM TempBooks
+),
+GenresToRemove AS (
+    SELECT genre
+    FROM books
+    WHERE genre IN (
+        WITH BorrowedBooks AS (
+            SELECT 
+                br.user_id, 
+                br.book_id, 
+                b.genre, 
+                DATEDIFF(CURDATE(), br.return_date) AS days_difference,
+                ROW_NUMBER() OVER (PARTITION BY br.book_id ORDER BY DATEDIFF(CURDATE(), br.return_date) ASC) AS row_num
+            FROM borrow br
+            JOIN books b ON b.id = br.book_id
+            WHERE br.user_id = ? 
+              AND br.status != 'đã mượn'
+        )
+        SELECT genre
+        FROM BorrowedBooks
+        WHERE row_num = 1 
+          AND genre != '' 
+          AND days_difference > 30
+    )
+)
+(SELECT id, title, author, cover_image, genre, downloads, date_added,status, priority
+FROM TempBooks
+WHERE priority IN (1, 2)
+  AND genre NOT IN (SELECT genre FROM GenresToRemove)
+ORDER BY downloads desc, date_added desc
+ );

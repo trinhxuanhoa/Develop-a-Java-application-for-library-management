@@ -56,7 +56,7 @@ public class Book {
     public Book() {
         this.id = new SimpleStringProperty();
         this.title = new SimpleStringProperty();
-        this.author = new SimpleStringProperty();
+        this.author = new SimpleStringProperty("Vô danh");
         this.publisher = new SimpleStringProperty();
         this.genre = new SimpleStringProperty();
         this.year = new SimpleIntegerProperty();
@@ -72,22 +72,22 @@ public class Book {
         this.summary = new SimpleStringProperty();
     };
 
-    public Book(String id, String title, String author, String publisher,
+    public Book(String id, String title, String author, String status,
                 Integer year, String genre, Integer quantity) {
         this.id = new SimpleStringProperty(id);
         this.title = new SimpleStringProperty(title);
         this.author = new SimpleStringProperty(author);
-        this.publisher = new SimpleStringProperty(publisher);
+        this.status = new SimpleStringProperty(status);
         this.year = (year!=null) ? new SimpleIntegerProperty(year) : null;
         this.genre = new SimpleStringProperty(genre);
         this.quantity = (quantity!=null) ? new SimpleIntegerProperty(quantity) : new SimpleIntegerProperty();
     }
-    public Book(boolean selected, String id, String title, String author, String publisher,
+    public Book(boolean selected, String id, String title, String author, String status,
              Integer year, String genre, Integer quantity, String detail) {
         this.id = new SimpleStringProperty(id);
         this.title = new SimpleStringProperty(title);
         this.author = new SimpleStringProperty(author);
-        this.publisher = new SimpleStringProperty(publisher);
+        this.status = new SimpleStringProperty(status);
         this.year = (year != null) ? new SimpleIntegerProperty(year) : null;
         this.genre = new SimpleStringProperty(genre);
         this.quantity = new SimpleIntegerProperty(quantity);
