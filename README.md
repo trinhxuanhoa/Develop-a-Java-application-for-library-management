@@ -35,11 +35,10 @@ Một ứng dụng quản lý thư viện được phát triển bằng Java, gi
 ## 🚀 Hướng Dẫn Cài Đặt
 
 **Clone dự án:**
-   ```bash
    git clone https://github.com/trinhxuanhoa/Develop-a-Java-application-for-library-management.git
    cd Develop-a-Java-application-for-library-management
-Chạy dự án:
-
+   
+**Chạy dự án:**
 Import dự án vào IDE của bạn.
 Copy database sách và người dùng từ 2 link sau:
 https://ideone.com/4kO1Eu
@@ -49,7 +48,7 @@ https://ideone.com/kUSwhq
 data books
 
 
-Xây dựng và chạy chương trình.
+**Xây dựng và chạy chương trình.**
 🖼️ Demo Giao Diện (Screenshots)
 
 ![image](https://github.com/user-attachments/assets/654afd30-8cdf-4373-82ce-3dcd206295e3)
