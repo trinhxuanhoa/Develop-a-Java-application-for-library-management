@@ -42,7 +42,7 @@ CREATE TABLE `comments` (
 
 LOCK TABLES `comments` WRITE;
 /*!40000 ALTER TABLE `comments` DISABLE KEYS */;
-INSERT INTO `comments` VALUES (18,'bvcbvc','123','kuiui8\n','2024-11-20 20:10:53'),(20,'fdgfd','123','sds','2024-11-22 20:56:28'),(22,'bvcbvc','123','sdvv','2024-11-22 20:57:33'),(23,'bvcbvc','123','sdvv','2024-11-22 20:57:42'),(24,'bvcbvc','123','sdvvd','2024-11-22 20:57:46'),(25,'bvcbvc','123','hthh','2024-11-22 20:57:48'),(26,'bvcbvc','123','rth','2024-11-22 20:57:51'),(49,'bvcbvc','123','gfh','2024-11-23 19:25:58'),(50,'bvcbvc','123','fh','2024-11-23 19:26:02'),(51,'bvcbvc','123','ghgh','2024-11-23 19:26:11'),(52,'bvcbvc','123','gh','2024-11-23 19:26:37'),(53,'bvcbvc','123','ghh','2024-11-23 19:26:40'),(54,'bvcbvc','123','ngn','2024-11-23 19:26:41'),(55,'bvcbvc','123','gf','2024-11-23 19:26:43'),(56,'bvcbvc','123','fgh','2024-11-23 19:26:44'),(57,'B001','123','sdhfthfh','2024-11-24 20:15:19');
+INSERT INTO `comments` VALUES (57,'B001','123','sdhfthfh','2024-11-24 20:15:19'),(58,'14e9c46c-413a-4ce2-beb2-7ef8602413d5','123','fdcxx','2024-12-02 14:45:41');
 /*!40000 ALTER TABLE `comments` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -55,4 +55,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-12-01 22:26:46
+-- Dump completed on 2024-12-02 23:33:32

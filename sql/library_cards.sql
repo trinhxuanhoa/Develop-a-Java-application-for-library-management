@@ -41,7 +41,7 @@ CREATE TABLE `cards` (
 
 LOCK TABLES `cards` WRITE;
 /*!40000 ALTER TABLE `cards` DISABLE KEYS */;
-INSERT INTO `cards` VALUES ('123plus','123','2024-12-01 12:53:09','2025-02-01','plus','Pending Renewal'),('hgfcommon','hgf','2024-12-01 14:57:42','2025-01-01','common','Active');
+INSERT INTO `cards` VALUES ('123plus','123','2024-12-01 12:53:09','2025-02-01','plus','Active'),('hgfcommon','hgf','2024-12-01 14:57:42','2025-01-01','common','Active');
 /*!40000 ALTER TABLE `cards` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -54,4 +54,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-12-01 22:26:47
+-- Dump completed on 2024-12-02 23:33:32

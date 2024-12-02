@@ -311,18 +311,17 @@ public class BookDAO {
                     }
                 };
 
-                currentTask.setOnSucceeded(event -> {
-                    System.out.println("Hoàn thành tải dữ liệu sách đã mượn!");
-                    executorService.shutdown();
-                });
+
                 currentTask.setOnSucceeded(event -> {
                     System.out.println("Hoàn thành tải dữ liệu sách người dùng đã mượn!");
                     executorService.shutdown();
+                    shutdownCurrentTask();
                 });
 
                 currentTask.setOnFailed(event -> {
                     System.err.println("Có lỗi xảy ra: " + currentTask.getException().getMessage());
                     executorService.shutdown();
+                    shutdownCurrentTask();
                 });
 
                 // Gửi Task vào ExecutorService
@@ -394,10 +393,12 @@ public class BookDAO {
         currentTask.setOnSucceeded(event -> {
             System.out.println("Hoàn thành tải dữ liệu sách đã mượn!");
             executorService.shutdown();
+            shutdownCurrentTask();
         });
                 currentTask.setOnSucceeded(event -> {
         System.out.println("Hoàn thành tải dữ liệu sách người dùng đã mượn!");
         executorService.shutdown();
+        shutdownCurrentTask();
     });
 
                currentTask.setOnFailed(event -> {
@@ -505,6 +506,7 @@ public class BookDAO {
                 if (node instanceof Button) {
                     Button loadButton = (Button) node;
                     Platform.runLater(() -> loadButton.setDisable(false)); // Kích hoạt lại Button
+                    shutdownCurrentTask();
                 }
                 Platform.runLater(() ->System.out.println(vBox.getChildren().size() + " hoa"));
                 try {
@@ -518,9 +520,11 @@ public class BookDAO {
             });
             currentTask.setOnFailed(event -> {
                 System.out.println("Task failed: " + currentTask.getException().getMessage());
+                shutdownCurrentTask();
             });
             currentTask.setOnCancelled(event -> {
                 System.out.println("Task was cancelled.");
+                shutdownCurrentTask();
             });
 
             return vBox;
@@ -612,6 +616,7 @@ public class BookDAO {
                     if (node instanceof Button) {
                         Button loadButton = (Button) node;
                         Platform.runLater(() -> loadButton.setDisable(false)); // Kích hoạt lại Button
+                        shutdownCurrentTask();
                     }
                     Platform.runLater(() ->System.out.println(vBox.getChildren().size() + " hoa"));
                     try {
@@ -625,9 +630,11 @@ public class BookDAO {
                 });
                 currentTask.setOnFailed(event -> {
                     System.out.println("Task failed: " + currentTask.getException().getMessage());
+                    shutdownCurrentTask();
                 });
                 currentTask.setOnCancelled(event -> {
                     System.out.println("Task was cancelled.");
+                    shutdownCurrentTask();
                 });
 
                 return vBox;
@@ -638,7 +645,7 @@ public class BookDAO {
         return vBox;
     }
     //15 cuốn sách mượn nhều nhất
-    public HBox findTopBorrownedBooks(Button loadButton) {
+    public HBox findTopBorrownedBooks() {
 
         HBox hBox = new HBox(30);
         shutdownCurrentTask();
@@ -680,23 +687,19 @@ public class BookDAO {
                             fadeTransition.play();  // Chạy hoạt hình mờ dần
                         });
                         Thread.sleep(200);
-                        // Giả lập độ trễ (nếu cần kiểm tra UI)
-                        Thread.sleep(50); // Giữ lại chỉ để mô phỏng độ trễ, có thể bỏ đi nếu không cần.
                     }
                     return null;
                 }
             };
             // Vô hiệu hóa nút khi bắt đầu tải
-            Platform.runLater(() -> loadButton.setDisable(true));
+
 
             // Chạy Task trong background thread
             executorService.submit(currentTask);
 
             // Xóa vòng tròn loading khi Task hoàn thành và kích hoạt lại nút
             currentTask.setOnSucceeded(event -> {
-                Platform.runLater(() -> {
-                    loadButton.setDisable(false); // Kích hoạt lại nút khi tải xong
-                });
+                System.out.println("Task was thanh công.");
             });
             currentTask.setOnFailed(event -> {
                 System.out.println("Task failed: " + currentTask.getException().getMessage());
@@ -712,7 +715,7 @@ public class BookDAO {
         return hBox;
     }
     //15 cuốn sách mới nhất
-    public HBox findNewBooks(Button loadButton) {
+    public HBox findNewBooks() {
 
         HBox hBox = new HBox(30);
         executorService = Executors.newSingleThreadExecutor();
@@ -754,22 +757,18 @@ public class BookDAO {
                 });
                 Thread.sleep(200);
                 // Giả lập độ trễ (nếu cần kiểm tra UI)
-                Thread.sleep(50); // Giữ lại chỉ để mô phỏng độ trễ, có thể bỏ đi nếu không cần.
             }
             return null;
         }
     };
             // Vô hiệu hóa nút khi bắt đầu tải
-            Platform.runLater(() -> loadButton.setDisable(true));
 
             // Chạy Task trong background thread
             executorService.submit(currentTask);
 
             // Xóa vòng tròn loading khi Task hoàn thành và kích hoạt lại nút
             currentTask.setOnSucceeded(event -> {
-                Platform.runLater(() -> {
-                    loadButton.setDisable(false); // Kích hoạt lại nút khi tải xong
-                });
+                System.out.println("Task was thành công.");
             });
             currentTask.setOnFailed(event -> {
                 System.out.println("Task failed: " + currentTask.getException().getMessage());
@@ -785,17 +784,13 @@ public class BookDAO {
         return hBox;
     }
     //15 cuốn sách đề xuất
-    public HBox findRelatedBooksLimit15(String userId, Node node) {
+    public HBox findRelatedBooksLimit15(String userId) {
 
         ExecutorService executorServiceSQl = Executors.newFixedThreadPool(10);
         HBox hBox = new HBox(30);
         executorService = Executors.newSingleThreadExecutor();
 
-        // Kiểm tra nếu node là Button, vô hiệu hóa Button
-        if (node instanceof Button) {
-            Button loadButton = (Button) node;
-            Platform.runLater(() -> loadButton.setDisable(true));
-        }
+
         try {
             Connection connection = DatabaseConnection.connectToLibrary();
             // Đọc các file SQL
@@ -894,7 +889,6 @@ public class BookDAO {
                         });
                         Thread.sleep(200);
                         // Giả lập độ trễ (nếu cần kiểm tra UI)
-                        Thread.sleep(50); // Giữ lại chỉ để mô phỏng độ trễ, có thể bỏ đi nếu không cần.
                     }
                     return null;
                 }
@@ -904,10 +898,6 @@ public class BookDAO {
 
             // Sau khi hoàn thành, kích hoạt lại nút nếu là Button
             currentTask.setOnSucceeded(event -> {
-                if (node instanceof Button) {
-                    Button loadButton = (Button) node;
-                    Platform.runLater(() -> loadButton.setDisable(false)); // Kích hoạt lại Button
-                }
                 Platform.runLater(() ->System.out.println(hBox.getChildren().size() + " hoa"));
                 try {
                     connection.close();
@@ -916,7 +906,6 @@ public class BookDAO {
                 } catch (SQLException e) {
                     System.out.println(e.getMessage());
                 }
-
             });
             currentTask.setOnFailed(event -> {
                 System.out.println("Task failed: " + currentTask.getException().getMessage());
@@ -937,7 +926,7 @@ public class BookDAO {
     //sách đề xuất
     public VBox findRelatedBooks(String userId, Node node) {
 
-        ExecutorService executorServiceSQl = Executors.newFixedThreadPool(10);
+        //ExecutorService executorServiceSQl = Executors.newFixedThreadPool(10);
         VBox vBox = new VBox(10);
        shutdownCurrentTask();
         executorService = Executors.newSingleThreadExecutor();
@@ -950,7 +939,7 @@ public class BookDAO {
         try {
             Connection connection = DatabaseConnection.connectToLibrary();
             // Đọc các file SQL
-            Callable<String>[] fileReaders = new Callable[]{
+           /* Callable<String>[] fileReaders = new Callable[]{
                     () -> new FileHandler("table11.txt").readFromFileAsString(),
                     () -> new FileHandler("table12.txt").readFromFileAsString(),
                     () -> new FileHandler("table21.txt").readFromFileAsString(),
@@ -964,20 +953,37 @@ public class BookDAO {
                     () -> new FileHandler("sql.txt").readFromFileAsString()
             };
             // Thực thi đọc file song song
-            List<Future<String>> fileContents = executorServiceSQl.invokeAll(List.of(fileReaders));
+            List<Future<String>> fileContents = executorServiceSQl.invokeAll(List.of(fileReaders));*/
 
             // Thu thập nội dung các tệp
-            String table11 = fileContents.get(0).get();
-            String table12 = fileContents.get(1).get();
-            String table21 = fileContents.get(2).get();
-            String table22 = fileContents.get(3).get();
-            String table31 = fileContents.get(4).get();
-            String table32 = fileContents.get(5).get();
-            String table41 = fileContents.get(6).get();
-            String table42 = fileContents.get(7).get();
-            String table51 = fileContents.get(8).get();
-            String table52 = fileContents.get(9).get();
-            String sql = fileContents.get(10).get();
+            // Tạo danh sách các tên file
+            String[] fileNames = {
+                    "table11.txt", "table12.txt", "table21.txt", "table22.txt",
+                    "table31.txt", "table32.txt", "table41.txt", "table42.txt",
+                    "table51.txt", "table52.txt", "sql.txt"
+            };
+
+// Tạo một danh sách chứa kết quả đọc file
+            List<String> fileContents = new ArrayList<>();
+
+// Đọc từng file một lần lượt
+            for (String fileName : fileNames) {
+                fileContents.add(new FileHandler(fileName).readFromFileAsString());
+            }
+
+// Lấy các nội dung từ danh sách
+            String table11 = fileContents.get(0);
+            String table12 = fileContents.get(1);
+            String table21 = fileContents.get(2);
+            String table22 = fileContents.get(3);
+            String table31 = fileContents.get(4);
+            String table32 = fileContents.get(5);
+            String table41 = fileContents.get(6);
+            String table42 = fileContents.get(7);
+            String table51 = fileContents.get(8);
+            String table52 = fileContents.get(9);
+            String sql = fileContents.get(10);
+
             String[] tableQueries = {table41, table42, table51, table52};
 
             try (PreparedStatement tempStatement = connection.prepareStatement(table11)) {
@@ -1068,6 +1074,7 @@ public class BookDAO {
                     if (node instanceof Button) {
                         Button loadButton = (Button) node;
                         Platform.runLater(() -> loadButton.setDisable(false)); // Kích hoạt lại Button
+                        shutdownCurrentTask();
                     }
                     Platform.runLater(() ->System.out.println(vBox.getChildren().size() + " hoa"));
                     try {
@@ -1077,6 +1084,7 @@ public class BookDAO {
                     } catch (SQLException e) {
                         System.out.println(e.getMessage());
                     }
+                    shutdownCurrentTask();
 
                 });
             currentTask.setOnFailed(event -> {
@@ -1088,10 +1096,10 @@ public class BookDAO {
 
                 return vBox;
 
-        } catch (SQLException | InterruptedException | ExecutionException e) {
+        } catch (SQLException e) {
             System.err.println("Lỗi khi truy vấn sách đề xuất: " + e.getMessage());
         } finally {
-            executorServiceSQl.shutdown();
+
         }
         return vBox;
     }
@@ -1162,7 +1170,6 @@ public class BookDAO {
                             hBox = tempHBox;  // Tạo một HBox mới
                             i = 0;  // Đặt lại biến đếm
                         }
-                        Thread.sleep(100);
                     }
                     return null;
                 }
@@ -1175,6 +1182,7 @@ public class BookDAO {
                 if (node instanceof Button) {
                     Button loadButton = (Button) node;
                     Platform.runLater(() -> loadButton.setDisable(false)); // Kích hoạt lại Button
+                    shutdownCurrentTask();
                 }
                 Platform.runLater(() ->System.out.println(vBox.getChildren().size() + " hoa"));
                 try {
@@ -1306,7 +1314,7 @@ public class BookDAO {
                 } catch (SQLException e) {
                     System.err.println("Lỗi khi đóng tài nguyên: " + e.getMessage());
                 }
-
+                shutdownCurrentTask();
             });
 
             currentTask.setOnFailed(event -> {
@@ -1319,6 +1327,7 @@ public class BookDAO {
                 } catch (SQLException e) {
                     System.err.println("Lỗi khi đóng tài nguyên: " + e.getMessage());
                 }
+                shutdownCurrentTask();
             });
 
             // Gửi Task vào ExecutorService
@@ -1641,11 +1650,13 @@ public class BookDAO {
             currentTask.setOnSucceeded(event -> {
                 System.out.println("Hoàn thành tải dữ liệu sách người dùng đã mượn!");
                 executorService.shutdown();
+                shutdownCurrentTask();
             });
 
             currentTask.setOnFailed(event -> {
                 System.err.println("Có lỗi xảy ra: " + currentTask.getException().getMessage());
                 executorService.shutdown();
+                shutdownCurrentTask();
             });
 
             // Gửi Task vào ExecutorService

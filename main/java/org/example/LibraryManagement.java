@@ -964,19 +964,19 @@ if(BorrowDAO.isApproved(id, Createinterface.userId())) {
 
         // Tạo TextField và Button tìm kiếm
         TextField searchField = new TextField();
-        searchField.setMinWidth(750);
-        searchField.setMaxWidth(750);
+        searchField.setMinWidth(850);
+        searchField.setMaxWidth(850);
         searchField.setPromptText("Tên sách, Tên tác giả");
+        searchField.setStyle("-fx-background-radius: 10px 0 0 10px;");
         Button searchButton = new Button("Tìm kiếm");
+        searchButton.setStyle("-fx-background-radius: 0 10px 10px 0;");
         searchButton.setMinWidth(100);
         searchButton.setMaxWidth(100);
 
         HBox searchHBox = new HBox(searchField, searchButton);
-        searchHBox.setMinWidth(850);
-        searchHBox.setMaxWidth(850);
+        searchHBox.setMinWidth(950);
+        searchHBox.setMaxWidth(950);
         searchHBox.setAlignment(Pos.CENTER);
-        searchHBox.setLayoutX(143);
-        searchHBox.setLayoutY(120);
 
         // Tạo ScrollPane chứa StackPane
         ScrollPane scrollPane = new ScrollPane();
@@ -985,8 +985,8 @@ if(BorrowDAO.isApproved(id, Createinterface.userId())) {
         scrollPane.setPrefSize(screenWidth - 467, screenHeight - 320);
         scrollPane.setPannable(true); // Kéo nội dung bằng chuột
 
-        VBox vBox = new VBox(10, topBooks(loadButton));
-        ScrollPane scrollPaneGenre = scrollPaneButtonGenre(vBox, loadButton);
+        VBox vBox = new VBox(10, topBooks());
+        ScrollPane scrollPaneGenre = scrollPaneButtonGenre(vBox);
 
         scrollPane.setContent(vBox); // Đặt StackPane vào ScrollPane
         scrollPane.setStyle("-fx-background-color: #FFFFFF; -fx-background: #FFFFFF;");
@@ -1002,6 +1002,7 @@ if(BorrowDAO.isApproved(id, Createinterface.userId())) {
         VBox vBoxAll = new VBox(20, searchHBox, scrollPaneGenre, scrollPane);
         vBoxAll.setLayoutX(37);
         vBoxAll.setLayoutY(120);
+        vBoxAll.setAlignment(Pos.CENTER);
 
         Pane pane = new Pane(rectangle, vBoxAll);
         return pane;
@@ -3696,7 +3697,7 @@ FileHandler fileHandler = new FileHandler(fileName);
         return button;
     }
     //Thanh thể loại khi tìm sách
-    public ScrollPane scrollPaneButtonGenre(VBox vBox, Button loadButton) {
+    public ScrollPane scrollPaneButtonGenre(VBox vBox) {
         List<Label> labelList = new ArrayList<>();
         List<String> nameLabels = new FileHandler("genre.txt").readFromFile(); // Giả sử FileHandler đã triển khai
         HBox hBox = new HBox(10);
@@ -3704,12 +3705,15 @@ FileHandler fileHandler = new FileHandler(fileName);
 
         // Tạo danh sách Label
         for (String name : nameLabels) {
-            labelList.add(genreLabel(name, vBox, loadButton));
+            labelList.add(genreLabel(name, vBox));
         }
-        hBox.getChildren().add(genreLabel("Trang chủ", vBox, loadButton));
-        hBox.getChildren().add(genreLabel("Đề xuất", vBox, loadButton));
-        hBox.getChildren().addAll(labelList);
-        hBox.getChildren().add(genreLabel("Khác", vBox, loadButton));
+        hBox.getChildren().add(genreLabel("Trang chủ", vBox));
+        hBox.getChildren().add(genreLabel("Đề xuất", vBox));
+        for (String name : nameLabels) {
+            hBox.getChildren().add(genreLabel(name, vBox));
+        }
+        //hBox.getChildren().addAll(labelList);
+        hBox.getChildren().add(genreLabel("Khác", vBox));
 
         // Tạo ScrollPane
         ScrollPane scrollPane = new ScrollPane(hBox);
@@ -3729,7 +3733,7 @@ FileHandler fileHandler = new FileHandler(fileName);
         return scrollPane;
     }
     //layout từng thể loại trên thanh tm sách
-    public Label genreLabel(String name, VBox vBox, Button loadButton) {
+    public Label genreLabel(String name, VBox vBox) {
 
         Label label = new Label(name);
         label.setMinHeight(45);
@@ -3765,7 +3769,7 @@ FileHandler fileHandler = new FileHandler(fileName);
             if (!isDragging) {
                 vBox.getChildren().clear();
                 if(name.compareTo("Trang chủ")==0)
-                    vBox.getChildren().add(topBooks(loadButton));
+                    vBox.getChildren().add(topBooks());
                 else if(name.compareTo("Đề xuất")==0)
                     vBox.getChildren().add(bookDAO.findRelatedBooks(Createinterface.userId(), label));
                 else if(name.compareTo("Khác")==0)
@@ -3793,16 +3797,16 @@ FileHandler fileHandler = new FileHandler(fileName);
         return label;
     }
     //layout đề xuất trong các loại sách trong trang chủ
-    public VBox topBooks(Button loadButton) {
+    public VBox topBooks() {
 
         Label topBorrownedBooksLabel = topLabel("Sách mượn nhiều");
         Label relatedBooksLabel = topLabel("Dành cho bạn");
         Label newBooksLabel = topLabel("Sách mới nhất");
 
         shutdownCurrentTask();
-        HBox topBorrownedBooksHBox = bookDAO.findTopBorrownedBooks(loadButton);
-        HBox relatedBooksHBox = bookDAO.findRelatedBooksLimit15(Createinterface.userId(), loadButton);
-        HBox newBooksHBox = bookDAO.findNewBooks(loadButton);
+        HBox topBorrownedBooksHBox = bookDAO.findTopBorrownedBooks();
+        HBox relatedBooksHBox = bookDAO.findRelatedBooksLimit15(Createinterface.userId());
+        HBox newBooksHBox = bookDAO.findNewBooks();
 
         ScrollPane topBorrownedBooksScrollPane = scrollPaneTopBooks(topBorrownedBooksHBox);
         ScrollPane relatedBooksScrollPane = scrollPaneTopBooks(relatedBooksHBox);

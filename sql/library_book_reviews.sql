@@ -34,7 +34,7 @@ CREATE TABLE `book_reviews` (
   CONSTRAINT `book_reviews_ibfk_1` FOREIGN KEY (`book_id`) REFERENCES `books` (`id`) ON DELETE CASCADE,
   CONSTRAINT `book_reviews_user_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT `book_reviews_chk_1` CHECK ((`rating` between 1 and 5))
-) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -43,7 +43,7 @@ CREATE TABLE `book_reviews` (
 
 LOCK TABLES `book_reviews` WRITE;
 /*!40000 ALTER TABLE `book_reviews` DISABLE KEYS */;
-INSERT INTO `book_reviews` VALUES (12,'bvcbvc','123',5.0,'2024-11-17 17:00:00'),(18,'B001','123',5.0,'2024-11-23 17:00:00'),(21,'123','123',5.0,'2024-11-27 17:00:00');
+INSERT INTO `book_reviews` VALUES (18,'B001','123',5.0,'2024-11-23 17:00:00'),(22,'B004','123',4.0,'2024-12-01 17:00:00'),(23,'113b51f3-8b5c-4757-9f56-f3eb9f08699a','123',5.0,'2024-12-01 17:00:00');
 /*!40000 ALTER TABLE `book_reviews` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -56,4 +56,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-12-01 22:26:46
+-- Dump completed on 2024-12-02 23:33:33

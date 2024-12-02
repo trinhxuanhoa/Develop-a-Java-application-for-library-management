@@ -35,7 +35,7 @@ CREATE TABLE `borrow` (
   KEY `borrow_ibfk_2` (`book_id`),
   CONSTRAINT `borrow_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
   CONSTRAINT `borrow_ibfk_2` FOREIGN KEY (`book_id`) REFERENCES `books` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=54 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=58 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -44,7 +44,7 @@ CREATE TABLE `borrow` (
 
 LOCK TABLES `borrow` WRITE;
 /*!40000 ALTER TABLE `borrow` DISABLE KEYS */;
-INSERT INTO `borrow` VALUES (2,'123','bvcbvc','2024-11-18','2024-11-20','trả đúng hạn','2024-12-18'),(6,'123','bvcbvc','2024-11-20','2024-11-23','trả đúng hạn','2024-12-20'),(9,'123','fdgfd','2024-11-20','2024-11-23','trả đúng hạn','2024-12-20'),(11,'123','bvcbvc','2024-11-23','2024-11-24','trả đúng hạn','2024-12-23'),(44,'123','123','2024-11-27','2024-11-27','trả đúng hạn','2024-12-27'),(45,'123','B001','2024-11-28','2024-11-29','trả đúng hạn','2024-12-28'),(46,'123','123','2024-11-29','2024-11-29','trả đúng hạn','2024-12-29'),(50,'123','32','2024-11-29','2024-12-01','trả đúng hạn','2024-12-29'),(51,'123','123','2024-12-01','2024-12-01','trả đúng hạn','2024-12-31'),(52,'123','32','2024-12-01','2024-12-01','trả đúng hạn','2024-12-31'),(53,'123','123','2024-12-01','2024-12-01','trả đúng hạn','2024-12-31');
+INSERT INTO `borrow` VALUES (45,'123','B001','2024-11-28','2024-11-29','trả đúng hạn','2024-12-28'),(54,'123','B004','2024-12-02','2024-12-02','trả đúng hạn','2025-01-01'),(55,'123','113b51f3-8b5c-4757-9f56-f3eb9f08699a','2024-12-02','2024-12-02','trả đúng hạn','2025-01-01'),(56,'123','B001','2024-12-02','2024-12-02','trả đúng hạn','2025-01-01'),(57,'123','B004','2024-12-02','2024-12-02','trả đúng hạn','2025-01-01');
 /*!40000 ALTER TABLE `borrow` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -57,4 +57,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-12-01 22:26:47
+-- Dump completed on 2024-12-02 23:33:32

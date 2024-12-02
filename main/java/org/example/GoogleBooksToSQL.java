@@ -25,7 +25,7 @@ import java.util.*;
 public class GoogleBooksToSQL {
     public static void main(String[] args) {
         String apiKey = "AIzaSyAnpU3yKVAHE-njl-OWqmqLyq17UKKJaGs";
-        String query = "Âm nhạc";
+        String query = "Manga";
         String genre;
         genre = query;
         query = removeAccentsAndSpaces(query);
