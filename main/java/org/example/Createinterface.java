@@ -65,7 +65,6 @@ public class Createinterface {
 
         Label  roleLabel = new Label(UserDAO.getRole(userId()));
         roleLabel.setStyle("-fx-font-size: 20px;-fx-font-weight: bold;-fx-text-fill: white");
-        roleLabel.setLayoutY(40);
 
         Circle circle = new Circle(50);
         circle.setCenterX(50);
@@ -80,6 +79,18 @@ public class Createinterface {
         imageView.setLayoutY(80);
         // Cắt hình ảnh thành hình tròn
         imageView.setClip(circle);
+
+
+        Circle circle2 = new Circle(20);
+        circle2.setCenterX(20);
+        circle2.setCenterY(20);
+        Image image2 = UserDAO.getAvatar(userId()); // Đường dẫn đến hình ảnh
+        // Đặt kích thước cho ImageView
+        ImageView imageView2 = new ImageView(image2);
+        imageView2.setClip(circle2);
+        imageView2.setFitWidth(40); // Kích thước chiều rộng
+        imageView2.setFitHeight(40); // Kích thước chiều cao
+
         Pane paneRectangle = new Pane(tableRectangle2,tableRectangle1);
 
         // Tạo các nút cho menu
@@ -169,7 +180,11 @@ HBox accountHBox =  accountHBox("Thông Tin Tài Khoản", login);
                                     );
         layout.setLayoutY(240);
 
-        pane.getChildren().addAll(imageView,accountHBox,layout,common, imageViewLibrary, roleLabel);
+        VBox roleVBox = new VBox(imageView2, roleLabel);
+        roleVBox.setAlignment(Pos.CENTER);
+        roleVBox.setLayoutY(5);
+
+        pane.getChildren().addAll(imageView,accountHBox,layout,common, imageViewLibrary, roleVBox);
         // Dùng StackPane để xếp hình nền, hình chữ nhật và form
 
         root.getChildren().addAll(paneRectangle,pane);
@@ -177,7 +192,7 @@ HBox accountHBox =  accountHBox("Thông Tin Tài Khoản", login);
     interfaceScene = new Scene(root, screenWidth, screenHeight);
         Platform.runLater(() -> {
             double screenWidth = interfaceScene.getWidth(); // Lấy chiều rộng của Scene
-            roleLabel.setLayoutX(screenWidth - roleLabel.getWidth() - 10); // Cách cạnh phải 10px
+            roleVBox.setLayoutX(screenWidth - roleVBox.getWidth() - 10); // Cách cạnh phải 10px
         });
         primaryStage.setScene(interfaceScene);
         // Đảm bảo đóng ExecutorService sau khi hoàn thành
@@ -185,7 +200,7 @@ HBox accountHBox =  accountHBox("Thông Tin Tài Khoản", login);
         loadInterfaceTask.setOnFailed(event -> executor.shutdown());
         executor.submit(loadInterfaceTask);
     }
-    public void interFaceUser(Login login) {
+    public void interFaceUser(Login login)  {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         StackPane root = new StackPane();
         Pane common = new Pane();
@@ -205,7 +220,6 @@ HBox accountHBox =  accountHBox("Thông Tin Tài Khoản", login);
 
         Label  roleLabel = new Label(UserDAO.getRole(userId()));
         roleLabel.setStyle("-fx-font-size: 20px;-fx-font-weight: bold;-fx-text-fill: white");
-        roleLabel.setLayoutY(40);
 
         Circle circle = new Circle(50);
         circle.setCenterX(50);
@@ -220,6 +234,18 @@ HBox accountHBox =  accountHBox("Thông Tin Tài Khoản", login);
         imageView.setLayoutY(80);
         // Cắt hình ảnh thành hình tròn
         imageView.setClip(circle);
+
+
+        Circle circle2 = new Circle(20);
+        circle2.setCenterX(20);
+        circle2.setCenterY(20);
+        Image image2 = UserDAO.getAvatar(userId()); // Đường dẫn đến hình ảnh
+        // Đặt kích thước cho ImageView
+        ImageView imageView2 = new ImageView(image2);
+        imageView2.setClip(circle2);
+        imageView2.setFitWidth(40); // Kích thước chiều rộng
+        imageView2.setFitHeight(40); // Kích thước chiều cao
+
         Pane paneRectangle = new Pane(tableRectangle2,tableRectangle1);
 
         // Tạo các nút cho menu
@@ -288,7 +314,11 @@ HBox accountHBox =  accountHBox("Thông Tin Tài Khoản", login);
         );
         layout.setLayoutY(240);
 
-        pane.getChildren().addAll(imageView,accountHBox,layout,common, imageViewLibrary, roleLabel);
+        VBox roleVBox = new VBox(imageView2, roleLabel);
+        roleVBox.setAlignment(Pos.CENTER);
+        roleVBox.setLayoutY(5);
+
+        pane.getChildren().addAll(imageView,accountHBox,layout,common, imageViewLibrary, roleVBox);
         // Dùng StackPane để xếp hình nền, hình chữ nhật và form
 
         root.getChildren().addAll(paneRectangle,pane);
@@ -296,7 +326,7 @@ HBox accountHBox =  accountHBox("Thông Tin Tài Khoản", login);
         interfaceScene = new Scene(root, screenWidth, screenHeight);
         Platform.runLater(() -> {
             double screenWidth = interfaceScene.getWidth(); // Lấy chiều rộng của Scene
-            roleLabel.setLayoutX(screenWidth - roleLabel.getWidth() - 10); // Cách cạnh phải 10px
+            roleVBox.setLayoutX(screenWidth - roleVBox.getWidth() - 10); // Cách cạnh phải 10px
         });
         primaryStage.setScene(interfaceScene);
         // Đảm bảo đóng ExecutorService sau khi hoàn thành

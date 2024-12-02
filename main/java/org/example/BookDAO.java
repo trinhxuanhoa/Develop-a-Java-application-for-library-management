@@ -483,7 +483,7 @@ public class BookDAO {
                             lastHBox.getChildren().add(bookVBox);
                             fadeTransition.play();  // Chạy hoạt hình mờ dần
                         });
-
+                        Thread.sleep(200);
                         i++;
 
                         // Nếu có đủ 6 phần tử trong hBox, thêm hBox vào vBox và tạo hBox mới
@@ -590,7 +590,7 @@ public class BookDAO {
                                 lastHBox.getChildren().add(bookVBox);
                                 fadeTransition.play();  // Chạy hoạt hình mờ dần
                             });
-
+                            Thread.sleep(200);
                             i++;
 
                             // Nếu có đủ 6 phần tử trong hBox, thêm hBox vào vBox và tạo hBox mới
@@ -679,7 +679,7 @@ public class BookDAO {
                             hBox.getChildren().add(bookVBox);  // Thêm VBox vào HBox
                             fadeTransition.play();  // Chạy hoạt hình mờ dần
                         });
-
+                        Thread.sleep(200);
                         // Giả lập độ trễ (nếu cần kiểm tra UI)
                         Thread.sleep(50); // Giữ lại chỉ để mô phỏng độ trễ, có thể bỏ đi nếu không cần.
                     }
@@ -752,7 +752,7 @@ public class BookDAO {
                     hBox.getChildren().add(bookVBox);  // Thêm VBox vào HBox
                     fadeTransition.play();  // Chạy hoạt hình mờ dần
                 });
-
+                Thread.sleep(200);
                 // Giả lập độ trễ (nếu cần kiểm tra UI)
                 Thread.sleep(50); // Giữ lại chỉ để mô phỏng độ trễ, có thể bỏ đi nếu không cần.
             }
@@ -892,7 +892,7 @@ public class BookDAO {
                             hBox.getChildren().add(bookVBox);  // Thêm VBox vào HBox
                             fadeTransition.play();  // Chạy hoạt hình mờ dần
                         });
-
+                        Thread.sleep(200);
                         // Giả lập độ trễ (nếu cần kiểm tra UI)
                         Thread.sleep(50); // Giữ lại chỉ để mô phỏng độ trễ, có thể bỏ đi nếu không cần.
                     }
@@ -1047,7 +1047,7 @@ public class BookDAO {
                                     lastHBox.getChildren().add(bookVBox);
                                     fadeTransition.play();  // Chạy hoạt hình mờ dần
                                 });
-
+                                Thread.sleep(200);
                                 i++;
 
                                 // Nếu có đủ 6 phần tử trong hBox, thêm hBox vào vBox và tạo hBox mới
@@ -1154,7 +1154,7 @@ public class BookDAO {
                             fadeTransition.play();  // Chạy hoạt hình mờ dần
                         });
                         i++;
-
+                        Thread.sleep(200);
                         // Nếu có đủ 6 phần tử trong hBox, thêm hBox vào vBox và tạo hBox mới
                         if (i == 6) {
                             final HBox tempHBox = new HBox(30);  // Lưu HBox vào biến tạm

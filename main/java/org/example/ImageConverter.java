@@ -14,6 +14,7 @@ import com.google.zxing.*;
 import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
 public class ImageConverter {
 
+    // chuyển ảnh thành byte
     public static byte[] imageToByteArray(ImageView imageView) {
         try {
             if (imageView == null) {return null;}
@@ -38,6 +39,7 @@ public class ImageConverter {
         return null;
     }
 
+    // chuyển qr sang url
     public static String decodeQRCodeFromImageView(Image image) {
 
         try {
@@ -61,7 +63,7 @@ public class ImageConverter {
         }
     }
 
-    // Phương thức chuyển Image thành BufferedImage
+    // Phương thức chuyển Image thành BufferedImage để giải mã
     public static BufferedImage convertImageToBufferedImage(Image image) throws IOException {
         // Chuyển đổi Image thành mảng byte
         ImageView  imageView = new ImageView(image);

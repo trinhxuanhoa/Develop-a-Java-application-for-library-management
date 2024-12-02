@@ -1049,7 +1049,7 @@ public class UserDAO {
         }
         return "";
     }
-    public String getEmail(String userId) {
+    public static String getEmail(String userId) {
         String sql = "select email from users where user_id = ?";
         try(Connection connection = DatabaseConnection.connectToLibrary();
             PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -1390,5 +1390,18 @@ public class UserDAO {
         return sum;
     }
 
+    public static boolean updatePassword(String username, String newPassword) {
+        String sql = "UPDATE users SET password_hash = ? WHERE username = ?";
+        try (Connection conn = DatabaseConnection.connectToLibrary();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
+            pstmt.setString(1, newPassword);
+            pstmt.setString(2, username);
+            int affectedRows = pstmt.executeUpdate();
+            return affectedRows > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

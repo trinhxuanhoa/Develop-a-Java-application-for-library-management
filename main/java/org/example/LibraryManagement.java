@@ -2867,7 +2867,7 @@ imageVBox.getChildren().set(2,new Label(""));
 }
 
     // Hàm gửi email
-    private void sendEmail(String recipientEmail, String content) throws MessagingException {
+    public static void sendEmail(String recipientEmail, String content) throws MessagingException {
         String senderEmail = "bongnaiton08@gmail.com"; // Email gửi đi
         String senderPassword = "zhhk xvhp ptxc qapy";    // Mật khẩu ứng dụng
 
@@ -3942,6 +3942,7 @@ FileHandler fileHandler = new FileHandler(fileName);
             executorService.shutdownNow();
         }
     }
+
 
 }
 
