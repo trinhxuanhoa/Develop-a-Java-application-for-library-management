@@ -273,15 +273,15 @@ public class Login {
             emailIcon.setFitWidth(32);
             emailIcon.setFitHeight(32);
 
-            TextField emailField = new TextField();
+            /*TextField emailField = new TextField();
             emailField.setPromptText("Nhập email");
             emailField.getStyleClass().add("text-field");
             emailField.setPrefWidth(500);
 
             HBox emailHBox = new HBox(10, emailIcon, emailField);
-            emailHBox.setAlignment(Pos.CENTER_LEFT);
+            emailHBox.setAlignment(Pos.CENTER_LEFT);*/
 
-            Label phoneLabel = new Label("Số điện thoại:");
+            Label phoneLabel = new Label("Họ và tên:");
             phoneLabel.getStyleClass().add("input-label");
 
             ImageView phoneIcon = new ImageView(phoneIconImage);
@@ -289,7 +289,7 @@ public class Login {
             phoneIcon.setFitHeight(32);
 
             TextField phoneField = new TextField();
-            phoneField.setPromptText("Nhập số điện thoại");
+            phoneField.setPromptText("Nhập Họ và tên");
             phoneField.getStyleClass().add("text-field");
             phoneField.setPrefWidth(500);
 
@@ -328,15 +328,14 @@ public class Login {
                     String username = newUsernameField.getText();
                     String password = newPasswordField.getText();
                     String confirmPassword = confirmPasswordField.getText();
-                    String email = emailField.getText();
-                    String phone = phoneField.getText();
+                    String fullName = phoneField.getText();
                     String captchaInput = captchaField.getText();
 
                     if (!captchaInput.equals(captchaText)) {
                         Noti.showFailureMessage("Mã CAPTCHA không chính xác!");
                     } else if (!password.equals(confirmPassword)) {
                         Noti.showFailureMessage("Mật khẩu không khớp!");
-                    } else if (UserDAO.registerAccount(username, password, email, phone)) {
+                    } else if (UserDAO.registerAccount(username, password, fullName)) {
                         Noti.showSuccessMessage("Đăng kí thành công!");
                         showLoginScene();
                     } else {
@@ -356,8 +355,6 @@ public class Login {
                     passwordHBox,
                     confirmPasswordLabel,
                     confirmPasswordHBox,
-                    emailLabel,
-                    emailHBox,
                     phoneLabel,
                     phoneHBox,
                     captchaBox,
@@ -638,12 +635,6 @@ public class Login {
             Label helpLabel = new Label("Yêu cầu trợ giúp");
             helpLabel.getStyleClass().add("form-title");
 
-            Label emailLabel = new Label("Email nhận phản hồi:");
-            emailLabel.getStyleClass().add("input-label");
-            TextField emailField = new TextField();
-            emailField.setPromptText("Nhập email");
-            emailField.getStyleClass().add("text-field");
-            emailField.setPrefWidth(500);
 
             Label userIdLabel = new Label("ID người dùng:");
             userIdLabel.getStyleClass().add("input-label");
@@ -672,14 +663,12 @@ public class Login {
             sendHelpButton.setPrefWidth(200);
             sendHelpButton.setOnAction(e -> {
                 try {
-                    String email = emailField.getText();
                     String userId = userIdField.getText();
                     String title = titleField.getText();
                     String content = contentField.getText();
 
-                    if (email.isEmpty()) {
-                        Noti.showFailureMessage("Bạn chưa nhập email!");
-                    } else if (userId.isEmpty()) {
+
+                    if (userId.isEmpty()) {
                         Noti.showFailureMessage("Bạn chưa nhập ID người dùng!");
                     } else if (title.isEmpty()) {
                         Noti.showFailureMessage("Bạn chưa nhập tiêu đề!");
@@ -688,7 +677,6 @@ public class Login {
                     } else {
                         // Xử lý gửi yêu cầu trợ giúp tại đây
                         Noti.showSuccessMessage("Yêu cầu trợ giúp đã được gửi thành công!");
-                        emailField.clear();
                         userIdField.clear();
                         titleField.clear();
                         contentField.clear();
@@ -707,8 +695,6 @@ public class Login {
 
             helpBox.getChildren().addAll(
                     helpLabel,
-                    emailLabel,
-                    emailField,
                     userIdLabel,
                     userIdField,
                     titleLabel,

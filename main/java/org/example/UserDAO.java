@@ -7,8 +7,8 @@ import javafx.scene.image.Image;
 import java.io.*;
 import java.io.ByteArrayInputStream;
 import java.sql.*;
-import java.util.List;
-import java.util.ArrayList;
+import java.sql.Date;
+import java.util.*;
 import java.time.LocalDate;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -1270,9 +1270,9 @@ public class UserDAO {
         }
     }
 
-    public static boolean registerAccount(String username, String password, String email, String phone) {
+    public static boolean registerAccount(String username, String password, String fullName) {
         String sqlCheck = "SELECT COUNT(*) FROM users WHERE username = ?";
-        String sqlInsert = "INSERT INTO users (user_id, username, password_hash, role, email, phone_number) VALUES (?, ?, ?, ?, ?, ?)";
+        String sqlInsert = "INSERT INTO users (user_id, username, password_hash, role, full_name) VALUES (?, ?, ?, ?, ?)";
 
         try (Connection conn = DatabaseConnection.connectToLibrary();
              PreparedStatement checkStmt = conn.prepareStatement(sqlCheck)) {
@@ -1289,19 +1289,18 @@ public class UserDAO {
 
 
             String passwordPrefix = password.length() >= 3 ? password.substring(0, 3) : password;
-            int userId = getAsciiProduct(passwordPrefix);
+            String userId = getAsciiProduct(passwordPrefix);
 
             // Hash mật khẩu trước khi lưu
             String hashedPassword = hashPassword(password);
 
             // Nếu tên đăng nhập chưa tồn tại, tiếp tục thêm vào cơ sở dữ liệu
             try (PreparedStatement insertStmt = conn.prepareStatement(sqlInsert)) {
-                insertStmt.setInt(1, userId);
+                insertStmt.setString(1, userId);
                 insertStmt.setString(2, username);
                 insertStmt.setString(3, hashedPassword);
                 insertStmt.setString(4, "member");
-                insertStmt.setString(5, email);
-                insertStmt.setString(6, phone);
+                insertStmt.setString(5, fullName);
 
                 int rowsInserted = insertStmt.executeUpdate();
                 return rowsInserted > 0;
@@ -1313,12 +1312,9 @@ public class UserDAO {
         }
     }
 
-    private static int getAsciiProduct(String str) {
-        int product = 1;
-        for (int i = 0; i < str.length(); i++) {
-            product *= (int) str.charAt(i);
-        }
-        return product;
+    private static String getAsciiProduct(String str) {
+
+        return  UUID.randomUUID().toString();
     }
 
     private static String hashPassword(String password) {

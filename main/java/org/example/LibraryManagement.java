@@ -47,6 +47,7 @@ import javafx.animation.TranslateTransition;
 import javafx.util.Duration;
 import javafx.application.Platform;
 import javafx.util.Duration;
+import java.util.concurrent.CompletableFuture;
 import javafx.scene.Node;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
@@ -3797,27 +3798,123 @@ FileHandler fileHandler = new FileHandler(fileName);
         return label;
     }
     //layout đề xuất trong các loại sách trong trang chủ
-    public VBox topBooks() {
+    public VBox topBookss() {
 
         Label topBorrownedBooksLabel = topLabel("Sách mượn nhiều");
         Label relatedBooksLabel = topLabel("Dành cho bạn");
         Label newBooksLabel = topLabel("Sách mới nhất");
 
-        shutdownCurrentTask();
-        HBox topBorrownedBooksHBox = bookDAO.findTopBorrownedBooks();
-        HBox relatedBooksHBox = bookDAO.findRelatedBooksLimit15(Createinterface.userId());
-        HBox newBooksHBox = bookDAO.findNewBooks();
+        HBox topBorrownedBooksHBox = new HBox();
+        HBox relatedBooksHBox = new HBox();
+        HBox newBooksHBox =  new HBox();
 
         ScrollPane topBorrownedBooksScrollPane = scrollPaneTopBooks(topBorrownedBooksHBox);
         ScrollPane relatedBooksScrollPane = scrollPaneTopBooks(relatedBooksHBox);
         ScrollPane newBooksScrollPane = scrollPaneTopBooks(newBooksHBox);
 
-        VBox topBorrownedBooksVBox = new VBox(10, topBorrownedBooksLabel, topBorrownedBooksScrollPane);
-        VBox relatedBooksVBox = new VBox(10, relatedBooksLabel, relatedBooksScrollPane);
-        VBox newBooksScrollVBox = new VBox(10, newBooksLabel, newBooksScrollPane);
+        VBox topBorrownedBooksVBox = new VBox(10, topBorrownedBooksLabel);
+        VBox relatedBooksVBox = new VBox(10, relatedBooksLabel);
+        VBox newBooksVBox = new VBox(10, newBooksLabel);
 
-        return  new VBox(newBooksScrollVBox, relatedBooksVBox, topBorrownedBooksVBox);
+        VBox vBox = new VBox();
+
+        shutdownCurrentTask();
+        executorService =  Executors.newSingleThreadExecutor();
+        Task<Void> task = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                Platform.runLater(() -> {
+                    newBooksVBox.getChildren().add(newBooksScrollPane);
+                    //topBorrownedBooksHBox.getChildren().add(bookDAO.findTopBorrownedBooks());
+                    vBox.getChildren().add(newBooksVBox);
+                });
+
+                Thread.sleep(3000);
+                Platform.runLater(() -> {
+                    //elatedBooksHBox.getChildren().add(bookDAO.findRelatedBooksLimit15(Createinterface.userId()));
+                    relatedBooksVBox.getChildren().add(relatedBooksScrollPane);
+                    vBox.getChildren().add(relatedBooksVBox);
+                });
+                Thread.sleep(3000);
+                Platform.runLater(() -> {
+                    topBorrownedBooksVBox.getChildren().add(topBorrownedBooksScrollPane);
+                    newBooksHBox.getChildren().add(bookDAO.findNewBooks());
+                    vBox.getChildren().add(topBorrownedBooksVBox);
+                });
+
+                return null;
+            }
+
+        };
+
+       task.setOnSucceeded(e->{
+           shutdownCurrentTask();
+           task.cancel(true);
+       });
+       task.setOnFailed(e->{
+           shutdownCurrentTask();
+           task.cancel(true);
+       });
+       task.setOnCancelled(e->{
+           shutdownCurrentTask();
+           task.cancel(true);
+       });
+        executorService.submit(task);
+        return vBox;
     }
+    public VBox topBooks() {
+        Label topBorrownedBooksLabel = topLabel("Sách mượn nhiều");
+        Label relatedBooksLabel = topLabel("Dành cho bạn");
+        Label newBooksLabel = topLabel("Sách mới nhất");
+
+        HBox topBorrownedBooksHBox = new HBox();
+        HBox relatedBooksHBox = new HBox();
+        HBox newBooksHBox = new HBox();
+
+        ScrollPane topBorrownedBooksScrollPane = scrollPaneTopBooks(topBorrownedBooksHBox);
+        ScrollPane relatedBooksScrollPane = scrollPaneTopBooks(relatedBooksHBox);
+        ScrollPane newBooksScrollPane = scrollPaneTopBooks(newBooksHBox);
+
+        VBox topBorrownedBooksVBox = new VBox(10, topBorrownedBooksLabel);
+        VBox relatedBooksVBox = new VBox(10, relatedBooksLabel);
+        VBox newBooksVBox = new VBox(10, newBooksLabel);
+
+        VBox vBox = new VBox();
+
+        shutdownCurrentTask();
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+
+        CompletableFuture.supplyAsync(() -> bookDAO.findTopBorrownedBooks(), executorService)
+                .thenAccept(books -> Platform.runLater(() -> {
+                    topBorrownedBooksHBox.getChildren().addAll(books);
+                    topBorrownedBooksVBox.getChildren().add(topBorrownedBooksScrollPane);
+                    vBox.getChildren().add(topBorrownedBooksVBox);
+                }))
+                .thenCompose(v -> CompletableFuture.supplyAsync(() -> bookDAO.findRelatedBooksLimit15(Createinterface.userId()), executorService))
+                .thenAccept(books -> Platform.runLater(() -> {
+                    relatedBooksHBox.getChildren().addAll(books);
+                    relatedBooksVBox.getChildren().add(relatedBooksScrollPane);
+                    vBox.getChildren().add(relatedBooksVBox);
+                }))
+                .thenCompose(v -> CompletableFuture.supplyAsync(() -> bookDAO.findNewBooks(), executorService))
+                .thenAccept(books -> Platform.runLater(() -> {
+                    newBooksHBox.getChildren().addAll(books);
+                    newBooksVBox.getChildren().add(newBooksScrollPane);
+                    vBox.getChildren().add(newBooksVBox);
+                }))
+                .whenComplete((result, ex) -> {
+                    executorService.shutdown();
+                    shutdownCurrentTask();
+                    if (ex != null) {
+                        ex.printStackTrace();
+                    }
+                });
+
+        return vBox;
+    }
+
+
+
     //layout cho từng loại đề xuất sách
     ScrollPane scrollPaneTopBooks(HBox hBox) {
     ScrollPane topScrollPane = new ScrollPane(hBox);
